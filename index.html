@@ -795,6 +795,9 @@
           <p class="brand-tagline" id="elTagline"></p>
         </div>
         <div class="top-actions">
+          <button class="icon-btn admin-trigger" id="btnRegisterCustomer" type="button" style="background:var(--surface);color:var(--accent);border:1.5px solid var(--accent);font-weight:800">
+            <span id="lblRegisterBtn">📝 ثبت نام</span>
+          </button>
           <button class="icon-btn" id="btnMyOrders" type="button">
             <span>📋 سفارش‌های من</span>
           </button>
@@ -882,6 +885,13 @@
     </div>
   </div>
 
+  <!-- Customer Registration Modal (ثبت نام مشتری و کافه در صفحه اول) -->
+  <div class="modal-backdrop hidden" id="registerModal">
+    <div class="modal-card" style="max-width:490px" role="dialog" aria-modal="true">
+      <div class="modal-content" id="registerModalBody"></div>
+    </div>
+  </div>
+
   <!-- Customer Shopping Cart + Personal Page / Order History Modal -->
   <div class="modal-backdrop hidden" id="cartModal">
     <div class="modal-card" style="max-width:540px" role="dialog" aria-modal="true">
@@ -894,7 +904,7 @@
     <div class="modal-card" style="max-width:390px" role="dialog" aria-modal="true">
       <div class="modal-content">
         <h3 style="font-size:17px;font-weight:800;margin-bottom:6px">ورود به پنل مدیریت</h3>
-        <p style="font-size:12.2px;color:var(--text-muted);margin-bottom:14px">رمز عبور مدیریت را وارد کنید (رمز اولیه پیش‌فرض: <code>1234</code> — از داخل تب ۴ قابل تغییر است):</p>
+        <p style="font-size:12.2px;color:var(--text-muted);margin-bottom:14px">رمز عبور مدیریت را وارد کنید (رمز اولیه پیش‌فرض: <code>1234</code> — از داخل تب ۵ قابل تغییر است):</p>
         <div class="field" style="margin-bottom:12px">
           <input type="password" dir="ltr" id="adminPassInput" placeholder="رمز مدیریت..." style="text-align:center;font-size:16px;font-weight:700">
         </div>
@@ -912,7 +922,7 @@
     <div class="admin-panel">
       <div class="admin-header">
         <div>
-          <h2 style="font-size:17px;font-weight:800">پنل مدیریت جامع منو، تصاویر، سفارشات و صفحات مشتریان</h2>
+          <h2 style="font-size:17px;font-weight:800">پنل مدیریت جامع سفارشات، ثبت‌نام‌ها، تصاویر و قیمت‌ها</h2>
           <p style="font-size:12px;color:var(--text-muted)">هر تغییری بدهید با زدن دکمه سبز پایین در کسری از ثانیه روی گوشی تمام مشتریان آپدیت می‌شود</p>
         </div>
         <button class="icon-btn" type="button" id="btnCloseAdmin">بستن &times;</button>
@@ -920,13 +930,16 @@
 
       <div class="admin-tabs">
         <button class="admin-tab active" data-atab="orders" type="button">
-          🔔 ۱. سفارشات مشتریان <span class="badge-dot hidden" id="tabOrdersBadge">۰</span>
+          🔔 ۱. سفارشات <span class="badge-dot hidden" id="tabOrdersBadge">۰</span>
         </button>
-        <button class="admin-tab" data-atab="prices" type="button">📷 ۲. قیمت، محصولات و عکس‌ها</button>
-        <button class="admin-tab" data-atab="customers" type="button">👤 ۳. صفحات اختصاصی مشتریان</button>
-        <button class="admin-tab" data-atab="brand" type="button">🏪 ۴. مشخصات برند و رمز</button>
-        <button class="admin-tab" data-atab="qr" type="button">🔳 ۵. ساخت QR Code چاپی</button>
-        <button class="admin-tab" data-atab="sync" type="button">☁️ ۶. اتصال و آپلود گیت‌هاب</button>
+        <button class="admin-tab" data-atab="registrations" type="button">
+          👥 ۲. ثبت‌نام مشتریان <span class="badge-dot hidden" id="tabRegsBadge" style="background:#1F6F4A">۰</span>
+        </button>
+        <button class="admin-tab" data-atab="prices" type="button">📷 ۳. قیمت و عکس‌ها</button>
+        <button class="admin-tab" data-atab="customers" type="button">⭐ ۴. صفحات اختصاصی</button>
+        <button class="admin-tab" data-atab="brand" type="button">🏪 ۵. مشخصات برند و رمز</button>
+        <button class="admin-tab" data-atab="qr" type="button">🔳 ۶. ساخت QR Code</button>
+        <button class="admin-tab" data-atab="sync" type="button">☁️ ۷. آپلود گیت‌هاب</button>
       </div>
 
       <div class="admin-body" id="adminBody"></div>
@@ -1023,9 +1036,24 @@
         return JSON.parse(jsText.slice(prefix, suffix + 1));
       }
 
-      let state = JSON.parse(JSON.stringify(window.MENU_DATA));
-      state.vipCustomers = state.vipCustomers || [];
-      state.orderConfig = state.orderConfig || {};
+      const FALLBACK_ORDER_CONFIG = {"enabled":true,"inboxTopic":"lotus_ord_c0c6774381dd56a86fb97273","notifyEmail":"","publicKeyJwk":{"key_ops":["encrypt"],"ext":true,"kty":"RSA","n":"5VZbDR8eh6j-gYFgmQ4rRbU0GaMQEtZpxiv4Pm4u_uhBatQagGOpRzRBkJeH-2HhQReqXhlyDaGXtpNQY2_BLSBy1RetJ7pM3FqvMSG9P8jEHuInbW5PJpzRt2Xw4GySzwMUxdMV4slJfr6dENQdJZkVEmGH3FfVMKq6s5ZxUFVj3JCrFw76PzSRcud0oQSGeGYli0C6Uq99bHRk5axqFLtvrobi4WzdHn-gTcPjg8z54gHGpjyCwe9eKDthKgg53wbVV8de9DwDq6_4dAuzO8Rz-Xw-YnwbpULS7qcxN8ZuGytvEsUwYPvBHTFvSpkCVAbaQFvTKVt97C2Q1egVCQ","e":"AQAB","alg":"RSA-OAEP-256"},"wrappedPrivateKey":{"salt":"8BF4xB1sy6FdTC0X61li+w==","iv":"9+Yjwoz2D5hx6lQb","ct":"tlXfjA4EaGrh0MS3EjYzoHvZtFKWIePGILbnMIyvzLYnd8EpSyCfrPNrWV9ocBATUEs448bVdOJ4+qOV8ed+7GPKKwjfHhkb0+jIlO6AXdT0FC+NUwDgfEwedx48Nd5XqqpRkyPvdAxiCc/thl9ulHMC4IzJZlaisR42l6cvvo5VGTVYcGC9jE1FexgAm7Modd6GVANbm925AvT2K3l8qc7lAtNBBDZoR+4LnxhxQ1pkzQeHSTUKHpuzSvFt9D2wAagDfw2Ii5ZXjCOFOU3Aiu5QJOE4fNC07j5wJn+KWf8cfC0Kbn4J5iSWIyYmxdJhVgWowA9ZM4R1wmBIVrdGgPF4qMPQFrPsi6NSLQYlRLRB+P9ihx0DiikxmMN6JbfXIwWPisWQKMUzQd6bSUOUOAW6xhnxh0BCrctYO+b/ul+t8LJZA3zptkSjg92gx27eQOC6jLXHpCnQS4nO3jgQcRU+ANn9Y3S1jycJOZFbb6lR+ikEOFRDfsv2to3k18/fwSalpTiwBWy/6hJAmPoSlW1HknoYNjrnSRu/AA9KLDHIA62h4EJGF2v7d1qII3EhghT09eiRgnFZQCZnadlmsZW/LM6gK58STB7ABU8oSbwVmPCEX7Xtm57Nu3zOsKncgcMI+My07uBvx3nAXg3oDQrl9hMR1lT7pBYDT8qmMI0yQ69KIJrG/gIrFePjXoIzqsUjEG4lRvlyTTPQs4YGgBfMcovoX/m9D2lqZeUgUBsCDD45TD5bcBz4H5wzY8YFK68F7RKnL6MeioP/CaEwg70u+eeKfJzZ83a5zLpq4SFACcZkPLDHNQmm6q3euhsjpIa/FCfjLB7u7ok3tEUK8ob4i8YU3QiHuLr6XZkfH6KmkD61bPdC60Gv14oKoRFw94/2D2cUmCYJUI+1Y2CZCA4zrM3Um6Ywjp8+Zdur5a4ca9V3LmKxNUojQfScwWOAI7mohgbAFJLWdtMqEBCbAjyZSFRmt6rUjiYP98dwCL7Ci+y27zz/LaWVfDrsE9RTtgCM10QwpjKFhaVHOPVZRbNmKuDxBdQVmxLgLn0vUgvmTUxCFGk6Hc702iRgpns6L6u1qsHZ0ZtUauW7wkBrughn9wJHbSCRP4ZbGlIz5xPrdGYpwJC9VNOEPVyw3Gax/tMHqMAYErnvnziBSkkF8ryLNhEMLC8GTtEHkKqOULug1L2sMkAs+wjM2vlC+FGMkYIoumIv8uI6n99I6yyEihAUD3NQ7EiP2aJjF8KBtWlJX94PGSXeAdnCzEA3gNTex7MN8X0mPNdI3xeJrh+vNcDKOe3eEwp+l3YqYvK81hPSofS7pjKlMyz2NkfExBKKvdhZjHDDlWR5hvQFPQEImi5GKV1XoUAPEj0kwB9hyFNA3/xFnnCVCwK5Z/SCcqsopTzlzzdb9xGSv4aEvF9A1BXVN7CzV111KTCDFVl9OGwR72L9uwnZZaKRetkMjia9ZV54dNQiX0gXvvjIPyBeo6Pf4kMu2xKhX/3YO0xLuCG3W/T5XTkXbF94mzOT61fcFnSBudBEDIswsOiUYfUnN0WvQdrQGR3841jCsrGWAECKh+WGrBHn/XXj7URd1Qp/9RnHO9jW0pxd3CDNqY4HSYeWqPKqDMvb7gDfQuUOz96n+rVsBrHGXu5zr0kiGmQ683cVgaG/45hPmIXkOvF43IbUiwG41fVAlJqNzpgCOz8EmWzGAklILHCji4pwqv4Y6PI69LaW6+3P5SgbUZopfQ4i169cLs3H+pSSbVgwWA1dNjzoMengijl0WjR88xrtgcrVy5HyREtJq08qwJjAWGAk8LGCjPjIrb2KMZ2P6yo4/hOyHOz47RyS3VepuYokuhz+j1TVyXLRwGS9+5zXvEsRH+whKo+dVjqpm00aHczfQfgJM9ufGSlT10gHptyRCzw2VPOMVzd66ZMas5RfIuPiS7EzxDyag1Me2g/HFKOc4UhLamxlQSdxZNWHOr34M6BKRmph6MvUBITBK+9weJu1M/8PWrNuY7lxb76w1Bi55AoG39zPf+C+dAXXhL0+6gSonGa+ea++RtPpTmYUcNlCxyY6dTjJCF+B3T5ieWxWEbZyOBYQBFz0eO3sux6CVU31cpPl/b88TGXjP9IHVtiFWDrQy4kGz/csoHn9jxdx7KQ1VpQ62aBX6XBlM6Axw0/Me18GxNuwJhhGzJoTyTIHaMqEAsZbkjTGk8VGfNF1LAUzt3zeJFIYzkGB+Q9X2tvcsRk="},"adminPassHash":"03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"};
+
+      function ensureOrderConfig(targetState) {
+        if (!targetState) return targetState;
+        targetState.vipCustomers = targetState.vipCustomers || [];
+        const oc = targetState.orderConfig || {};
+        targetState.orderConfig = {
+          enabled: true,
+          inboxTopic: oc.inboxTopic || FALLBACK_ORDER_CONFIG.inboxTopic,
+          notifyEmail: oc.notifyEmail || FALLBACK_ORDER_CONFIG.notifyEmail || '',
+          publicKeyJwk: oc.publicKeyJwk || FALLBACK_ORDER_CONFIG.publicKeyJwk,
+          wrappedPrivateKey: oc.wrappedPrivateKey || FALLBACK_ORDER_CONFIG.wrappedPrivateKey,
+          adminPassHash: oc.adminPassHash || FALLBACK_ORDER_CONFIG.adminPassHash
+        };
+        return targetState;
+      }
+
+      let state = ensureOrderConfig(JSON.parse(JSON.stringify(window.MENU_DATA)));
 
       // Active VIP Customer Page detection (?c=slug)
       const urlParams = new URLSearchParams(location.search);
@@ -1044,10 +1072,11 @@
         return base;
       }
 
-      // Shopping Cart & Local Customer Profile
+      // Shopping Cart & Local Customer Profile (نام، نام کافه، تلفن، آدرس)
       const cartKey = 'lotus_cart_' + (vipSlugParam || 'main');
       let cart = JSON.parse(localStorage.getItem(cartKey) || '{}');
-      let customerProfile = JSON.parse(localStorage.getItem('lotus_customer_profile_v1') || '{"name":"","phone":"","address":""}');
+      let customerProfile = JSON.parse(localStorage.getItem('lotus_customer_profile_v1') || '{"name":"","cafeName":"","phone":"","address":""}');
+      if (customerProfile.cafeName === undefined) customerProfile.cafeName = '';
       let myOrderHistory = JSON.parse(localStorage.getItem('lotus_my_orders_v1') || '[]');
 
       function saveCart() {
@@ -1192,18 +1221,26 @@
       }
 
       function updateOrderBadges() {
-        const newCnt = adminOrders.filter(o => (o.status || 'new') === 'new').length;
-        const b1 = document.getElementById('adminNewBadge');
-        const b2 = document.getElementById('tabOrdersBadge');
-        [b1, b2].forEach(el => {
-          if (!el) return;
-          if (newCnt > 0) {
-            el.textContent = toFa(newCnt);
-            el.classList.remove('hidden');
-          } else {
-            el.classList.add('hidden');
-          }
-        });
+        const newOrdersCnt = adminOrders.filter(o => o.kind !== 'registration' && (o.status || 'new') === 'new').length;
+        const newRegsCnt = adminOrders.filter(o => o.kind === 'registration' && (o.status || 'new') === 'new').length;
+        const totalUnread = newOrdersCnt + newRegsCnt;
+
+        const bTop = document.getElementById('adminNewBadge');
+        const bOrd = document.getElementById('tabOrdersBadge');
+        const bReg = document.getElementById('tabRegsBadge');
+
+        if (bTop) {
+          bTop.textContent = toFa(totalUnread);
+          bTop.classList.toggle('hidden', totalUnread === 0);
+        }
+        if (bOrd) {
+          bOrd.textContent = toFa(newOrdersCnt);
+          bOrd.classList.toggle('hidden', newOrdersCnt === 0);
+        }
+        if (bReg) {
+          bReg.textContent = toFa(newRegsCnt);
+          bReg.classList.toggle('hidden', newRegsCnt === 0);
+        }
       }
 
       // Encrypt/Decrypt permanent order archive on GitHub repo (orders-vault.enc.json) so orders NEVER expire after 12h!
@@ -1319,7 +1356,7 @@
                   const ord = await decryptEnvelope(rawEnv);
                   if (mergeOrderIntoList(ord)) {
                     saveOrdersVaultToGithub();
-                    if (currentAdminTab === 'orders' && !document.getElementById('adminModal').classList.contains('hidden')) {
+                    if ((currentAdminTab === 'orders' || currentAdminTab === 'registrations') && !document.getElementById('adminModal').classList.contains('hidden')) {
                       renderAdminTab();
                     }
                   }
@@ -1390,8 +1427,7 @@
           if (rLocal.ok) {
             const parsedLocal = parseMenuJs(await rLocal.text());
             if (parsedLocal && (!state.updatedAt || (parsedLocal.updatedAt || 0) >= (state.updatedAt || 0))) {
-              state = parsedLocal;
-              state.vipCustomers = state.vipCustomers || [];
+              state = ensureOrderConfig(parsedLocal);
               renderAll();
             }
           }
@@ -1407,8 +1443,7 @@
               if (meta && meta.content) {
                 const parsedRemote = parseMenuJs(base64ToUtf8(meta.content));
                 if (parsedRemote && (parsedRemote.updatedAt || 0) >= (state.updatedAt || 0)) {
-                  state = parsedRemote;
-                  state.vipCustomers = state.vipCustomers || [];
+                  state = ensureOrderConfig(parsedRemote);
                   if (!localStorage.getItem('bakery_theme') && state.brand.defaultTheme) {
                     applyTheme(state.brand.defaultTheme);
                   }
@@ -1421,6 +1456,13 @@
       }
 
       function renderAll() {
+        ensureOrderConfig(state);
+        const regLbl = document.getElementById('lblRegisterBtn');
+        if (regLbl) {
+          regLbl.textContent = customerProfile && (customerProfile.cafeName || customerProfile.name)
+            ? `👤 ${customerProfile.cafeName || customerProfile.name} ✓`
+            : '📝 ثبت نام';
+        }
         const vip = getActiveVip();
         const vipBanner = document.getElementById('vipBanner');
         if (vip) {
@@ -1625,6 +1667,145 @@
         if (e.target.id === 'detailModal') e.target.classList.add('hidden');
       });
 
+      // DEDICATED FIRST-PAGE REGISTRATION MODAL («ثبت نام» در صفحه اول جهت سهولت در ادامه همکاری)
+      function openRegisterModal() {
+        const modal = document.getElementById('registerModal');
+        const body = document.getElementById('registerModalBody');
+        const vip = getActiveVip();
+        modal.classList.remove('hidden');
+
+        body.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <h3 style="font-size:18px;font-weight:800">📝 ثبت نام همکاری مشتریان و کافه‌ها</h3>
+            <button type="button" class="icon-btn" id="btnCloseRegisterModal" style="height:32px;padding:0 10px">&times;</button>
+          </div>
+          <p style="font-size:12.5px;color:var(--text-muted);line-height:1.75;margin-bottom:14px">
+            با ثبت مشخصات زیر، هم اطلاعات همکاری شما مستقیماً برای مدیریت ارسال می‌شود و هم در تمام سفارش‌های بعدی به صورت خودکار پر خواهد شد:
+          </p>
+          <div class="form-grid" style="margin-bottom:14px">
+            <div class="field">
+              <label>نام و نام خانوادگی <span style="color:#DC2626">*</span></label>
+              <input id="reg_name" value="${escapeHtml(customerProfile.name || '')}" placeholder="مثلاً علی رضایی">
+            </div>
+            <div class="field">
+              <label>نام کافه <span style="color:#DC2626">*</span></label>
+              <input id="reg_cafe" value="${escapeHtml(customerProfile.cafeName || (vip ? vip.name : ''))}" placeholder="مثلاً کافه لمیز">
+            </div>
+            <div class="field" style="grid-column:1/-1">
+              <label>شماره تلفن تماس <span style="color:#DC2626">*</span></label>
+              <input dir="ltr" type="tel" id="reg_phone" value="${escapeHtml(customerProfile.phone || '')}" placeholder="0912xxxxxxx">
+            </div>
+            <div class="field" style="grid-column:1/-1">
+              <label>آدرس دقیق کافه / محل تحویل <span style="color:#DC2626">*</span></label>
+              <textarea id="reg_address" rows="2" placeholder="خیابان، کوچه، پلاک، واحد...">${escapeHtml(customerProfile.address || '')}</textarea>
+            </div>
+          </div>
+          <div id="regError" class="hidden" style="color:#DC2626;font-size:12.2px;font-weight:700;margin-bottom:10px"></div>
+          <button type="button" class="cta-primary" id="btnSubmitRegister" style="width:100%;height:46px;background:#1F6F4A;color:#fff;font-size:13.8px">
+            ثبت نام و ارسال مشخصات همکاری ✅
+          </button>`;
+
+        document.getElementById('btnCloseRegisterModal').addEventListener('click', () => {
+          modal.classList.add('hidden');
+        });
+
+        document.getElementById('btnSubmitRegister').addEventListener('click', async () => {
+          const elName = document.getElementById('reg_name');
+          const elCafe = document.getElementById('reg_cafe');
+          const elPhone = document.getElementById('reg_phone');
+          const elAddr = document.getElementById('reg_address');
+          const errEl = document.getElementById('regError');
+
+          const name = elName.value.trim();
+          const cafeName = elCafe.value.trim();
+          const phone = toEnDigits(elPhone.value.trim()).replace(/\s+/g, '');
+          const address = elAddr.value.trim();
+          const phoneDigits = phone.replace(/[^\d]/g, '');
+
+          [elName, elCafe, elPhone, elAddr].forEach(el => { el.style.borderColor = ''; });
+          let hasErr = false;
+          if (!name) { elName.style.borderColor = '#DC2626'; hasErr = true; }
+          if (!cafeName) { elCafe.style.borderColor = '#DC2626'; hasErr = true; }
+          if (phoneDigits.length < 10) { elPhone.style.borderColor = '#DC2626'; hasErr = true; }
+          if (!address) { elAddr.style.borderColor = '#DC2626'; hasErr = true; }
+
+          if (hasErr) {
+            errEl.textContent = 'تکمیل هر ۴ مورد ستاره‌دار (نام، نام کافه، شماره تلفن معتبر و آدرس دقیق) الزامی است.';
+            errEl.classList.remove('hidden');
+            return;
+          }
+          errEl.classList.add('hidden');
+
+          const btn = document.getElementById('btnSubmitRegister');
+          btn.disabled = true;
+          btn.textContent = 'در حال ثبت و ارسال مشخصات...';
+
+          customerProfile = { name, cafeName, phone, address };
+          localStorage.setItem('lotus_customer_profile_v1', JSON.stringify(customerProfile));
+          renderAll();
+
+          const regPayload = {
+            kind: 'registration',
+            id: 'REG-' + Math.floor(1000 + Math.random() * 9000),
+            createdAt: Date.now(),
+            customerName: name,
+            cafeName,
+            phone,
+            address,
+            status: 'new'
+          };
+
+          try {
+            ensureOrderConfig(state);
+            const topic = state.orderConfig.inboxTopic;
+            const encryptedPayload = await encryptOrderPayload(regPayload);
+            const resp = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+              body: encryptedPayload
+            });
+            if (!resp.ok) throw new Error('اختلال موقت شبکه');
+
+            if (state.orderConfig.notifyEmail) {
+              fetch(`https://formsubmit.co/ajax/${encodeURIComponent(state.orderConfig.notifyEmail)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({
+                  _subject: `ثبت‌نام همکاری جدید: ${cafeName} (${name})`,
+                  نام: name,
+                  نام_کافه: cafeName,
+                  تلفن_تماس: phone,
+                  آدرس: address
+                })
+              }).catch(() => {});
+            }
+
+            body.innerHTML = `
+              <div style="text-align:center;padding:16px 8px">
+                <div style="font-size:38px;margin-bottom:8px">🌸</div>
+                <h3 style="font-size:18px;font-weight:800;color:var(--ok);margin-bottom:6px">ثبت نام شما با موفقیت انجام شد!</h3>
+                <p style="font-size:13px;color:var(--text-muted);line-height:1.8;margin-bottom:16px">
+                  مشخصات <strong>${escapeHtml(cafeName)} (${escapeHtml(name)})</strong> برای مدیریت ارسال شد و روی گوشی شما ذخیره گردید تا در تمام سفارش‌های بعدی به صورت خودکار پر شود.
+                </p>
+                <button type="button" class="cta-primary" id="btnDoneReg" style="width:100%">مشاهده منو و ثبت سفارش</button>
+              </div>`;
+            document.getElementById('btnDoneReg').addEventListener('click', () => {
+              modal.classList.add('hidden');
+            });
+          } catch (err) {
+            btn.disabled = false;
+            btn.textContent = 'ثبت نام و ارسال مشخصات همکاری ✅';
+            errEl.textContent = 'مشخصات در گوشی شما ذخیره شد؛ اما ارسال آنلاین با خطا مواجه شد (' + err.message + '). دوباره تلاش کنید.';
+            errEl.classList.remove('hidden');
+          }
+        });
+      }
+
+      document.getElementById('btnRegisterCustomer').addEventListener('click', openRegisterModal);
+      document.getElementById('registerModal').addEventListener('click', e => {
+        if (e.target.id === 'registerModal') e.target.classList.add('hidden');
+      });
+
       // CUSTOMER PERSONAL PORTAL & CHECKOUT DRAWER
       function openCartModal(initialView) {
         const modal = document.getElementById('cartModal');
@@ -1677,11 +1858,12 @@
         if (mode === 'history') {
           wrap.innerHTML = headerTabs + `
             <div style="padding:12px 14px;border-radius:12px;background:var(--surface-soft);border:1px solid var(--border);margin-bottom:14px">
-              <div style="font-size:12.5px;font-weight:700;margin-bottom:8px">مشخصات ذخیره شده شما در این گوشی (برای ثبت سریع سفارش):</div>
+              <div style="font-size:12.5px;font-weight:700;margin-bottom:8px">مشخصات ذخیره شده شما در این گوشی (جهت پر شدن خودکار در سفارش‌ها):</div>
               <div class="form-grid">
-                <div class="field"><label>نام شما یا نام کافه</label><input id="p_custName" value="${escapeHtml(vip ? vip.name : customerProfile.name)}" placeholder="مثلاً کافه لمیز / خانم رضایی"></div>
-                <div class="field"><label>شماره موبایل</label><input dir="ltr" id="p_custPhone" value="${escapeHtml(customerProfile.phone)}" placeholder="0912..."></div>
-                <div class="field" style="grid-column:1/-1"><label>آدرس پیش‌فرض تحویل</label><input id="p_custAddr" value="${escapeHtml(customerProfile.address)}" placeholder="آدرس جهت ارسال پیک..."></div>
+                <div class="field"><label>نام و نام خانوادگی *</label><input id="p_custName" value="${escapeHtml(customerProfile.name || '')}" placeholder="مثلاً علی رضایی"></div>
+                <div class="field"><label>نام کافه *</label><input id="p_custCafe" value="${escapeHtml(customerProfile.cafeName || (vip ? vip.name : ''))}" placeholder="مثلاً کافه لمیز"></div>
+                <div class="field"><label>شماره تلفن *</label><input dir="ltr" id="p_custPhone" value="${escapeHtml(customerProfile.phone || '')}" placeholder="0912..."></div>
+                <div class="field"><label>آدرس دقیق *</label><input id="p_custAddr" value="${escapeHtml(customerProfile.address || '')}" placeholder="آدرس جهت ارسال..."></div>
               </div>
               <button type="button" class="icon-btn btn-green" id="btnSaveCustProfile" style="margin-top:10px;width:100%">ذخیره مشخصات من ✓</button>
             </div>
@@ -1702,10 +1884,12 @@
           document.getElementById('btnSaveCustProfile').addEventListener('click', () => {
             customerProfile = {
               name: document.getElementById('p_custName').value.trim(),
+              cafeName: document.getElementById('p_custCafe').value.trim(),
               phone: toEnDigits(document.getElementById('p_custPhone').value.trim()),
               address: document.getElementById('p_custAddr').value.trim()
             };
             localStorage.setItem('lotus_customer_profile_v1', JSON.stringify(customerProfile));
+            renderAll();
             document.getElementById('btnSaveCustProfile').textContent = 'ذخیره شد ✓';
           });
           wrap.querySelectorAll('[data-reorder]').forEach(btn => {
@@ -1720,13 +1904,13 @@
             });
           });
         } else {
-          // Checkout Mode
+          // Checkout Mode — ALL 4 FIELDS (نام، نام کافه، شماره تلفن، آدرس) MANDATORY!
           if (sum.count === 0) {
             wrap.innerHTML = headerTabs + `<div class="empty-state">سبد سفارش شما خالی است. از داخل منو روی دکمه <strong>«+ سفارش»</strong> کنار هر کیک بزنید.</div>`;
           } else {
-            const defaultName = vip ? vip.name : (customerProfile.name || '');
+            const defaultCafe = customerProfile.cafeName || (vip ? vip.name : '');
             wrap.innerHTML = headerTabs + `
-              <div style="max-height:210px;overflow-y:auto;padding-left:4px;margin-bottom:12px">
+              <div style="max-height:190px;overflow-y:auto;padding-left:4px;margin-bottom:12px">
                 ${sum.lines.map(l => `
                   <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:8px">
                     <div style="flex:1;min-width:0">
@@ -1747,20 +1931,24 @@
               </div>
               <div class="form-grid" style="margin-bottom:14px">
                 <div class="field">
-                  <label>نام شما یا نام کافه *</label>
-                  <input id="co_name" value="${escapeHtml(defaultName)}" placeholder="مثلاً خانم کریمی / کافه لمیز">
+                  <label>نام و نام خانوادگی <span style="color:#DC2626">*</span></label>
+                  <input id="co_name" required value="${escapeHtml(customerProfile.name || '')}" placeholder="مثلاً علی رضایی">
                 </div>
                 <div class="field">
-                  <label>شماره تماس جهت هماهنگی *</label>
-                  <input dir="ltr" type="tel" id="co_phone" value="${escapeHtml(customerProfile.phone)}" placeholder="0912xxxxxxx">
+                  <label>نام کافه <span style="color:#DC2626">*</span></label>
+                  <input id="co_cafe" required value="${escapeHtml(defaultCafe)}" placeholder="مثلاً کافه لمیز">
                 </div>
                 <div class="field">
-                  <label>روز و ساعت تحویل درخواستی</label>
+                  <label>شماره تلفن تماس <span style="color:#DC2626">*</span></label>
+                  <input dir="ltr" type="tel" id="co_phone" required value="${escapeHtml(customerProfile.phone || '')}" placeholder="0912xxxxxxx">
+                </div>
+                <div class="field">
+                  <label>روز/ساعت تحویل یا توضیحات (اختیاری)</label>
                   <input id="co_when" placeholder="مثلاً فردا ساعت ۱۱ صبح">
                 </div>
-                <div class="field">
-                  <label>آدرس یا توضیحات (نوشته روی کیک و...)</label>
-                  <input id="co_note" value="${escapeHtml(customerProfile.address)}" placeholder="توضیحات اختیاری...">
+                <div class="field" style="grid-column:1/-1">
+                  <label>آدرس دقیق تحویل <span style="color:#DC2626">*</span></label>
+                  <textarea id="co_address" rows="2" required placeholder="خیابان، کوچه، پلاک، واحد...">${escapeHtml(customerProfile.address || '')}</textarea>
                 </div>
               </div>
               <div id="coError" class="hidden" style="color:#DC2626;font-size:12.2px;font-weight:700;margin-bottom:10px"></div>
@@ -1778,14 +1966,28 @@
             }));
 
             document.getElementById('btnSubmitCustomerOrder').addEventListener('click', async () => {
-              const name = document.getElementById('co_name').value.trim();
-              const phone = toEnDigits(document.getElementById('co_phone').value.trim()).replace(/\s+/g, '');
-              const when = document.getElementById('co_when').value.trim();
-              const note = document.getElementById('co_note').value.trim();
+              const elName = document.getElementById('co_name');
+              const elCafe = document.getElementById('co_cafe');
+              const elPhone = document.getElementById('co_phone');
+              const elAddr = document.getElementById('co_address');
               const errEl = document.getElementById('coError');
 
-              if (!name || phone.length < 10) {
-                errEl.textContent = 'لطفاً نام و شماره موبایل معتبر خود را وارد بفرمایید تا بتوانیم با شما تماس بگیریم.';
+              const name = elName.value.trim();
+              const cafeName = elCafe.value.trim();
+              const phone = toEnDigits(elPhone.value.trim()).replace(/\s+/g, '');
+              const phoneDigits = phone.replace(/[^\d]/g, '');
+              const address = elAddr.value.trim();
+              const when = document.getElementById('co_when').value.trim();
+
+              [elName, elCafe, elPhone, elAddr].forEach(el => { el.style.borderColor = ''; });
+              const missing = [];
+              if (!name) { elName.style.borderColor = '#DC2626'; missing.push('نام'); }
+              if (!cafeName) { elCafe.style.borderColor = '#DC2626'; missing.push('نام کافه'); }
+              if (phoneDigits.length < 10) { elPhone.style.borderColor = '#DC2626'; missing.push('شماره تلفن معتبر'); }
+              if (!address) { elAddr.style.borderColor = '#DC2626'; missing.push('آدرس'); }
+
+              if (missing.length > 0) {
+                errEl.textContent = 'تکمیل موارد الزامی ناقص است: لطفاً ' + missing.join('، ') + ' را وارد کنید تا سفارش ثبت شود.';
                 errEl.classList.remove('hidden');
                 return;
               }
@@ -1794,26 +1996,30 @@
               submitBtn.disabled = true;
               submitBtn.textContent = 'در حال ثبت آنی سفارش...';
 
-              customerProfile = { name, phone, address: note };
+              customerProfile = { name, cafeName, phone, address };
               localStorage.setItem('lotus_customer_profile_v1', JSON.stringify(customerProfile));
+              renderAll();
 
               const orderObj = {
+                kind: 'order',
                 id: 'LC-' + Math.floor(1000 + Math.random() * 9000),
                 createdAt: Date.now(),
                 customerName: name,
+                cafeName,
                 vipSlug: vip ? vip.slug : '',
                 vipTitle: vip ? vip.name : '',
                 phone,
+                address,
                 deliveryWhen: when,
-                note,
+                note: address,
                 items: sum.lines,
                 total: sum.total,
                 status: 'new'
               };
 
               try {
-                const topic = state.orderConfig && state.orderConfig.inboxTopic;
-                if (!topic) throw new Error('کانال سفارش فعال نیست');
+                ensureOrderConfig(state);
+                const topic = state.orderConfig.inboxTopic;
                 const encryptedPayload = await encryptOrderPayload(orderObj);
                 const resp = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
                   method: 'POST',
@@ -1822,18 +2028,18 @@
                 });
                 if (!resp.ok) throw new Error('اختلال موقت شبکه');
 
-                // Optional instant email notification to owner's Gmail if set
                 if (state.orderConfig.notifyEmail) {
                   fetch(`https://formsubmit.co/ajax/${encodeURIComponent(state.orderConfig.notifyEmail)}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify({
-                      _subject: `سفارش جدید کیک (${orderObj.id}) - ${orderObj.customerName}`,
+                      _subject: `سفارش جدید کیک (${orderObj.id}) - ${orderObj.cafeName}`,
                       کد_سفارش: orderObj.id,
                       نام_مشتری: orderObj.customerName,
+                      نام_کافه: orderObj.cafeName,
                       تلفن_تماس: orderObj.phone,
+                      آدرس: orderObj.address,
                       زمان_تحویل: orderObj.deliveryWhen || '-',
-                      توضیحات: orderObj.note || '-',
                       اقلام_سفارش: orderObj.items.map(i => `${i.name} × ${i.qty}`).join(' | '),
                       مبلغ_کل_تومان: orderObj.total.toLocaleString()
                     })
@@ -1987,15 +2193,16 @@
         const body = document.getElementById('adminBody');
 
         if (currentAdminTab === 'orders') {
-          const filtered = adminOrders.filter(o => {
+          const onlyOrders = adminOrders.filter(o => o.kind !== 'registration');
+          const filtered = onlyOrders.filter(o => {
             if (adminOrderFilter === 'all') return true;
             return (o.status || 'new') === adminOrderFilter;
           });
           body.innerHTML = `
             <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px">
               <div style="display:flex;gap:6px;flex-wrap:wrap">
-                <button type="button" class="tab-pill ${adminOrderFilter === 'all' ? 'active' : ''}" data-ofilt="all">همه (${toFa(adminOrders.length)})</button>
-                <button type="button" class="tab-pill ${adminOrderFilter === 'new' ? 'active' : ''}" data-ofilt="new">🟠 در انتظار تماس (${toFa(adminOrders.filter(x => (x.status||'new')==='new').length)})</button>
+                <button type="button" class="tab-pill ${adminOrderFilter === 'all' ? 'active' : ''}" data-ofilt="all">همه (${toFa(onlyOrders.length)})</button>
+                <button type="button" class="tab-pill ${adminOrderFilter === 'new' ? 'active' : ''}" data-ofilt="new">🟠 در انتظار تماس (${toFa(onlyOrders.filter(x => (x.status||'new')==='new').length)})</button>
                 <button type="button" class="tab-pill ${adminOrderFilter === 'called' ? 'active' : ''}" data-ofilt="called">🔵 هماهنگ شده</button>
                 <button type="button" class="tab-pill ${adminOrderFilter === 'done' ? 'active' : ''}" data-ofilt="done">🟢 تحویل شده</button>
               </div>
@@ -2005,17 +2212,18 @@
               ? `<div class="empty-state">
                   <div style="font-size:32px;margin-bottom:8px">📭</div>
                   هنوز سفارشی در این بخش ثبت نشده است.<br>
-                  <span style="font-size:12px">به محض اینکه هر مشتری در سایت دکمه «ثبت نهایی سفارش» را بزند، مشخصات و شماره تماسش رمزنگاری‌شده همین‌جا ظاهر می‌شود!</span>
+                  <span style="font-size:12px">به محض اینکه هر مشتری در سایت دکمه «ثبت نهایی سفارش» را بزند، نام، نام کافه، شماره تماس و آدرسش رمزنگاری‌شده همین‌جا ظاهر می‌شود!</span>
                 </div>`
               : filtered.map(ord => {
                   const st = ord.status || 'new';
-                  const smsBody = encodeURIComponent(`سلام ${ord.customerName} عزیز، سفارش شما (${ord.id}) در ${state.brand.name} دریافت شد.`);
+                  const smsBody = encodeURIComponent(`سلام ${ord.customerName} عزیز (${ord.cafeName || ''})، سفارش شما (${ord.id}) در ${state.brand.name} دریافت شد.`);
                   return `
                   <div class="order-card-admin status-${st}">
                     <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px">
                       <div>
-                        <strong style="font-size:15px">${escapeHtml(ord.customerName)}</strong>
-                        ${ord.vipTitle ? `<span class="serving-tag" style="margin-right:6px">⭐ صفحه اختصاصی: ${escapeHtml(ord.vipTitle)}</span>` : ''}
+                        <strong style="font-size:15px">👤 ${escapeHtml(ord.customerName)}</strong>
+                        ${ord.cafeName ? `<span class="serving-tag" style="margin-right:6px;font-size:12px">☕ کافه: ${escapeHtml(ord.cafeName)}</span>` : ''}
+                        ${ord.vipTitle ? `<span class="serving-tag" style="margin-right:6px">⭐ ویژه: ${escapeHtml(ord.vipTitle)}</span>` : ''}
                         <span style="font-size:11.5px;color:var(--text-muted);margin-right:8px" dir="ltr">${ord.id}</span>
                       </div>
                       <span style="font-size:11.8px;color:var(--text-muted)">${new Date(ord.createdAt).toLocaleString('fa-IR')}</span>
@@ -2026,11 +2234,10 @@
                         جمع کل سفارش: ${formatPriceFa(ord.total)} تومان
                       </div>
                     </div>
-                    ${(ord.deliveryWhen || ord.note) ? `
-                      <div style="font-size:12.3px;color:var(--text-muted);margin-bottom:10px">
-                        ${ord.deliveryWhen ? `<div>🕒 <strong>زمان تحویل درخواستی:</strong> ${escapeHtml(ord.deliveryWhen)}</div>` : ''}
-                        ${ord.note ? `<div>📝 <strong>آدرس / توضیحات:</strong> ${escapeHtml(ord.note)}</div>` : ''}
-                      </div>` : ''}
+                    <div style="font-size:12.5px;color:var(--text);line-height:1.8;margin-bottom:10px;padding:8px 10px;border-radius:9px;background:var(--surface)">
+                      <div>📍 <strong>آدرس دقیق تحویل:</strong> ${escapeHtml(ord.address || ord.note || '-')}</div>
+                      ${ord.deliveryWhen ? `<div>🕒 <strong>زمان تحویل / توضیحات:</strong> ${escapeHtml(ord.deliveryWhen)}</div>` : ''}
+                    </div>
                     <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px">
                       <div style="display:flex;gap:8px;flex-wrap:wrap">
                         <a href="tel:${ord.phone}" class="icon-btn btn-green">📞 تماس با مشتری (${toFa(ord.phone)})</a>
@@ -2068,6 +2275,83 @@
                 saveOrdersVaultToGithub();
                 renderAdminTab();
               }
+            });
+          });
+
+        } else if (currentAdminTab === 'registrations') {
+          const regs = adminOrders.filter(o => o.kind === 'registration');
+          body.innerHTML = `
+            <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px">
+              <div style="font-size:13px;font-weight:700">
+                فهرست مشتریان و کافه‌هایی که در صفحه اول فرم «ثبت نام همکاری» را پر کرده‌اند (${toFa(regs.length)} مورد):
+              </div>
+              <button type="button" class="icon-btn" id="btnRefreshRegs">🔄 بررسی ثبت‌نام جدید</button>
+            </div>
+            ${regs.length === 0
+              ? `<div class="empty-state">
+                  <div style="font-size:32px;margin-bottom:8px">👥</div>
+                  هنوز ثبت‌نام جدیدی ارسال نشده است.<br>
+                  <span style="font-size:12px">هر مشتری یا مدیر کافه‌ای روی دکمه «📝 ثبت نام» در بالای صفحه اول کلیک کند و فرم را پر کند، مشخصاتش همین‌جا ثبت می‌شود!</span>
+                </div>`
+              : regs.map(r => {
+                  const st = r.status || 'new';
+                  return `
+                  <div class="order-card-admin status-${st === 'done' ? 'done' : 'new'}">
+                    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px">
+                      <div>
+                        <strong style="font-size:15px">☕ ${escapeHtml(r.cafeName || '-')}</strong>
+                        <span class="serving-tag" style="margin-right:6px;font-size:12px">👤 ${escapeHtml(r.customerName)}</span>
+                      </div>
+                      <span style="font-size:11.8px;color:var(--text-muted)">${new Date(r.createdAt).toLocaleString('fa-IR')}</span>
+                    </div>
+                    <div style="font-size:12.6px;line-height:1.8;padding:9px 12px;border-radius:9px;background:var(--bg);margin-bottom:10px">
+                      <div>📞 <strong>تلفن تماس:</strong> <span dir="ltr">${toFa(r.phone)}</span></div>
+                      <div>📍 <strong>آدرس کافه / تحویل:</strong> ${escapeHtml(r.address)}</div>
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px">
+                      <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <a href="tel:${r.phone}" class="icon-btn btn-green">📞 تماس با مشتری</a>
+                        <button type="button" class="icon-btn" data-makevip="${escapeHtml(r.cafeName || r.customerName)}">⭐ ساخت لینک اختصاصی برای این کافه</button>
+                      </div>
+                      <select data-rstatus="${r.id}" style="padding:7px 10px;border-radius:9px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);font-size:12.2px;font-weight:700">
+                        <option value="new" ${st === 'new' ? 'selected' : ''}>🟠 جدید (بررسی نشده)</option>
+                        <option value="done" ${st === 'done' ? 'selected' : ''}>🟢 هماهنگ و ثبت شد</option>
+                      </select>
+                    </div>
+                  </div>`;
+                }).join('')}`;
+
+          document.getElementById('btnRefreshRegs').addEventListener('click', async () => {
+            document.getElementById('btnRefreshRegs').textContent = 'در حال دریافت...';
+            await fetchLiveOrdersFromRelay();
+            renderAdminTab();
+          });
+          body.querySelectorAll('[data-rstatus]').forEach(sel => {
+            sel.addEventListener('change', () => {
+              const r = adminOrders.find(x => x.id === sel.dataset.rstatus);
+              if (r) {
+                r.status = sel.value;
+                r.updatedStatusAt = Date.now();
+                localStorage.setItem('lotus_admin_orders_cache_v1', JSON.stringify(adminOrders));
+                updateOrderBadges();
+                saveOrdersVaultToGithub();
+                renderAdminTab();
+              }
+            });
+          });
+          body.querySelectorAll('[data-makevip]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const title = btn.dataset.makevip;
+              state.vipCustomers.push({
+                name: title,
+                slug: 'cafe-' + Math.floor(100 + Math.random() * 900),
+                discount: 10,
+                note: 'همکاری ویژه'
+              });
+              currentAdminTab = 'customers';
+              document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('active', b.dataset.atab === 'customers'));
+              renderAdminTab();
+              document.getElementById('adminToast').textContent = `صفحه اختصاصی برای «${title}» ساخته شد! درصد تخفیف را تنظیم و دکمه سبز ذخیره را بزنید ✓`;
             });
           });
 

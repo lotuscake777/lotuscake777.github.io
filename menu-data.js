@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1792684681760,
+  "updatedAt": 1792688740979,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
@@ -11,11 +11,12 @@ window.MENU_DATA = {
     "standardBadge": "استاندارد سرو: قالب  سایز ۲۰ / ۸ اسلایس",
     "orderNote": "تمامی سفارش‌ها به‌صورت پخت روز آماده می‌شوند • لطفاً حداقل ۲۴ ساعت قبل هماهنگ فرمایید",
     "phone": "09366919696",
-    "whatsapp": "989366919696",
+    "whatsapp": "989120000000",
     "instagram": "lotuscaker",
     "telegram": "lotuscaker",
     "publicUrl": "https://lotuscaker.github.io",
-    "defaultTheme": "light"
+    "defaultTheme": "light",
+    "orderingEnabled": true
   },
   "categories": [
     {
@@ -266,5 +267,26 @@ window.MENU_DATA = {
       "available": true
     }
   ],
+  "orderConfig": {
+    "enabled": true,
+    "inboxTopic": "lotus_ord_c0c6774381dd56a86fb97273",
+    "notifyEmail": "mohamad.farahani666@gmail.com",
+    "publicKeyJwk": {
+      "key_ops": [
+        "encrypt"
+      ],
+      "ext": true,
+      "kty": "RSA",
+      "n": "5VZbDR8eh6j-gYFgmQ4rRbU0GaMQEtZpxiv4Pm4u_uhBatQagGOpRzRBkJeH-2HhQReqXhlyDaGXtpNQY2_BLSBy1RetJ7pM3FqvMSG9P8jEHuInbW5PJpzRt2Xw4GySzwMUxdMV4slJfr6dENQdJZkVEmGH3FfVMKq6s5ZxUFVj3JCrFw76PzSRcud0oQSGeGYli0C6Uq99bHRk5axqFLtvrobi4WzdHn-gTcPjg8z54gHGpjyCwe9eKDthKgg53wbVV8de9DwDq6_4dAuzO8Rz-Xw-YnwbpULS7qcxN8ZuGytvEsUwYPvBHTFvSpkCVAbaQFvTKVt97C2Q1egVCQ",
+      "e": "AQAB",
+      "alg": "RSA-OAEP-256"
+    },
+    "wrappedPrivateKey": {
+      "salt": "8BF4xB1sy6FdTC0X61li+w==",
+      "iv": "9+Yjwoz2D5hx6lQb",
+      "ct": "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"
+    },
+    "adminPassHash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"
+  },
   "vipCustomers": []
 };
