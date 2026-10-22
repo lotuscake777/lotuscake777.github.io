@@ -400,6 +400,14 @@
       width: 100%; height: 340px; overflow:hidden; position:relative; background:#111; border-radius:12px; cursor: grab; touch-action:none; user-select:none;
     }
     .crop-viewport:active { cursor: grabbing; }
+    /* Splash full-screen luxury intro */
+    .splash-screen {
+      position: fixed; inset:0; z-index: 300; background: #FAF8F5; display: grid; place-items: center;
+      transition: opacity 900ms ease, visibility 900ms ease;
+    }
+    .splash-screen.hide { opacity:0; visibility:hidden; pointer-events:none; }
+    .splash-logo { width: min(360px, 68vw); max-height: 44vh; object-fit: contain; filter: drop-shadow(0 8px 28px rgba(0,0,0,0.08)); animation: splashIn 900ms ease; }
+    @keyframes splashIn { from { opacity:0; transform: scale(0.96) translateY(8px); } to { opacity:1; transform: scale(1) translateY(0); } }
     .crop-viewport img { position:absolute; left:50%; top:50%; transform-origin: center center; will-change: transform; max-width:none; max-height:none; }
     .bake-status-bar {
       background: var(--surface-soft); border-bottom: 1px solid var(--border);
@@ -866,6 +874,9 @@
 </head>
 <body>
 
+  <div id="splashScreen" class="splash-screen hidden">
+    <img id="splashLogoImg" src="" alt="Logo" class="splash-logo">
+  </div>
   <div class="lux-toast" id="luxuryToast"></div>
 
   <!-- Dedicated Personal Customer / Cafe Banner (shown automatically on ?c=slug) -->
@@ -1048,7 +1059,7 @@
         <button class="admin-tab" data-atab="registrations" type="button">
           👥 ۲. ثبت‌نام مشتریان <span class="badge-dot hidden" id="tabRegsBadge" style="background:#1F6F4A">۰</span>
         </button>
-        <button class="admin-tab" data-atab="prices" type="button">📷 ۳. قیمت و عکس‌ها</button>
+        <button class="admin-tab" data-atab="prices" type="button">📦 ۳. محصولات</button>
         <button class="admin-tab" data-atab="customers" type="button">⭐ ۴. صفحات اختصاصی</button>
         <button class="admin-tab" data-atab="brand" type="button">🏪 ۵. مشخصات برند و رمز</button>
         <button class="admin-tab" data-atab="qr" type="button">🔳 ۶. ساخت QR Code</button>
@@ -3409,6 +3420,21 @@
           window._adminPriceFilter = window._adminPriceFilter || 'all';
           const catsForFilter = [{id:'all', title:'همه'}].concat(state.categories);
           body.innerHTML = `
+            <div style="padding:12px; background:var(--surface-soft); border:1px solid var(--border); border-radius:12px; margin-bottom:12px">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+                <label style="font-weight:800; font-size:13px">دسته‌بندی‌های منو — افزودن / حذف / تغییر</label>
+                <button type="button" class="icon-btn admin-trigger" id="btnAddCat2" style="height:32px">➕ افزودن دسته</button>
+              </div>
+              <div id="catsEditor2">
+                ${state.categories.map((c,ci)=>`
+                  <div class="cat-row" style="display:grid; grid-template-columns:1fr 1fr 1.4fr auto; gap:8px; margin-bottom:8px; align-items:center">
+                    <input class="cat-id" value="${escapeHtml(c.id)}" placeholder="id">
+                    <input class="cat-title" value="${escapeHtml(c.title)}" placeholder="عنوان">
+                    <input class="cat-sub" value="${escapeHtml(c.subtitle)}" placeholder="زیرعنوان">
+                    <button type="button" class="icon-btn btn-danger cat-del" data-ci="${ci}" style="height:32px">حذف</button>
+                  </div>`).join('')}
+              </div>
+            </div>
             <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px">
               <div style="font-size:12.5px;color:var(--text-muted)">
                 برای تغییر عکس هر کیک روی <strong>«📷 تغییر عکس»</strong> بزنید و در پایان دکمه سبز پایین را بزنید:
@@ -3523,6 +3549,18 @@
           });
 
           // Enhanced per-item editing: badge & shelfLife
+          // Categories in products tab
+          const addCat2=document.getElementById('btnAddCat2');
+          if(addCat2) addCat2.addEventListener('click',()=>{ collectAdminInputs(); state.categories.push({id:'cat_'+Date.now(), title:'دسته جدید', subtitle:'توضیح'}); renderAdminTab(); });
+          body.querySelectorAll('#catsEditor2 .cat-del').forEach(b=>{
+            b.addEventListener('click',()=>{
+              collectAdminInputs();
+              const idx=+b.dataset.ci;
+              const catId=state.categories[idx]?.id;
+              if(state.items.some(it=>it.category===catId)){ document.getElementById('adminToast').textContent='این دسته دارای محصول است — ابتدا محصولات را جابجا کنید'; return; }
+              state.categories.splice(idx,1); renderAdminTab();
+            });
+          });
           body.querySelectorAll('.ei-badge').forEach(inp=>{
             inp.addEventListener('change',()=>{ collectAdminInputs(); const idx=+inp.dataset.bidx; if(state.items[idx]) state.items[idx].badge=inp.value.trim(); });
           });
@@ -3560,8 +3598,9 @@
               }
             });
           });
-          // Logo upload handler (in design tab)
-          const logoUp = document.getElementById('f_logoUpload');
+
+          // Logo upload handler placeholder for prices - do nothing, handler is in design tab
+          
           if(logoUp){
             logoUp.addEventListener('change', async (e)=>{
               const f=e.target.files&&e.target.files[0]; if(!f) return;
@@ -3703,19 +3742,7 @@
                 <input dir="ltr" type="email" id="f_notifyEmail" value="${escapeHtml((state.orderConfig && state.orderConfig.notifyEmail) || '')}" placeholder="example@gmail.com">
               </div>
               <div class="field" style="grid-column:1/-1"><label>توضیح شرایط ثبت سفارش در پایین صفحه</label><input id="f_note" value="${escapeHtml(b.orderNote)}"></div>
-              <div class="field" style="grid-column:1/-1; margin-top:10px; padding:12px; background:var(--surface-soft); border-radius:12px; border:1px solid var(--border)">
-                <label style="font-weight:800">دسته‌بندی‌های منو (افزودن / حذف / تغییر — کاملاً بدون کدنویسی)</label>
-                <div id="catsEditor" style="margin-top:8px">
-                  ${state.categories.map((c,ci)=>`
-                    <div class="cat-row" style="display:grid; grid-template-columns:1fr 1fr 1.4fr auto; gap:8px; margin-bottom:8px; align-items:center">
-                      <input class="cat-id" value="${escapeHtml(c.id)}" placeholder="id انگلیسی">
-                      <input class="cat-title" value="${escapeHtml(c.title)}" placeholder="عنوان فارسی">
-                      <input class="cat-sub" value="${escapeHtml(c.subtitle)}" placeholder="زیرعنوان">
-                      <button type="button" class="icon-btn btn-danger cat-del" data-ci="${ci}" style="height:32px">حذف</button>
-                    </div>`).join('')}
-                </div>
-                <button type="button" class="icon-btn admin-trigger" id="btnAddCat" style="margin-top:8px">➕ افزودن دسته جدید</button>
-              </div>
+              <div style="grid-column:1/-1; font-size:11px; color:var(--text-muted); padding:8px 10px; background:var(--surface-soft); border:1px dashed var(--border); border-radius:8px">💡 دسته‌بندی‌ها اکنون در تب <strong>📦 محصولات</strong> مدیریت می‌شوند</div>
               <div class="field" style="grid-column:1/-1;padding-top:10px;border-top:1px solid var(--border)">
                 <label>تغییر رمز ورود به پنل مدیریت (مهم: حتماً رمز اختصاصی خودتان را جایگزین 1234 کنید)</label>
                 <div style="display:flex;gap:8px;max-width:420px">
@@ -3868,6 +3895,48 @@
               <strong>💡 چه چیزهایی را بدون کدنویسی می‌توانید تغییر دهید؟</strong><br>
               تقریباً <strong>همه چیز</strong> — از متن‌ها و رنگ‌ها گرفته تا تعداد ستون‌ها، عکس هر محصول، نشان‌های لوکس، متن نوار پخت، آیکون شبکه‌های اجتماعی و حتی بازه‌های تحویل! فقط کافیست در تب‌های ۳ تا ۷ تغییرات را بدهید و دکمه سبز پایین را بزنید.
             </div>`;
+          // Attach logo handlers when in design tab
+          setTimeout(()=>{
+            const logoUp2 = document.getElementById('f_logoUpload');
+            if(logoUp2 && !logoUp2._bound){
+              logoUp2._bound=true;
+              logoUp2.addEventListener('change', async (e)=>{
+                const f=e.target.files&&e.target.files[0]; if(!f) return;
+                try{
+                  const { dataUrl, base64 } = await compressImageFile(f, 600, 0.92);
+                  const lp = `assets/images/logo_${Date.now()}.png`;
+                  pendingImageUploads[lp]=base64;
+                  document.getElementById('f_logoImage').value = lp;
+                  state.design.logoImage = dataUrl;
+                  const prev=document.getElementById('logoPreviewImg');
+                  if(prev){ prev.src=dataUrl; prev.style.display='block'; }
+                  fetch('api/upload-image',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path:lp, base64})}).catch(()=>{});
+                  document.getElementById('adminToast').textContent='لوگو آپلود شد ✓ جایگاه و شفافیت را تنظیم و ذخیره کنید';
+                  renderAll();
+                }catch(err){ document.getElementById('adminToast').textContent=err.message; }
+                e.target.value='';
+              });
+              ['f_logoOpacity','f_logoBlur','f_logoSize','f_logoPosition'].forEach(id=>{
+                const el=document.getElementById(id);
+                if(!el) return;
+                const upd=()=>{ collectAdminInputs(); renderAll(); const op=document.getElementById('logoOpVal'); if(op) op.textContent=document.getElementById('f_logoOpacity').value+'%'; const bl=document.getElementById('logoBlurVal'); if(bl) bl.textContent=document.getElementById('f_logoBlur').value+'px'; const sz=document.getElementById('logoSizeVal'); if(sz) sz.textContent=document.getElementById('f_logoSize').value+'px'; };
+                el.addEventListener('input',upd); el.addEventListener('change',upd);
+              });
+              const btnRem2=document.getElementById('btnRemoveLogo');
+              if(btnRem2) btnRem2.addEventListener('click',()=>{
+                document.getElementById('f_logoImage').value='';
+                const p=document.getElementById('logoPreviewImg'); if(p) p.style.display='none';
+                state.design.logoImage=''; collectAdminInputs(); renderAll();
+                document.getElementById('adminToast').textContent='لوگو حذف شد';
+              });
+              const logoImgInput2=document.getElementById('f_logoImage');
+              if(logoImgInput2) logoImgInput2.addEventListener('input',()=>{
+                const v=logoImgInput2.value.trim();
+                const prev=document.getElementById('logoPreviewImg');
+                if(v){ prev.src=v; prev.style.display='block'; } else prev.style.display='none';
+              });
+            }
+          },0);
           // Save handlers are via collectAdminInputs (below)
         } else if (currentAdminTab === 'sync') {
           const cfg = detectCloudRepo();
@@ -4342,6 +4411,28 @@
       renderAll();
       updateOrderBadges();
       syncLatestFromNetwork();
+      // Splash logic
+      (function initSplash(){
+        const s = state.design || {};
+        if(s.showSplash === false || !s.logoImage) return;
+        const overlay=document.getElementById('splashScreen');
+        const img=document.getElementById('splashLogoImg');
+        if(!overlay || !img) return;
+        img.src = s.logoImage;
+        overlay.classList.remove('hidden');
+        document.body.style.overflow='hidden';
+        const dur = Math.max(800, Math.min(5000, Number(s.splashDuration)||1800));
+        setTimeout(()=>{
+          overlay.classList.add('hide');
+          document.body.style.overflow='';
+          setTimeout(()=> overlay.classList.add('hidden'), 950);
+        }, dur);
+        // Allow click to skip
+        overlay.addEventListener('click', ()=>{
+          overlay.classList.add('hide');
+          document.body.style.overflow='';
+        });
+      })();
     })();
   </script>
 </body>

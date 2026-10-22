@@ -1,12 +1,12 @@
 window.MENU_DATA = {
-  "updatedAt": 1792712101511,
+  "updatedAt": 1792712803206,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
     "ghBranch": "main"
   },
   "brand": {
-    "name": "Lotus Caker - Menu",
+    "name": "Lotus Cacker - Menu",
     "tagline": "پخت روزانه با مواد اولیه تازه و با کیفیت • ویژه سرو کافه، مهمانی و سفارش خانگی",
     "standardBadge": "استاندارد سرو: قالب کامل ۸ اسلایس",
     "orderNote": "تمامی سفارش‌ها به‌صورت پخت روز آماده می‌شوند • لطفاً حداقل ۲۴ ساعت قبل هماهنگ فرمایید",
@@ -343,7 +343,7 @@ window.MENU_DATA = {
     "fontScale": "normal",
     "showMonogram": false,
     "monogramText": "LC",
-    "logoImage": "",
+    "logoImage": "assets/images/logo-lotus-caker.svg",
     "showBakeStatus": false,
     "bakeStatusText": "پذیرش سفارش پخت روزانه فعال است",
     "bakeStatusDot": "#1f6f4a",
@@ -373,7 +373,9 @@ window.MENU_DATA = {
     "logoPosition": "top-center",
     "logoOpacity": 100,
     "logoBlur": 0,
-    "logoSize": 56
+    "logoSize": 72,
+    "showSplash": true,
+    "splashDuration": 1800
   },
   "encryptedAccounts": {}
 };
