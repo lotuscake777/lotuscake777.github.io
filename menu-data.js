@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1792696538838,
+  "updatedAt": 1792699438998,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
@@ -338,5 +338,6 @@ window.MENU_DATA = {
     },
     "adminPassHash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"
   },
-  "vipCustomers": []
+  "vipCustomers": [],
+  "encryptedAccounts": {}
 };

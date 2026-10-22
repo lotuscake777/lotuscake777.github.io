@@ -771,9 +771,52 @@
 
     .status-toast { font-size: 12.5px; color: var(--accent); font-weight: 700; }
     .empty-state { text-align: center; padding: 44px 16px; color: var(--text-muted); font-size: 13.5px; }
+
+    .lux-toast {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-16px);
+      z-index: 220;
+      background: var(--text);
+      color: var(--bg);
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 12.8px;
+      font-weight: 700;
+      box-shadow: var(--shadow-modal);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      max-width: 90vw;
+      text-align: center;
+    }
+    .lux-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .pass-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .pass-wrap input { padding-left: 42px; }
+    .eye-btn {
+      position: absolute;
+      left: 8px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      padding: 4px 6px;
+      color: var(--text-muted);
+    }
   </style>
 </head>
 <body>
+
+  <div class="lux-toast" id="luxuryToast"></div>
 
   <!-- Dedicated Personal Customer / Cafe Banner (shown automatically on ?c=slug) -->
   <div class="vip-banner hidden" id="vipBanner">
@@ -796,7 +839,10 @@
         </div>
         <div class="top-actions">
           <button class="icon-btn admin-trigger" id="btnRegisterCustomer" type="button" style="background:var(--surface);color:var(--accent);border:1.5px solid var(--accent);font-weight:800">
-            <span id="lblRegisterBtn">📝 ثبت نام</span>
+            <span id="lblRegisterBtn">👤 ورود / ثبت نام</span>
+          </button>
+          <button class="icon-btn btn-danger hidden" id="btnLogoutHeader" type="button" title="خروج از حساب کاربری">
+            <span>🚪 خروج</span>
           </button>
           <button class="icon-btn" id="btnMyOrders" type="button">
             <span>📋 سفارش‌های من</span>
@@ -885,10 +931,17 @@
     </div>
   </div>
 
-  <!-- Customer Registration Modal (ثبت نام مشتری و کافه در صفحه اول) -->
-  <div class="modal-backdrop hidden" id="registerModal">
-    <div class="modal-card" style="max-width:490px" role="dialog" aria-modal="true">
+  <!-- Customer Login / Registration / Account Modal -->
+  <div class="modal-backdrop hidden" id="registerModal" style="z-index:140">
+    <div class="modal-card" style="max-width:510px" role="dialog" aria-modal="true">
       <div class="modal-content" id="registerModalBody"></div>
+    </div>
+  </div>
+
+  <!-- Dedicated Add New Product Modal (opens right on top of Admin Panel!) -->
+  <div class="modal-backdrop hidden" id="addProductModal" style="z-index:160">
+    <div class="modal-card" style="max-width:520px" role="dialog" aria-modal="true">
+      <div class="modal-content" id="addProductModalBody"></div>
     </div>
   </div>
 
@@ -1038,9 +1091,28 @@
 
       const FALLBACK_ORDER_CONFIG = {"enabled":true,"inboxTopic":"lotus_ord_c0c6774381dd56a86fb97273","notifyEmail":"","publicKeyJwk":{"key_ops":["encrypt"],"ext":true,"kty":"RSA","n":"5VZbDR8eh6j-gYFgmQ4rRbU0GaMQEtZpxiv4Pm4u_uhBatQagGOpRzRBkJeH-2HhQReqXhlyDaGXtpNQY2_BLSBy1RetJ7pM3FqvMSG9P8jEHuInbW5PJpzRt2Xw4GySzwMUxdMV4slJfr6dENQdJZkVEmGH3FfVMKq6s5ZxUFVj3JCrFw76PzSRcud0oQSGeGYli0C6Uq99bHRk5axqFLtvrobi4WzdHn-gTcPjg8z54gHGpjyCwe9eKDthKgg53wbVV8de9DwDq6_4dAuzO8Rz-Xw-YnwbpULS7qcxN8ZuGytvEsUwYPvBHTFvSpkCVAbaQFvTKVt97C2Q1egVCQ","e":"AQAB","alg":"RSA-OAEP-256"},"wrappedPrivateKey":{"salt":"8BF4xB1sy6FdTC0X61li+w==","iv":"9+Yjwoz2D5hx6lQb","ct":"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"},"adminPassHash":"03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"};
 
+      let toastTimer = null;
+      function showLuxuryToast(msg) {
+        const el = document.getElementById('luxuryToast');
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 2900);
+      }
+
+      function normalizeUsername(raw) {
+        return toEnDigits(String(raw || '')).trim().toLowerCase().replace(/\s+/g, '');
+      }
+
+      function normalizePassword(raw) {
+        return toEnDigits(String(raw || '')).trim();
+      }
+
       function ensureOrderConfig(targetState) {
         if (!targetState) return targetState;
         targetState.vipCustomers = targetState.vipCustomers || [];
+        targetState.encryptedAccounts = targetState.encryptedAccounts || {};
         const oc = targetState.orderConfig || {};
         targetState.orderConfig = {
           enabled: true,
@@ -1055,12 +1127,27 @@
 
       let state = ensureOrderConfig(JSON.parse(JSON.stringify(window.MENU_DATA)));
 
-      // Active VIP Customer Page detection (?c=slug)
+      // Active VIP Customer Page detection (?c=slug OR logged-in account discount!)
       const urlParams = new URLSearchParams(location.search);
       const vipSlugParam = (urlParams.get('c') || '').trim().toLowerCase();
+
+      // Logged-in Customer Account Session & Cross-Device Zero-Knowledge Vault
+      const cartKey = 'lotus_cart_' + (vipSlugParam || 'main');
+      let cart = JSON.parse(localStorage.getItem(cartKey) || '{}');
+      let customerProfile = JSON.parse(localStorage.getItem('lotus_active_user_v2') || 'null') ||
+        { loggedIn: false, username: '', name: '', cafeName: '', phone: '', address: '', discount: 0 };
+      let localAccountStore = JSON.parse(localStorage.getItem('lotus_accounts_vault_v2') || '{}');
+      let myOrderHistory = JSON.parse(localStorage.getItem('lotus_my_orders_v1') || '[]');
+
       function getActiveVip() {
-        if (!vipSlugParam) return null;
-        return (state.vipCustomers || []).find(v => (v.slug || '').toLowerCase() === vipSlugParam) || null;
+        if (vipSlugParam) {
+          const found = (state.vipCustomers || []).find(v => (v.slug || '').toLowerCase() === vipSlugParam);
+          if (found) return found;
+        }
+        if (customerProfile && customerProfile.loggedIn && Number(customerProfile.discount) > 0) {
+          return { name: customerProfile.cafeName || customerProfile.name, slug: customerProfile.username, discount: Number(customerProfile.discount), note: 'حساب همکاری ویژه' };
+        }
+        return null;
       }
 
       function getEffectivePriceNum(item) {
@@ -1072,12 +1159,99 @@
         return base;
       }
 
-      // Shopping Cart & Local Customer Profile (نام، نام کافه، تلفن، آدرس)
-      const cartKey = 'lotus_cart_' + (vipSlugParam || 'main');
-      let cart = JSON.parse(localStorage.getItem(cartKey) || '{}');
-      let customerProfile = JSON.parse(localStorage.getItem('lotus_customer_profile_v1') || '{"name":"","cafeName":"","phone":"","address":""}');
-      if (customerProfile.cafeName === undefined) customerProfile.cafeName = '';
-      let myOrderHistory = JSON.parse(localStorage.getItem('lotus_my_orders_v1') || '[]');
+      async function deriveAccountKeyMaterial(cleanUser, cleanPass) {
+        const keyId = await sha256Hex('lotus_acct_v2:' + cleanUser);
+        const saltBytes = new TextEncoder().encode(keyId.slice(0, 24));
+        const baseKey = await crypto.subtle.importKey(
+          'raw',
+          new TextEncoder().encode(cleanUser + ':' + cleanPass),
+          'PBKDF2',
+          false,
+          ['deriveKey']
+        );
+        const aesKey = await crypto.subtle.deriveKey(
+          { name: 'PBKDF2', salt: saltBytes, iterations: 100000, hash: 'SHA-256' },
+          baseKey,
+          { name: 'AES-GCM', length: 256 },
+          false,
+          ['encrypt', 'decrypt']
+        );
+        return { keyId, relayTopic: 'lotus_usr_' + keyId.slice(0, 22), aesKey };
+      }
+
+      async function encryptCustomerAccountVault(cleanUser, cleanPass, profileData) {
+        const { keyId, relayTopic, aesKey } = await deriveAccountKeyMaterial(cleanUser, cleanPass);
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const plain = new TextEncoder().encode(JSON.stringify(profileData));
+        const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aesKey, plain);
+        const vaultObj = {
+          v: 2,
+          updatedAt: Date.now(),
+          iv: arrayBufferToBase64(iv.buffer),
+          ct: arrayBufferToBase64(ct)
+        };
+        localAccountStore[keyId] = vaultObj;
+        localStorage.setItem('lotus_accounts_vault_v2', JSON.stringify(localAccountStore));
+        return { keyId, relayTopic, vaultObj };
+      }
+
+      async function publishAccountVaultCrossDevice(relayTopic, vaultObj) {
+        try {
+          await fetch(`https://ntfy.sh/${encodeURIComponent(relayTopic)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+            body: 'USR2:' + JSON.stringify(vaultObj)
+          });
+        } catch (_) {}
+      }
+
+      async function findEncryptedAccountAnywhere(cleanUser) {
+        const keyId = await sha256Hex('lotus_acct_v2:' + cleanUser);
+        const relayTopic = 'lotus_usr_' + keyId.slice(0, 22);
+        const candidates = [];
+
+        if (state.encryptedAccounts && state.encryptedAccounts[keyId]) {
+          candidates.push(state.encryptedAccounts[keyId]);
+        }
+        if (localAccountStore[keyId]) {
+          candidates.push(localAccountStore[keyId]);
+        }
+        try {
+          const r = await fetch(`https://ntfy.sh/${encodeURIComponent(relayTopic)}/json?poll=1&since=all`, { cache: 'no-store' });
+          if (r.ok) {
+            const lines = (await r.text()).split('\n').filter(Boolean);
+            for (const ln of lines) {
+              try {
+                const ev = JSON.parse(ln);
+                if (ev.event === 'message' && ev.message && ev.message.startsWith('USR2:')) {
+                  candidates.push(JSON.parse(ev.message.slice(5)));
+                }
+              } catch (_) {}
+            }
+          }
+        } catch (_) {}
+
+        if (candidates.length === 0) return null;
+        candidates.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+        return { keyId, relayTopic, latestVault: candidates[0], allCandidates: candidates };
+      }
+
+      function setLoggedInCustomer(profileObj) {
+        customerProfile = Object.assign({ loggedIn: true, discount: 0 }, profileObj);
+        localStorage.setItem('lotus_active_user_v2', JSON.stringify(customerProfile));
+        localStorage.setItem('lotus_customer_profile_v1', JSON.stringify(customerProfile));
+        renderAll();
+      }
+
+      function logoutCustomerAccount() {
+        customerProfile = { loggedIn: false, username: '', name: '', cafeName: '', phone: '', address: '', discount: 0 };
+        localStorage.removeItem('lotus_active_user_v2');
+        localStorage.removeItem('lotus_customer_profile_v1');
+        cart = {};
+        saveCart();
+        renderAll();
+        showLuxuryToast('با موفقیت از حساب کاربری خود خارج شدید ✓');
+      }
 
       function saveCart() {
         localStorage.setItem(cartKey, JSON.stringify(cart));
@@ -1208,6 +1382,10 @@
 
       function mergeOrderIntoList(ord) {
         if (!ord || !ord.id) return false;
+        if (ord.accountKeyId && ord.encVault) {
+          state.encryptedAccounts = state.encryptedAccounts || {};
+          state.encryptedAccounts[ord.accountKeyId] = ord.encVault;
+        }
         const existingIdx = adminOrders.findIndex(x => x.id === ord.id);
         if (existingIdx === -1) {
           ord.status = ord.status || 'new';
@@ -1458,10 +1636,15 @@
       function renderAll() {
         ensureOrderConfig(state);
         const regLbl = document.getElementById('lblRegisterBtn');
+        const logoutBtn = document.getElementById('btnLogoutHeader');
         if (regLbl) {
-          regLbl.textContent = customerProfile && (customerProfile.cafeName || customerProfile.name)
-            ? `👤 ${customerProfile.cafeName || customerProfile.name} ✓`
-            : '📝 ثبت نام';
+          if (customerProfile && customerProfile.loggedIn && (customerProfile.cafeName || customerProfile.name || customerProfile.username)) {
+            regLbl.textContent = `👤 ${customerProfile.cafeName || customerProfile.name || customerProfile.username}`;
+            if (logoutBtn) logoutBtn.classList.remove('hidden');
+          } else {
+            regLbl.textContent = '👤 ورود / ثبت نام';
+            if (logoutBtn) logoutBtn.classList.add('hidden');
+          }
         }
         const vip = getActiveVip();
         const vipBanner = document.getElementById('vipBanner');
@@ -1667,70 +1850,263 @@
         if (e.target.id === 'detailModal') e.target.classList.add('hidden');
       });
 
-      // DEDICATED FIRST-PAGE REGISTRATION MODAL («ثبت نام» در صفحه اول جهت سهولت در ادامه همکاری)
-      function openRegisterModal() {
+      document.getElementById('btnLogoutHeader').addEventListener('click', () => {
+        logoutCustomerAccount();
+      });
+
+      // ZERO-BUG CROSS-DEVICE CUSTOMER AUTHENTICATION MODAL (ورود / ثبت نام با یوزرنیم و پسورد + خروج از اکانت)
+      function attachPasswordEyeToggles(rootEl) {
+        rootEl.querySelectorAll('.eye-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const inp = rootEl.querySelector('#' + btn.dataset.target);
+            if (!inp) return;
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+            btn.textContent = inp.type === 'password' ? '👁️' : '🙈';
+          });
+        });
+      }
+
+      function openRegisterModal(initialTab) {
         const modal = document.getElementById('registerModal');
         const body = document.getElementById('registerModalBody');
         const vip = getActiveVip();
         modal.classList.remove('hidden');
 
+        // If already logged in -> show Account Profile + Logout Button!
+        if (customerProfile && customerProfile.loggedIn && !initialTab) {
+          body.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <div>
+                <h3 style="font-size:17.5px;font-weight:800">👤 حساب کاربری من</h3>
+                <span style="font-size:11.8px;color:var(--accent);font-weight:700" dir="ltr">@${escapeHtml(customerProfile.username)}</span>
+              </div>
+              <button type="button" class="icon-btn" id="btnCloseRegisterModal" style="height:32px;padding:0 10px">&times;</button>
+            </div>
+            <div class="form-grid" style="margin-bottom:12px">
+              <div class="field"><label>نام و نام خانوادگی *</label><input id="acc_name" value="${escapeHtml(customerProfile.name || '')}"></div>
+              <div class="field"><label>نام کافه *</label><input id="acc_cafe" value="${escapeHtml(customerProfile.cafeName || '')}"></div>
+              <div class="field"><label>شماره تلفن *</label><input dir="ltr" type="tel" id="acc_phone" value="${escapeHtml(customerProfile.phone || '')}"></div>
+              <div class="field">
+                <label>تایید یا تغییر رمز عبور (جهت ذخیره ابری) *</label>
+                <div class="pass-wrap">
+                  <input dir="ltr" type="password" id="acc_pass" placeholder="رمز فعلی یا رمز جدید...">
+                  <button type="button" class="eye-btn" data-target="acc_pass">👁️</button>
+                </div>
+              </div>
+              <div class="field" style="grid-column:1/-1">
+                <label>آدرس دقیق *</label>
+                <textarea id="acc_address" rows="2">${escapeHtml(customerProfile.address || '')}</textarea>
+              </div>
+            </div>
+            <div id="accMsg" class="hidden" style="font-size:12.2px;font-weight:700;margin-bottom:10px;color:#DC2626"></div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button type="button" class="cta-primary" id="btnUpdateAccount" style="width:100%;background:#1F6F4A;color:#fff">ذخیره مشخصات در حساب کاربری ✓</button>
+              <button type="button" class="icon-btn btn-danger" id="btnLogoutInsideModal" style="width:100%;height:42px;font-weight:800">🚪 خروج از حساب کاربری</button>
+            </div>`;
+
+          attachPasswordEyeToggles(body);
+          document.getElementById('btnCloseRegisterModal').addEventListener('click', () => modal.classList.add('hidden'));
+          document.getElementById('btnLogoutInsideModal').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            logoutCustomerAccount();
+          });
+          document.getElementById('btnUpdateAccount').addEventListener('click', async () => {
+            const name = document.getElementById('acc_name').value.trim();
+            const cafeName = document.getElementById('acc_cafe').value.trim();
+            const phone = toEnDigits(document.getElementById('acc_phone').value.trim()).replace(/\s+/g, '');
+            const address = document.getElementById('acc_address').value.trim();
+            const pass = normalizePassword(document.getElementById('acc_pass').value);
+            const msgEl = document.getElementById('accMsg');
+
+            if (!name || !cafeName || phone.replace(/[^\d]/g, '').length < 10 || !address) {
+              msgEl.textContent = 'لطفاً نام، نام کافه، تلفن معتبر و آدرس را کامل وارد کنید.';
+              msgEl.classList.remove('hidden');
+              return;
+            }
+            const updatedProfile = Object.assign({}, customerProfile, { loggedIn: true, name, cafeName, phone, address });
+            setLoggedInCustomer(updatedProfile);
+            if (pass.length >= 4 && customerProfile.username) {
+              const { relayTopic, vaultObj } = await encryptCustomerAccountVault(customerProfile.username, pass, updatedProfile);
+              await publishAccountVaultCrossDevice(relayTopic, vaultObj);
+            }
+            showLuxuryToast('مشخصات حساب شما با موفقیت به‌روزرسانی شد ✓');
+            modal.classList.add('hidden');
+          });
+          return;
+        }
+
+        const mode = initialTab || 'login';
         body.innerHTML = `
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <h3 style="font-size:18px;font-weight:800">📝 ثبت نام همکاری مشتریان و کافه‌ها</h3>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="display:flex;gap:6px">
+              <button type="button" class="tab-pill ${mode === 'login' ? 'active' : ''}" id="authTabLogin">🔑 ورود به حساب</button>
+              <button type="button" class="tab-pill ${mode === 'signup' ? 'active' : ''}" id="authTabSignup">📝 ثبت نام جدید</button>
+            </div>
             <button type="button" class="icon-btn" id="btnCloseRegisterModal" style="height:32px;padding:0 10px">&times;</button>
           </div>
-          <p style="font-size:12.5px;color:var(--text-muted);line-height:1.75;margin-bottom:14px">
-            با ثبت مشخصات زیر، هم اطلاعات همکاری شما مستقیماً برای مدیریت ارسال می‌شود و هم در تمام سفارش‌های بعدی به صورت خودکار پر خواهد شد:
-          </p>
-          <div class="form-grid" style="margin-bottom:14px">
-            <div class="field">
-              <label>نام و نام خانوادگی <span style="color:#DC2626">*</span></label>
-              <input id="reg_name" value="${escapeHtml(customerProfile.name || '')}" placeholder="مثلاً علی رضایی">
+          ${mode === 'login' ? `
+            <p style="font-size:12.4px;color:var(--text-muted);margin-bottom:14px">
+              نام کاربری و رمز عبور خود را وارد کنید تا مشخصات کافه، شماره تماس و آدرس شما به صورت خودکار بارگذاری شود:
+            </p>
+            <div class="form-grid" style="grid-template-columns:1fr;margin-bottom:14px">
+              <div class="field">
+                <label>نام کاربری (یا شماره موبایل ثبت‌نامی) *</label>
+                <input dir="ltr" id="lg_user" autocomplete="username" placeholder="مثلاً lamiz یا 0912xxxxxxx">
+              </div>
+              <div class="field">
+                <label>رمز عبور *</label>
+                <div class="pass-wrap">
+                  <input dir="ltr" type="password" id="lg_pass" autocomplete="current-password" placeholder="رمز عبور...">
+                  <button type="button" class="eye-btn" data-target="lg_pass">👁️</button>
+                </div>
+              </div>
             </div>
-            <div class="field">
-              <label>نام کافه <span style="color:#DC2626">*</span></label>
-              <input id="reg_cafe" value="${escapeHtml(customerProfile.cafeName || (vip ? vip.name : ''))}" placeholder="مثلاً کافه لمیز">
+            <div id="loginCustError" class="hidden" style="color:#DC2626;font-size:12.2px;font-weight:700;margin-bottom:10px"></div>
+            <button type="button" class="cta-primary" id="btnDoCustomerLogin" style="width:100%;height:46px;background:#1F6F4A;color:#fff;font-size:14px">
+              ورود به حساب کاربری ←
+            </button>
+            <div style="text-align:center;margin-top:12px;font-size:12.2px;color:var(--text-muted)">
+              هنوز حساب ندارید؟ <button type="button" id="linkGoSignup" style="background:none;border:none;color:var(--accent);font-weight:800;cursor:pointer;text-decoration:underline">ثبت نام جدید در ۱۰ ثانیه</button>
             </div>
-            <div class="field" style="grid-column:1/-1">
-              <label>شماره تلفن تماس <span style="color:#DC2626">*</span></label>
-              <input dir="ltr" type="tel" id="reg_phone" value="${escapeHtml(customerProfile.phone || '')}" placeholder="0912xxxxxxx">
+          ` : `
+            <p style="font-size:12.3px;color:var(--text-muted);line-height:1.7;margin-bottom:12px">
+              یک نام کاربری و رمز عبور دلخواه انتخاب کنید؛ با این حساب از <strong>هر گوشی یا سیستمی</strong> وارد شوید اطلاعات شما آماده است:
+            </p>
+            <div class="form-grid" style="margin-bottom:14px">
+              <div class="field">
+                <label>نام کاربری دلخواه (انگلیسی یا موبایل) <span style="color:#DC2626">*</span></label>
+                <input dir="ltr" id="reg_user" autocomplete="username" placeholder="مثلاً cafe_lamiz یا 0912...">
+              </div>
+              <div class="field">
+                <label>رمز عبور دلخواه (حداقل ۴ کاراکتر) <span style="color:#DC2626">*</span></label>
+                <div class="pass-wrap">
+                  <input dir="ltr" type="password" id="reg_pass" autocomplete="new-password" placeholder="حداقل ۴ عدد یا حرف">
+                  <button type="button" class="eye-btn" data-target="reg_pass">👁️</button>
+                </div>
+              </div>
+              <div class="field">
+                <label>نام و نام خانوادگی <span style="color:#DC2626">*</span></label>
+                <input id="reg_name" placeholder="مثلاً علی رضایی">
+              </div>
+              <div class="field">
+                <label>نام کافه <span style="color:#DC2626">*</span></label>
+                <input id="reg_cafe" value="${escapeHtml(vip ? vip.name : '')}" placeholder="مثلاً کافه لمیز">
+              </div>
+              <div class="field" style="grid-column:1/-1">
+                <label>شماره تلفن تماس <span style="color:#DC2626">*</span></label>
+                <input dir="ltr" type="tel" id="reg_phone" placeholder="0912xxxxxxx">
+              </div>
+              <div class="field" style="grid-column:1/-1">
+                <label>آدرس دقیق کافه / محل تحویل <span style="color:#DC2626">*</span></label>
+                <textarea id="reg_address" rows="2" placeholder="خیابان، کوچه، پلاک، واحد..."></textarea>
+              </div>
             </div>
-            <div class="field" style="grid-column:1/-1">
-              <label>آدرس دقیق کافه / محل تحویل <span style="color:#DC2626">*</span></label>
-              <textarea id="reg_address" rows="2" placeholder="خیابان، کوچه، پلاک، واحد...">${escapeHtml(customerProfile.address || '')}</textarea>
-            </div>
-          </div>
-          <div id="regError" class="hidden" style="color:#DC2626;font-size:12.2px;font-weight:700;margin-bottom:10px"></div>
-          <button type="button" class="cta-primary" id="btnSubmitRegister" style="width:100%;height:46px;background:#1F6F4A;color:#fff;font-size:13.8px">
-            ثبت نام و ارسال مشخصات همکاری ✅
-          </button>`;
+            <div id="regError" class="hidden" style="color:#DC2626;font-size:12.2px;font-weight:700;margin-bottom:10px"></div>
+            <button type="button" class="cta-primary" id="btnSubmitRegister" style="width:100%;height:46px;background:#1F6F4A;color:#fff;font-size:13.8px">
+              تکمیل ثبت نام و ورود به حساب ✅
+            </button>
+          `}`;
 
-        document.getElementById('btnCloseRegisterModal').addEventListener('click', () => {
-          modal.classList.add('hidden');
-        });
+        attachPasswordEyeToggles(body);
+        document.getElementById('btnCloseRegisterModal').addEventListener('click', () => modal.classList.add('hidden'));
+        document.getElementById('authTabLogin').addEventListener('click', () => openRegisterModal('login'));
+        document.getElementById('authTabSignup').addEventListener('click', () => openRegisterModal('signup'));
 
+        if (mode === 'login') {
+          document.getElementById('linkGoSignup').addEventListener('click', () => openRegisterModal('signup'));
+          const doLogin = async () => {
+            const uEl = document.getElementById('lg_user');
+            const pEl = document.getElementById('lg_pass');
+            const errEl = document.getElementById('loginCustError');
+            const cleanUser = normalizeUsername(uEl.value);
+            const cleanPass = normalizePassword(pEl.value);
+
+            if (!cleanUser || !cleanPass) {
+              errEl.textContent = 'لطفاً هم نام کاربری و هم رمز عبور را وارد کنید.';
+              errEl.classList.remove('hidden');
+              return;
+            }
+            errEl.classList.add('hidden');
+            const btn = document.getElementById('btnDoCustomerLogin');
+            btn.disabled = true;
+            btn.textContent = 'در حال بررسی حساب کاربری...';
+
+            try {
+              const found = await findEncryptedAccountAnywhere(cleanUser);
+              if (!found) {
+                btn.disabled = false;
+                btn.textContent = 'ورود به حساب کاربری ←';
+                errEl.textContent = 'حسابی با این نام کاربری یافت نشد. اگر قبلاً ثبت‌نام نکرده‌اید روی تب «ثبت نام جدید» بزنید.';
+                errEl.classList.remove('hidden');
+                return;
+              }
+              const { aesKey } = await deriveAccountKeyMaterial(cleanUser, cleanPass);
+              let decryptedProfile = null;
+              for (const cand of found.allCandidates) {
+                try {
+                  const plain = await crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: base64ToUint8(cand.iv) },
+                    aesKey,
+                    base64ToUint8(cand.ct)
+                  );
+                  decryptedProfile = JSON.parse(new TextDecoder().decode(plain));
+                  break;
+                } catch (_) {}
+              }
+              if (!decryptedProfile) {
+                btn.disabled = false;
+                btn.textContent = 'ورود به حساب کاربری ←';
+                errEl.textContent = 'رمز عبور واردشده اشتباه است. (در صورت فراموشی رمز با مدیریت تماس بگیرید)';
+                errEl.classList.remove('hidden');
+                return;
+              }
+              setLoggedInCustomer(Object.assign({ username: cleanUser }, decryptedProfile));
+              modal.classList.add('hidden');
+              showLuxuryToast(`خوش آمدید، ${decryptedProfile.cafeName || decryptedProfile.name} عزیز ✨`);
+            } catch (err) {
+              btn.disabled = false;
+              btn.textContent = 'ورود به حساب کاربری ←';
+              errEl.textContent = 'خطا در برقراری ارتباط (' + err.message + ')';
+              errEl.classList.remove('hidden');
+            }
+          };
+          document.getElementById('btnDoCustomerLogin').addEventListener('click', doLogin);
+          document.getElementById('lg_pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+          return;
+        }
+
+        // Sign-Up Mode
         document.getElementById('btnSubmitRegister').addEventListener('click', async () => {
+          const elUser = document.getElementById('reg_user');
+          const elPass = document.getElementById('reg_pass');
           const elName = document.getElementById('reg_name');
           const elCafe = document.getElementById('reg_cafe');
           const elPhone = document.getElementById('reg_phone');
           const elAddr = document.getElementById('reg_address');
           const errEl = document.getElementById('regError');
 
+          const cleanUser = normalizeUsername(elUser.value);
+          const cleanPass = normalizePassword(elPass.value);
           const name = elName.value.trim();
           const cafeName = elCafe.value.trim();
           const phone = toEnDigits(elPhone.value.trim()).replace(/\s+/g, '');
           const address = elAddr.value.trim();
           const phoneDigits = phone.replace(/[^\d]/g, '');
 
-          [elName, elCafe, elPhone, elAddr].forEach(el => { el.style.borderColor = ''; });
-          let hasErr = false;
-          if (!name) { elName.style.borderColor = '#DC2626'; hasErr = true; }
-          if (!cafeName) { elCafe.style.borderColor = '#DC2626'; hasErr = true; }
-          if (phoneDigits.length < 10) { elPhone.style.borderColor = '#DC2626'; hasErr = true; }
-          if (!address) { elAddr.style.borderColor = '#DC2626'; hasErr = true; }
+          [elUser, elPass, elName, elCafe, elPhone, elAddr].forEach(el => { el.style.borderColor = ''; });
+          const missing = [];
+          if (!cleanUser || cleanUser.length < 3 || !/^[a-z0-9_.-]+$/.test(cleanUser)) {
+            elUser.style.borderColor = '#DC2626';
+            missing.push('نام کاربری انگلیسی یا موبایل (حداقل ۳ حرف/عدد بدون فاصله)');
+          }
+          if (cleanPass.length < 4) { elPass.style.borderColor = '#DC2626'; missing.push('رمز عبور (حداقل ۴ کاراکتر)'); }
+          if (!name) { elName.style.borderColor = '#DC2626'; missing.push('نام و نام خانوادگی'); }
+          if (!cafeName) { elCafe.style.borderColor = '#DC2626'; missing.push('نام کافه'); }
+          if (phoneDigits.length < 10) { elPhone.style.borderColor = '#DC2626'; missing.push('شماره تلفن معتبر'); }
+          if (!address) { elAddr.style.borderColor = '#DC2626'; missing.push('آدرس دقیق'); }
 
-          if (hasErr) {
-            errEl.textContent = 'تکمیل هر ۴ مورد ستاره‌دار (نام، نام کافه، شماره تلفن معتبر و آدرس دقیق) الزامی است.';
+          if (missing.length > 0) {
+            errEl.textContent = 'لطفاً موارد زیر را کامل کنید: ' + missing.join(' ، ');
             errEl.classList.remove('hidden');
             return;
           }
@@ -1738,40 +2114,55 @@
 
           const btn = document.getElementById('btnSubmitRegister');
           btn.disabled = true;
-          btn.textContent = 'در حال ثبت و ارسال مشخصات...';
-
-          customerProfile = { name, cafeName, phone, address };
-          localStorage.setItem('lotus_customer_profile_v1', JSON.stringify(customerProfile));
-          renderAll();
-
-          const regPayload = {
-            kind: 'registration',
-            id: 'REG-' + Math.floor(1000 + Math.random() * 9000),
-            createdAt: Date.now(),
-            customerName: name,
-            cafeName,
-            phone,
-            address,
-            status: 'new'
-          };
+          btn.textContent = 'در حال بررسی نام کاربری و ساخت حساب...';
 
           try {
+            // Prevent duplicate username!
+            const alreadyExists = await findEncryptedAccountAnywhere(cleanUser);
+            if (alreadyExists) {
+              btn.disabled = false;
+              btn.textContent = 'تکمیل ثبت نام و ورود به حساب ✅';
+              elUser.style.borderColor = '#DC2626';
+              errEl.textContent = 'این نام کاربری قبلاً ثبت شده است! اگر متعلق به شماست، از تب «ورود به حساب» وارد شوید یا نام کاربری دیگری انتخاب کنید.';
+              errEl.classList.remove('hidden');
+              return;
+            }
+
+            const profileData = { username: cleanUser, name, cafeName, phone, address, discount: 0, createdAt: Date.now() };
+            const { keyId, relayTopic, vaultObj } = await encryptCustomerAccountVault(cleanUser, cleanPass, profileData);
+            await publishAccountVaultCrossDevice(relayTopic, vaultObj);
+            setLoggedInCustomer(profileData);
+
+            const regPayload = {
+              kind: 'registration',
+              id: 'REG-' + Math.floor(1000 + Math.random() * 9000),
+              createdAt: Date.now(),
+              username: cleanUser,
+              accountKeyId: keyId,
+              encVault: vaultObj,
+              customerName: name,
+              cafeName,
+              phone,
+              address,
+              status: 'new'
+            };
+
             ensureOrderConfig(state);
             const topic = state.orderConfig.inboxTopic;
             const encryptedPayload = await encryptOrderPayload(regPayload);
-            const resp = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
+            await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
               method: 'POST',
               headers: { 'Content-Type': 'text/plain; charset=utf-8' },
               body: encryptedPayload
             });
-            if (!resp.ok) throw new Error('اختلال موقت شبکه');
 
             if (state.orderConfig.notifyEmail) {
               fetch(`https://formsubmit.co/ajax/${encodeURIComponent(state.orderConfig.notifyEmail)}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({
-                  _subject: `ثبت‌نام همکاری جدید: ${cafeName} (${name})`,
+                  _subject: `ثبت‌نام عضو جدید: ${cafeName} (@${cleanUser})`,
+                  نام_کاربری: cleanUser,
                   نام: name,
                   نام_کافه: cafeName,
                   تلفن_تماس: phone,
@@ -1780,28 +2171,18 @@
               }).catch(() => {});
             }
 
-            body.innerHTML = `
-              <div style="text-align:center;padding:16px 8px">
-                <div style="font-size:38px;margin-bottom:8px">🌸</div>
-                <h3 style="font-size:18px;font-weight:800;color:var(--ok);margin-bottom:6px">ثبت نام شما با موفقیت انجام شد!</h3>
-                <p style="font-size:13px;color:var(--text-muted);line-height:1.8;margin-bottom:16px">
-                  مشخصات <strong>${escapeHtml(cafeName)} (${escapeHtml(name)})</strong> برای مدیریت ارسال شد و روی گوشی شما ذخیره گردید تا در تمام سفارش‌های بعدی به صورت خودکار پر شود.
-                </p>
-                <button type="button" class="cta-primary" id="btnDoneReg" style="width:100%">مشاهده منو و ثبت سفارش</button>
-              </div>`;
-            document.getElementById('btnDoneReg').addEventListener('click', () => {
-              modal.classList.add('hidden');
-            });
+            modal.classList.add('hidden');
+            showLuxuryToast(`حساب کاربری «${cafeName}» ساخته شد و وارد حساب شدید 🎉`);
           } catch (err) {
             btn.disabled = false;
-            btn.textContent = 'ثبت نام و ارسال مشخصات همکاری ✅';
-            errEl.textContent = 'مشخصات در گوشی شما ذخیره شد؛ اما ارسال آنلاین با خطا مواجه شد (' + err.message + '). دوباره تلاش کنید.';
+            btn.textContent = 'تکمیل ثبت نام و ورود به حساب ✅';
+            errEl.textContent = 'خطا در اتصال (' + err.message + '). لطفاً دوباره تلاش کنید.';
             errEl.classList.remove('hidden');
           }
         });
       }
 
-      document.getElementById('btnRegisterCustomer').addEventListener('click', openRegisterModal);
+      document.getElementById('btnRegisterCustomer').addEventListener('click', () => openRegisterModal());
       document.getElementById('registerModal').addEventListener('click', e => {
         if (e.target.id === 'registerModal') e.target.classList.add('hidden');
       });
@@ -2189,6 +2570,132 @@
         return raw.replace(/index\.html$/i, '').replace(/\/+$/, '');
       }
 
+      function openAddProductModal() {
+        const modal = document.getElementById('addProductModal');
+        const mBody = document.getElementById('addProductModalBody');
+        modal.classList.remove('hidden');
+
+        let pickedDataUrl = '';
+        let pickedBase64 = '';
+        const fallbackImg = (state.items[0] && state.items[0].image) || 'assets/images/k01-snickers.jpg';
+
+        mBody.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <h3 style="font-size:18px;font-weight:800">➕ افزودن محصول جدید به منو</h3>
+            <button type="button" class="icon-btn" id="btnCloseAddProd" style="height:32px;padding:0 10px">&times;</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;padding:12px;border-radius:12px;background:var(--surface-soft);border:1px solid var(--border);margin-bottom:14px">
+            <img id="np_preview" src="${fallbackImg}" alt="" style="width:92px;height:76px;border-radius:10px;object-fit:cover;border:1px solid var(--border-strong)">
+            <div style="flex:1">
+              <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">تصویر محصول جدید:</div>
+              <label class="icon-btn admin-trigger" style="cursor:pointer;display:inline-flex">
+                📷 انتخاب عکس از گالری / فایل‌ها
+                <input type="file" accept="image/*" id="np_file" class="hidden">
+              </label>
+            </div>
+          </div>
+          <div class="form-grid" style="margin-bottom:14px">
+            <div class="field">
+              <label>نام محصول جدید *</label>
+              <input id="np_name" placeholder="مثلاً چیزکیک زعفران و پسته">
+            </div>
+            <div class="field">
+              <label>دسته‌بندی *</label>
+              <select id="np_cat">
+                ${state.categories.map(c => `<option value="${c.id}">${c.title}</option>`).join('')}
+              </select>
+            </div>
+            <div class="field">
+              <label>قیمت به تومان *</label>
+              <input id="np_price" placeholder="مثلاً ۹۸۰,۰۰۰">
+            </div>
+            <div class="field">
+              <label>سایز / تعداد اسلایس *</label>
+              <input id="np_serv" value="۸ اسلایس" placeholder="مثلاً ۸ اسلایس یا تک‌نفره">
+            </div>
+            <div class="field" style="grid-column:1/-1">
+              <label>توضیحات و ترکیبات محصول</label>
+              <input id="np_desc" placeholder="مثلاً تهیه شده با زعفران سرگل و کرم پنیری تازه...">
+            </div>
+          </div>
+          <div id="np_err" class="hidden" style="color:#DC2626;font-size:12.2px;font-weight:700;margin-bottom:10px"></div>
+          <button type="button" class="cta-primary" id="btnConfirmAddProd" style="width:100%;height:46px;background:#1F6F4A;color:#fff;font-size:14px">
+            ثبت و افزودن محصول به منو ✅
+          </button>`;
+
+        document.getElementById('btnCloseAddProd').addEventListener('click', () => modal.classList.add('hidden'));
+        modal.onclick = e => { if (e.target.id === 'addProductModal') modal.classList.add('hidden'); };
+
+        // Auto-format price with comma separators as user types
+        const priceEl = document.getElementById('np_price');
+        priceEl.addEventListener('input', () => {
+          const num = parsePriceNumber(priceEl.value);
+          if (num > 0) priceEl.value = formatPriceFa(num);
+        });
+
+        document.getElementById('np_file').addEventListener('change', async e => {
+          const f = e.target.files && e.target.files[0];
+          if (!f) return;
+          try {
+            const { dataUrl, base64 } = await compressImageFile(f, 900, 0.88);
+            pickedDataUrl = dataUrl;
+            pickedBase64 = base64;
+            document.getElementById('np_preview').src = dataUrl;
+          } catch (err) {
+            document.getElementById('np_err').textContent = err.message;
+            document.getElementById('np_err').classList.remove('hidden');
+          }
+        });
+
+        document.getElementById('btnConfirmAddProd').addEventListener('click', () => {
+          const name = document.getElementById('np_name').value.trim();
+          const cat = document.getElementById('np_cat').value;
+          const rawPrice = document.getElementById('np_price').value.trim();
+          const serv = document.getElementById('np_serv').value.trim() || '۸ اسلایس';
+          const desc = document.getElementById('np_desc').value.trim() || 'تهیه شده با مواد اولیه تازه روز';
+          const errEl = document.getElementById('np_err');
+
+          if (!name || !rawPrice) {
+            errEl.textContent = 'لطفاً نام محصول و قیمت آن را وارد بفرمایید.';
+            errEl.classList.remove('hidden');
+            return;
+          }
+
+          const newId = 'item_' + Date.now();
+          let imgPath = fallbackImg;
+          if (pickedBase64) {
+            imgPath = `assets/images/custom_${newId}.jpg`;
+            pendingImageUploads[imgPath] = pickedBase64;
+            fetch('api/upload-image', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ path: imgPath, base64: pickedBase64 })
+            }).catch(() => {});
+          }
+
+          const newItem = {
+            id: newId,
+            category: cat,
+            name,
+            serving: serv,
+            desc,
+            price: formatPriceFa(parsePriceNumber(rawPrice)) || rawPrice,
+            available: true,
+            image: imgPath
+          };
+          if (pickedDataUrl) newItem._previewDataUrl = pickedDataUrl;
+
+          state.items.unshift(newItem);
+          modal.classList.add('hidden');
+          renderAdminTab();
+          const adminBody = document.getElementById('adminBody');
+          if (adminBody) adminBody.scrollTop = 0;
+          renderAll();
+          document.getElementById('adminToast').textContent = `محصول جدید «${name}» به ابتدای لیست اضافه شد ✓ برای انتشار روی همه گوشی‌ها دکمه سبز ذخیره را بزنید!`;
+          showLuxuryToast(`محصول «${name}» با موفقیت به منو اضافه شد ✨`);
+        });
+      }
+
       function renderAdminTab() {
         const body = document.getElementById('adminBody');
 
@@ -2301,6 +2808,7 @@
                       <div>
                         <strong style="font-size:15px">☕ ${escapeHtml(r.cafeName || '-')}</strong>
                         <span class="serving-tag" style="margin-right:6px;font-size:12px">👤 ${escapeHtml(r.customerName)}</span>
+                        ${r.username ? `<span class="serving-tag" style="margin-right:6px;font-size:12px" dir="ltr">@${escapeHtml(r.username)}</span>` : ''}
                       </div>
                       <span style="font-size:11.8px;color:var(--text-muted)">${new Date(r.createdAt).toLocaleString('fa-IR')}</span>
                     </div>
@@ -2308,6 +2816,14 @@
                       <div>📞 <strong>تلفن تماس:</strong> <span dir="ltr">${toFa(r.phone)}</span></div>
                       <div>📍 <strong>آدرس کافه / تحویل:</strong> ${escapeHtml(r.address)}</div>
                     </div>
+                    ${r.username ? `
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 10px;border-radius:9px;background:var(--surface);margin-bottom:10px;font-size:12px">
+                      <span>🔑 <strong>مدیریت اکانت مشتری:</strong></span>
+                      <input dir="ltr" placeholder="رمز جدید (در صورت فراموشی)" class="adm-reset-pass" data-rid="${r.id}" style="width:170px;padding:6px 9px;border-radius:8px;border:1px solid var(--border)">
+                      <input dir="ltr" type="number" min="0" max="70" value="${r.discount || 0}" title="درصد تخفیف همکاری اکانت" class="adm-acct-disc" data-rid="${r.id}" style="width:74px;padding:6px 9px;border-radius:8px;border:1px solid var(--border)">
+                      <span>٪ تخفیف</span>
+                      <button type="button" class="icon-btn admin-trigger btn-apply-acct" data-rid="${r.id}" style="height:32px;font-size:11.5px">اعمال روی اکانت مشتری ✓</button>
+                    </div>` : ''}
                     <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px">
                       <div style="display:flex;gap:8px;flex-wrap:wrap">
                         <a href="tel:${r.phone}" class="icon-btn btn-green">📞 تماس با مشتری</a>
@@ -2325,6 +2841,43 @@
             document.getElementById('btnRefreshRegs').textContent = 'در حال دریافت...';
             await fetchLiveOrdersFromRelay();
             renderAdminTab();
+          });
+          body.querySelectorAll('.btn-apply-acct').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const rid = btn.dataset.rid;
+              const r = adminOrders.find(x => x.id === rid);
+              if (!r || !r.username) return;
+              const passInput = body.querySelector(`.adm-reset-pass[data-rid="${rid}"]`);
+              const discInput = body.querySelector(`.adm-acct-disc[data-rid="${rid}"]`);
+              const newPass = normalizePassword(passInput.value);
+              const newDisc = Math.max(0, Math.min(70, Number(discInput.value) || 0));
+              if (newPass.length < 4) {
+                document.getElementById('adminToast').textContent = 'برای تغییر رمز یا تخفیف اکانت مشتری، رمز جدید حداقل ۴ کاراکتری وارد کنید.';
+                passInput.style.borderColor = '#DC2626';
+                return;
+              }
+              passInput.style.borderColor = '';
+              r.discount = newDisc;
+              const profileData = {
+                username: r.username,
+                name: r.customerName,
+                cafeName: r.cafeName,
+                phone: r.phone,
+                address: r.address,
+                discount: newDisc,
+                createdAt: r.createdAt || Date.now()
+              };
+              const { keyId, relayTopic, vaultObj } = await encryptCustomerAccountVault(r.username, newPass, profileData);
+              state.encryptedAccounts = state.encryptedAccounts || {};
+              state.encryptedAccounts[keyId] = vaultObj;
+              r.accountKeyId = keyId;
+              r.encVault = vaultObj;
+              await publishAccountVaultCrossDevice(relayTopic, vaultObj);
+              localStorage.setItem('lotus_admin_orders_cache_v1', JSON.stringify(adminOrders));
+              saveOrdersVaultToGithub();
+              passInput.value = '';
+              document.getElementById('adminToast').textContent = `رمز عبور و تخفیف اکانت @${r.username} فوراً فعال شد ✓ (دکمه سبز ذخیره را هم بزنید)`;
+            });
           });
           body.querySelectorAll('[data-rstatus]').forEach(sel => {
             sel.addEventListener('change', () => {
@@ -2407,28 +2960,33 @@
 
           document.getElementById('btnAddNewCake').addEventListener('click', () => {
             collectAdminInputs();
-            const newId = 'item_' + Date.now();
-            state.items.unshift({
-              id: newId,
-              category: state.categories[0].id,
-              name: 'کیک جدید دست‌ساز',
-              serving: '۸ اسلایس',
-              desc: 'تهیه شده با مواد اولیه تازه روز',
-              price: '۱,۲۰۰,۰۰۰',
-              available: true,
-              image: state.items[0] ? state.items[0].image : 'assets/images/k01.jpg'
-            });
-            renderAdminTab();
+            openAddProductModal();
           });
 
           body.querySelectorAll('.ei-del').forEach(btn => {
             btn.addEventListener('click', () => {
+              if (btn.dataset.armed !== '1') {
+                btn.dataset.armed = '1';
+                btn.textContent = 'تایید حذف؟';
+                btn.style.background = '#DC2626';
+                btn.style.color = '#FFFFFF';
+                setTimeout(() => {
+                  if (btn.isConnected) {
+                    btn.dataset.armed = '0';
+                    btn.textContent = 'حذف';
+                    btn.style.background = '';
+                    btn.style.color = '';
+                  }
+                }, 3500);
+                return;
+              }
               collectAdminInputs();
               const di = +btn.dataset.didx;
-              if (confirm(`آیا از حذف «${state.items[di].name}» مطمئن هستید؟`)) {
-                state.items.splice(di, 1);
-                renderAdminTab();
-              }
+              const removedName = state.items[di] ? state.items[di].name : '';
+              state.items.splice(di, 1);
+              renderAdminTab();
+              renderAll();
+              document.getElementById('adminToast').textContent = `محصول «${removedName}» حذف شد ✓ (دکمه سبز ذخیره را بزنید)`;
             });
           });
 
