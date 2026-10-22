@@ -1,33 +1,33 @@
 window.MENU_DATA = {
-  "updatedAt": 1792703309807,
+  "updatedAt": 1792703558534,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
     "ghBranch": "main"
   },
   "brand": {
-    "name": "کارگاه کیک و شیرینی دست‌ساز",
+    "name": "Lotus Cacker - Menu",
     "tagline": "پخت روزانه با مواد اولیه تازه • ویژه سرو کافه، مهمانی و سفارش خانگی",
     "standardBadge": "استاندارد سرو: قالب کامل ۸ اسلایس",
     "orderNote": "تمامی سفارش‌ها به‌صورت پخت روز آماده می‌شوند • لطفاً حداقل ۲۴ ساعت قبل هماهنگ فرمایید",
-    "phone": "09120000000",
+    "phone": "09366919696",
     "whatsapp": "989120000000",
-    "instagram": "your.bakery",
-    "telegram": "your_bakery",
+    "instagram": "lotuscaker",
+    "telegram": "lotuscaker",
     "publicUrl": "https://lotuscaker.github.io",
-    "defaultTheme": "light",
+    "defaultTheme": "dark",
     "orderingEnabled": true
   },
   "categories": [
     {
       "id": "cakes",
-      "title": "کیک‌ها (۸ اسلایس)",
-      "subtitle": "قالب کامل کافه‌ای و مجلسی با برش استاندارد ۸ تکه"
+      "title": "کیک‌ها",
+      "subtitle": "قالب سایز ۲۰ / ۸ اسلایس"
     },
     {
       "id": "cheesecakes",
-      "title": "چیزکیک‌های کامل",
-      "subtitle": "چیزکیک‌های تنوری و یخچالی در قالب ۲۴ سانتی ۸ اسلایس"
+      "title": "چیزکیک‌ها",
+      "subtitle": "قالب سایز ۲۴ و ۲۵ / ۱۰ اسلایس"
     },
     {
       "id": "singles",
@@ -316,7 +316,7 @@ window.MENU_DATA = {
   "orderConfig": {
     "enabled": true,
     "inboxTopic": "lotus_ord_c0c6774381dd56a86fb97273",
-    "notifyEmail": "",
+    "notifyEmail": "www.lotuscaker@gmail.com",
     "publicKeyJwk": {
       "key_ops": [
         "encrypt"
