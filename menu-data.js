@@ -1,12 +1,12 @@
 window.MENU_DATA = {
-  "updatedAt": 1792693435545,
+  "updatedAt": 1792696538838,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
     "ghBranch": "main"
   },
   "brand": {
-    "name": "Lotus Cacker - Menu",
+    "name": "Lotus Caker - Menu",
     "tagline": "پخت روزانه با مواد اولیه تازه • ویژه سرو کافه، مهمانی و سفارش خانگی",
     "standardBadge": "استاندارد سرو: قالب  سایز ۲۰ / ۸ اسلایس",
     "orderNote": "تمامی سفارش‌ها به‌صورت پخت روز آماده می‌شوند • لطفاً حداقل ۲۴ ساعت قبل هماهنگ فرمایید",
@@ -36,6 +36,56 @@ window.MENU_DATA = {
     }
   ],
   "items": [
+    {
+      "id": "item_1792696350134",
+      "category": "cakes",
+      "name": "کیک جدید دست‌ساز",
+      "serving": "۸ اسلایس",
+      "desc": "تهیه شده با مواد اولیه تازه روز",
+      "price": "۱,۲۰۰,۰۰۰",
+      "available": true,
+      "image": "assets/images/k01-snickers.jpg"
+    },
+    {
+      "id": "item_1792696325109",
+      "category": "cakes",
+      "name": "کیک جدید دست‌ساز",
+      "serving": "۸ اسلایس",
+      "desc": "تهیه شده با مواد اولیه تازه روز",
+      "price": "۱,۲۰۰,۰۰۰",
+      "available": true,
+      "image": "assets/images/k01-snickers.jpg"
+    },
+    {
+      "id": "item_1792696324313",
+      "category": "cakes",
+      "name": "کیک جدید دست‌ساز",
+      "serving": "۸ اسلایس",
+      "desc": "تهیه شده با مواد اولیه تازه روز",
+      "price": "۱,۲۰۰,۰۰۰",
+      "available": true,
+      "image": "assets/images/k01-snickers.jpg"
+    },
+    {
+      "id": "item_1792696321422",
+      "category": "cakes",
+      "name": "کیک جدید دست‌ساز",
+      "serving": "۸ اسلایس",
+      "desc": "تهیه شده با مواد اولیه تازه روز",
+      "price": "۱,۲۰۰,۰۰۰",
+      "available": true,
+      "image": "assets/images/k01-snickers.jpg"
+    },
+    {
+      "id": "item_1792696318393",
+      "category": "cakes",
+      "name": "کیک جدید دست‌ساز",
+      "serving": "۸ اسلایس",
+      "desc": "تهیه شده با مواد اولیه تازه روز",
+      "price": "۱,۲۰۰,۰۰۰",
+      "available": true,
+      "image": "assets/images/k01-snickers.jpg"
+    },
     {
       "id": "k01",
       "category": "cakes",
