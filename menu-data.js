@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1792707559629,
+  "updatedAt": 1792707673058,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
@@ -370,7 +370,7 @@ window.MENU_DATA = {
       "برش‌خورده استاندارد کافه",
       "قالب کامل (بدون برش)"
     ],
-    "logoPosition": "hidden",
+    "logoPosition": "top-center",
     "logoOpacity": 100,
     "logoBlur": 0,
     "logoSize": 56
