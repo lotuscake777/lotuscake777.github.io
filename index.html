@@ -382,6 +382,25 @@
       background: var(--accent); color: var(--accent-contrast); font-size: 13px; font-weight: 800;
       letter-spacing: 0.5px; border: 1.5px solid var(--border-strong); flex-shrink: 0;
     }
+    .header-logo {
+      display: block; object-fit: contain; border-radius: 8px;
+    }
+    .header-logo.pos-top-left { order: -1; }
+    .header-logo.pos-top-center { margin: 0 auto 10px; display: block; }
+    .header-logo.pos-top-right { order: 2; }
+    .header-logo-wrap { position: relative; width: 100%; }
+    .header-logo-bg {
+      position: absolute; inset: 0; background-repeat: no-repeat; background-position: center; background-size: contain;
+      pointer-events: none; z-index: 0;
+    }
+    /* Image crop editor */
+    .crop-overlay { position: fixed; inset:0; z-index:200; background: rgba(0,0,0,0.75); display:grid; place-items:center; padding:16px; }
+    .crop-card { background: var(--surface); border-radius:16px; padding:16px; width: 100%; max-width: 560px; box-shadow: var(--shadow-modal); }
+    .crop-viewport {
+      width: 100%; height: 340px; overflow:hidden; position:relative; background:#111; border-radius:12px; cursor: grab; touch-action:none; user-select:none;
+    }
+    .crop-viewport:active { cursor: grabbing; }
+    .crop-viewport img { position:absolute; left:50%; top:50%; transform-origin: center center; will-change: transform; max-width:none; max-height:none; }
     .bake-status-bar {
       background: var(--surface-soft); border-bottom: 1px solid var(--border);
       padding: 7px 0; text-align: center; font-size: 11.8px; font-weight: 600; color: var(--text-muted);
@@ -860,9 +879,12 @@
     </div>
   </div>
 
-  <header class="top-bar">
-    <div class="container">
+  <header class="top-bar" id="mainHeaderBar" style="position:relative; overflow:hidden">
+    <div id="headerLogoBg" class="header-logo-bg hidden"></div>
+    <div class="container" style="position:relative; z-index:1">
+      <div id="headerLogoTopCenter" class="hidden" style="text-align:center; padding-bottom:8px"></div>
       <div class="top-row">
+        <div id="headerLogoSideL" class="hidden"></div>
         <div class="brand-wrap" style="display:flex;align-items:center;gap:12px">
           <div class="monogram-badge hidden" id="elMonogram">LC</div>
           <div>
@@ -871,6 +893,7 @@
             <p class="brand-tagline" id="elTagline"></p>
           </div>
         </div>
+        <div id="headerLogoSideR" class="hidden"></div>
         <div class="top-actions">
           <button class="icon-btn admin-trigger" id="btnRegisterCustomer" type="button" style="background:var(--surface);color:var(--accent);border:1.5px solid var(--accent);font-weight:800">
             <span id="lblRegisterBtn">👤 ورود / ثبت نام</span>
@@ -924,7 +947,6 @@
     </div>
     <div class="social-luxury hidden" id="socialLuxuryBox">
       <h3 id="socialCtaTitle">ما را در شبکه‌های اجتماعی دنبال کنید</h3>
-      <p class="social-sub" id="socialCtaSub">جدیدترین طعم‌ها و پشت صحنه پخت روزانه</p>
       <div class="social-icons-row" id="socialIconsRow"></div>
       <div class="social-handle" id="socialHandleDisplay"></div>
     </div>
@@ -1046,6 +1068,28 @@
     </div>
   </div>
 
+  <!-- Image Crop & Zoom Editor -->
+  <div id="cropEditor" class="crop-overlay hidden">
+    <div class="crop-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+        <h3 style="font-size:14px; font-weight:800">✂️ تنظیم قاب تصویر — بکشید و زوم کنید</h3>
+        <button type="button" class="icon-btn" id="btnCropClose" style="height:30px">✕</button>
+      </div>
+      <div class="crop-viewport" id="cropViewport">
+        <img id="cropImage" src="" alt="">
+        <div style="position:absolute; inset:0; border:1px dashed rgba(255,255,255,0.5); border-radius:12px; pointer-events:none"></div>
+        <div style="position:absolute; inset:0; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; pointer-events:none; opacity:0.25">
+          <div style="border-right:1px solid #fff; border-bottom:1px solid #fff"></div><div style="border-bottom:1px solid #fff"></div><div style="border-right:1px solid #fff"></div><div></div>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center; margin-top:10px; flex-wrap:wrap">
+        <label style="font-size:11px; flex:1; display:flex; align-items:center; gap:6px">🔍 زوم <input type="range" id="cropZoomSlider" min="100" max="300" value="100" style="flex:1"> <span id="cropZoomVal">100%</span></label>
+        <button type="button" class="icon-btn" id="btnCropReset" style="height:32px">↺ ریست</button>
+        <button type="button" class="icon-btn admin-trigger" id="btnCropConfirm" style="height:32px">✅ تایید قاب</button>
+      </div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:6px">تصویر رو با موس بکشید، با اسکرول موس یا اسلایدر زوم کنید — نسبت ۵:۴ ثابت می‌مونه</div>
+    </div>
+  </div>
   <script src="assets/qrcode.min.js"></script>
   <script src="assets/jszip.min.js"></script>
   <script src="menu-data.js"></script>
@@ -1070,6 +1114,36 @@
       function formatPriceFa(num) {
         const n = Math.max(0, Math.round(num || 0));
         return toFa(n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','));
+      }
+
+      // === ROBUST SLICE MATH CORE - 100% accurate everywhere ===
+      function parseSliceCount(servingStr){
+        const s = toEnDigits(String(servingStr||'')).trim();
+        // Extract first Persian/English number - handles "۸ اسلایس", "12 slices", "۶ تکه" etc
+        const m = s.match(/(\d+)/);
+        if(m){
+          const n = parseInt(m[1],10);
+          // Valid slice counts are 2..32 (covers 2,4,6,8,10,12,16 etc) - excludes years/prices
+          if(n>=2 && n<=32) return n;
+        }
+        return 0; // 0 = single serving / non-slice product
+      }
+      function getPerSlicePrice(item){
+        const cnt = parseSliceCount(item.serving);
+        if(cnt>=2){
+          const eff = getEffectivePriceNum(item);
+          // Banker's rounding to nearest rial, prevents floating errors
+          return Math.round((eff / cnt) * 100) / 100 | 0; // integer rial
+        }
+        return 0;
+      }
+      function getPerSliceText(item){
+        const cnt = parseSliceCount(item.serving);
+        if(cnt>=2 && state.design && state.design.showPerSlicePrice){
+          const p = getPerSlicePrice(item);
+          return `هر اسلایس: ${formatPriceFa(p)} تومان`;
+        }
+        return '';
       }
 
       function escapeHtml(s) {
@@ -1163,6 +1237,14 @@
         dd.showMonogram = dd.showMonogram !== false;
         dd.monogramText = dd.monogramText || 'LC';
         dd.logoImage = dd.logoImage || '';
+        dd.logoPosition = dd.logoPosition || 'top-right';
+        dd.logoOpacity = dd.logoOpacity != null ? dd.logoOpacity : 100;
+        dd.logoBlur = dd.logoBlur != null ? dd.logoBlur : 0;
+        dd.logoSize = dd.logoSize || 56;
+        dd.logoPosition = dd.logoPosition || 'top-right'; // top-left | top-center | top-right | header-bg | hidden
+        dd.logoOpacity = dd.logoOpacity != null ? dd.logoOpacity : 100;
+        dd.logoBlur = dd.logoBlur != null ? dd.logoBlur : 0;
+        dd.logoSize = dd.logoSize || 56; // px height
         dd.showBakeStatus = dd.showBakeStatus !== false;
         dd.bakeStatusText = dd.bakeStatusText || 'پذیرش سفارش پخت روزانه فعال است';
         dd.bakeStatusDot = dd.bakeStatusDot || '#1F6F4A';
@@ -1734,16 +1816,60 @@
         if (state.design) {
           document.documentElement.style.setProperty('--accent', state.design.accentColor || '#7A5435');
           document.documentElement.style.setProperty('--bg', state.design.bgColor || '#FAF8F5');
-          const mono = document.getElementById('elMonogram');
-          if (mono) {
-            if (state.design.showMonogram) {
-              mono.textContent = state.design.monogramText || 'LC';
-              mono.classList.remove('hidden');
-              if (state.design.logoImage) {
-                mono.innerHTML = `<img src="${state.design.logoImage}" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-              }
-            } else mono.classList.add('hidden');
-          }
+          // Header custom logo with position/opacity/blur
+          (function renderHeaderLogo(){
+            const d = state.design;
+            const imgSrc = d.logoImage || '';
+            const pos = d.logoPosition || 'hidden';
+            const op = Math.max(0,Math.min(100, Number(d.logoOpacity)||100))/100;
+            const blur = Math.max(0,Math.min(20, Number(d.logoBlur)||0));
+            const size = Math.max(24,Math.min(160, Number(d.logoSize)||56));
+            const containers = {
+              'header-bg': document.getElementById('headerLogoBg'),
+              'top-center': document.getElementById('headerLogoTopCenter'),
+              'top-left': document.getElementById('headerLogoSideL'),
+              'top-right': document.getElementById('headerLogoSideR')
+            };
+            // hide all first
+            Object.values(containers).forEach(el=>{ if(el){ el.classList.add('hidden'); el.innerHTML=''; el.style.opacity=''; el.style.filter=''; el.style.backgroundImage=''; }});
+            const mono = document.getElementById('elMonogram');
+            if(mono){
+              if(imgSrc && pos==='monogram' || (d.showMonogram && !imgSrc)){
+                mono.textContent = d.monogramText || 'LC';
+                mono.classList.remove('hidden');
+                if(imgSrc) mono.innerHTML = `<img src="${imgSrc}" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+                else mono.innerHTML = escapeHtml(d.monogramText||'LC');
+              } else if(d.showMonogram && pos!=='hidden' && imgSrc) {
+                // monogram hidden when custom logo used elsewhere
+                mono.classList.add('hidden');
+              } else if(d.showMonogram){
+                mono.textContent = d.monogramText || 'LC';
+                mono.innerHTML = escapeHtml(d.monogramText||'LC');
+                mono.classList.remove('hidden');
+              } else mono.classList.add('hidden');
+            }
+            if(!imgSrc || pos==='hidden') return;
+            if(pos==='header-bg'){
+              const bg=document.getElementById('headerLogoBg');
+              bg.style.backgroundImage = `url("${imgSrc}")`;
+              bg.style.opacity = op;
+              bg.style.filter = blur? `blur(${blur}px)` : '';
+              bg.classList.remove('hidden');
+            } else if(pos==='top-center'){
+              const el=document.getElementById('headerLogoTopCenter');
+              el.innerHTML = `<img src="${imgSrc}" alt="لوگو" class="header-logo pos-top-center" style="height:${size}px;max-width:220px;opacity:${op};filter:${blur?'blur('+blur+'px)':''}">`;
+              el.style.opacity = ''; el.style.filter='';
+              el.classList.remove('hidden');
+            } else if(pos==='top-left'){
+              const el=document.getElementById('headerLogoSideL');
+              el.innerHTML = `<img src="${imgSrc}" alt="لوگو" class="header-logo pos-top-left" style="height:${size}px;max-width:160px;opacity:${op};filter:${blur?'blur('+blur+'px)':''}">`;
+              el.classList.remove('hidden');
+            } else if(pos==='top-right'){
+              const el=document.getElementById('headerLogoSideR');
+              el.innerHTML = `<img src="${imgSrc}" alt="لوگو" class="header-logo pos-top-right" style="height:${size}px;max-width:160px;opacity:${op};filter:${blur?'blur('+blur+'px)':''}">`;
+              el.classList.remove('hidden');
+            }
+          })();
           const bakeBar = document.getElementById('bakeStatusBar');
           if (bakeBar) {
             if (state.design.showBakeStatus) {
@@ -1798,7 +1924,7 @@
             const tgUrl = dsg.telegramUrl || ('https://t.me/'+(state.brand.telegram||'lotuscaker').replace(/^@/,'')); 
             document.getElementById('socialIconsRow').innerHTML = `
               <a href="${igUrl}" target="_blank" rel="noopener" class="social-icon-btn" title="Instagram" aria-label="Instagram">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><defs><radialGradient id="igGrad" cx="30%" cy="107%"><stop offset="0%" stop-color="#FFDD55"/><stop offset="20%" stop-color="#FF543E"/><stop offset="60%" stop-color="#C837AB"/><stop offset="100%" stop-color="#0364FF"/></radialGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" fill="url(#igGrad)"/><rect x="2" y="2" width="20" height="20" rx="6" stroke="rgba(0,0,0,0.08)"/><circle cx="12" cy="12" r="4.2" stroke="#fff" stroke-width="1.6" fill="none"/><circle cx="17.2" cy="6.8" r="1.2" fill="#fff"/><rect x="7.2" y="7.2" width="9.6" height="9.6" rx="2.8" stroke="#fff" stroke-width="1.3" fill="none"/></svg>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="igG1" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#FFD600"/><stop offset="25%" stop-color="#FF7A00"/><stop offset="50%" stop-color="#FF0069"/><stop offset="75%" stop-color="#D300C5"/><stop offset="100%" stop-color="#7638FA"/></linearGradient><radialGradient id="igG2" cx="30%" cy="105%" r="140%"><stop offset="0%" stop-color="#FF543E" stop-opacity="0.9"/><stop offset="100%" stop-color="#C837AB" stop-opacity="0"/></radialGradient></defs><rect x="1.5" y="1.5" width="21" height="21" rx="5.5" fill="url(#igG1)"/><rect x="1.5" y="1.5" width="21" height="21" rx="5.5" fill="url(#igG2)"/><rect x="1.5" y="1.5" width="21" height="21" rx="5.5" stroke="rgba(0,0,0,0.07)"/><g stroke="#fff" stroke-width="1.55" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="2.6"/><circle cx="12" cy="12" r="2.85"/><circle cx="16.6" cy="7.4" r="0.95" fill="#fff" stroke="none"/></g></svg>
               </a>
               <a href="${tgUrl}" target="_blank" rel="noopener" class="social-icon-btn" title="Telegram" aria-label="Telegram" style="background:#229ED9;border-color:#229ED9">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75l-2.2-1.45c-.97-.64-.34-1-.21-1.5l-.06-.06c-.18-.18.4-.54.4-.54l4.5-4.1c.2-.18.02-.42-.15-.3L9.2 13.2l-2.8-.9c-.6-.2-.6-.6 0-.9l10.9-4.2c.5-.2 1 .1.34 1.0z"/></svg>
@@ -1868,7 +1994,8 @@
                     }
                   }
                   const badgeHtml = item.badge ? `<span class="card-badge">${escapeHtml(item.badge)}</span>` : '';
-                  const perSliceHtml = (state.design && state.design.showPerSlicePrice && item.serving && item.serving.includes('۸')) ? `<div class="per-slice-price">هر اسلایس: ${formatPriceFa(Math.round(effNum/8))} تومان</div>` : '';
+                  const perSliceText = getPerSliceText(item);
+                  const perSliceHtml = perSliceText ? `<div class="per-slice-price">${perSliceText}</div>` : '';
                   return `
                   <article class="card" data-id="${item.id}">
                     <div class="card-img-wrap">
@@ -1963,11 +2090,9 @@
         }
         const perSliceEl = document.getElementById('mPerSlice');
         if (perSliceEl) {
-          const eff = getEffectivePriceNum(item);
-          if (state.design && state.design.showPerSlicePrice && item.serving.includes('۸')) {
-            perSliceEl.textContent = `هر اسلایس: ${formatPriceFa(Math.round(eff/8))} تومان`;
-            perSliceEl.classList.remove('hidden');
-          } else perSliceEl.classList.add('hidden');
+          const txt = getPerSliceText(item);
+          if(txt){ perSliceEl.textContent = txt; perSliceEl.classList.remove('hidden'); }
+          else perSliceEl.classList.add('hidden');
         }
         document.getElementById('mPrice').textContent = formatPriceFa(getEffectivePriceNum(item));
         const badgeDetail = document.getElementById('mBadgeDetail');
@@ -2366,7 +2491,11 @@
             ${order.deliveryDate?'<div>📅 تحویل: '+order.deliveryDate+' — '+order.deliverySlot+'</div>':''}
             ${order.cutOption?'<div>🔪 برش: '+order.cutOption+'</div>':''}
           </div>
-          ${order.items.map(it=>'<div class="row"><span>'+it.name+' × '+it.qty+'</span><span>'+formatPriceFa(it.lineTotal)+' تومان</span></div>').join('')}
+          ${order.items.map(it=>{
+            const cnt = parseSliceCount(it.serving||'');
+            const per = cnt>=2 ? ' — هر اسلایس '+formatPriceFa(Math.round(it.unitPrice/cnt))+' ت' : '';
+            return '<div class="row"><span>'+escapeHtml(it.name)+' ('+escapeHtml(it.serving||'')+') × '+toFa(it.qty)+per+'</span><span>'+formatPriceFa(it.lineTotal)+' تومان</span></div>';
+          }).join('')}
           <div class="total"><span>جمع کل</span><span>${formatPriceFa(order.total)} تومان</span></div>
           <div class="footer">از اعتماد شما سپاسگزاریم — پخت تازه روزانه</div>
         </div></body></html>`;
@@ -2524,7 +2653,7 @@
                   <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:8px">
                     <div style="flex:1;min-width:0">
                       <div style="font-size:13px;font-weight:700">${escapeHtml(l.name)}</div>
-                      <div style="font-size:11.2px;color:var(--text-muted)">${toFa(l.serving)} · واحد ${formatPriceFa(l.unitPrice)} تومان</div>
+                      <div style="font-size:11.2px;color:var(--text-muted)">${toFa(l.serving)} · واحد ${formatPriceFa(l.unitPrice)} تومان${(()=>{const c=parseSliceCount(l.serving); return c>=2 ? ' · '+formatPriceFa(Math.round(l.unitPrice/c))+' ت/اسلایس':'';})()}</div>
                     </div>
                     <div class="qty-stepper">
                       <button type="button" data-cinc="${l.id}">+</button>
@@ -2817,6 +2946,117 @@
         });
       }
 
+      // === ADVANCED IMAGE CROP & POSITION EDITOR ===
+      let cropState = null; // { img, posX, posY, zoom, baseZoom, resolve, reject, fileNameHint }
+      function openImageCropEditor(dataUrl, hintName){
+        return new Promise((resolve,reject)=>{
+          const modal=document.getElementById('cropEditor');
+          const viewport=document.getElementById('cropViewport');
+          const imgEl=document.getElementById('cropImage');
+          const slider=document.getElementById('cropZoomSlider');
+          const zoomVal=document.getElementById('cropZoomVal');
+          cropState={ posX:0, posY:0, zoom:1, baseZoom:1, resolve, reject };
+          imgEl.src=dataUrl;
+          imgEl.style.left='50%'; imgEl.style.top='50%';
+          slider.value=100; zoomVal.textContent='100%';
+          modal.classList.remove('hidden');
+          imgEl.onload=()=>{
+            const vw=viewport.clientWidth, vh=viewport.clientHeight;
+            // baseZoom to cover viewport
+            const coverZoom = Math.max(vw/imgEl.naturalWidth, vh/imgEl.naturalHeight);
+            cropState.baseZoom = coverZoom;
+            cropState.zoom = coverZoom;
+            applyCropTransform();
+          };
+          function applyCropTransform(){
+            const s=cropState.zoom;
+            imgEl.style.width = (imgEl.naturalWidth * s) + 'px';
+            imgEl.style.height = (imgEl.naturalHeight * s) + 'px';
+            imgEl.style.transform = `translate(-50%,-50%) translate(${cropState.posX}px,${cropState.posY}px)`;
+            zoomVal.textContent = Math.round((cropState.zoom/cropState.baseZoom)*100)+'%';
+            slider.value = Math.round((cropState.zoom/cropState.baseZoom)*100);
+          }
+          // drag
+          let dragging=false, startX=0,startY=0, origX=0,origY=0;
+          function onDown(e){
+            dragging=true; viewport.setPointerCapture && viewport.setPointerCapture(e.pointerId);
+            startX=e.clientX; startY=e.clientY; origX=cropState.posX; origY=cropState.posY;
+            e.preventDefault();
+          }
+          function onMove(e){
+            if(!dragging) return;
+            cropState.posX = origX + (e.clientX - startX);
+            cropState.posY = origY + (e.clientY - startY);
+            // clamp to keep image covering viewport
+            const vw=viewport.clientWidth, vh=viewport.clientHeight;
+            const imgW=imgEl.naturalWidth * cropState.zoom, imgH=imgEl.naturalHeight * cropState.zoom;
+            const maxX = (imgW - vw)/2, maxY = (imgH - vh)/2;
+            cropState.posX = Math.max(-maxX, Math.min(maxX, cropState.posX));
+            cropState.posY = Math.max(-maxY, Math.min(maxY, cropState.posY));
+            applyCropTransform();
+          }
+          function onUp(e){ dragging=false; }
+          viewport.onpointerdown = onDown;
+          viewport.onpointermove = onMove;
+          viewport.onpointerup = onUp;
+          viewport.onpointercancel = onUp;
+          viewport.onwheel = (e)=>{
+            e.preventDefault();
+            const delta = e.deltaY >0 ? -0.04 : 0.04;
+            let newZoom = cropState.zoom * (1+delta);
+            const minZoom = cropState.baseZoom;
+            const maxZoom = cropState.baseZoom*3;
+            newZoom = Math.max(minZoom, Math.min(maxZoom, newZoom));
+            cropState.zoom = newZoom;
+            applyCropTransform();
+          };
+          slider.oninput = ()=>{
+            const pct = parseInt(slider.value,10);
+            cropState.zoom = cropState.baseZoom * (pct/100);
+            applyCropTransform();
+          };
+          document.getElementById('btnCropReset').onclick = ()=>{
+            cropState.posX=0; cropState.posY=0; cropState.zoom=cropState.baseZoom; applyCropTransform();
+          };
+          document.getElementById('btnCropClose').onclick = ()=>{
+            modal.classList.add('hidden');
+            cropState.reject(new Error('لغو شد'));
+            cleanup();
+          };
+          document.getElementById('btnCropConfirm').onclick = async ()=>{
+            // render to canvas 900x720
+            const outW=900, outH=720; // 5:4
+            const canvas=document.createElement('canvas'); canvas.width=outW; canvas.height=outH;
+            const ctx=canvas.getContext('2d');
+            ctx.fillStyle='#FAF8F5'; ctx.fillRect(0,0,outW,outH);
+            const vw=viewport.clientWidth, vh=viewport.clientHeight;
+            const scaleRatio = outW / vw;
+            // draw image at correct position/zoom
+            ctx.save();
+            ctx.translate(outW/2 + cropState.posX*scaleRatio, outH/2 + cropState.posY*scaleRatio);
+            ctx.scale(cropState.zoom*scaleRatio, cropState.zoom*scaleRatio);
+            ctx.drawImage(imgEl, -imgEl.naturalWidth/2, -imgEl.naturalHeight/2);
+            ctx.restore();
+            const dataUrlOut = canvas.toDataURL('image/jpeg', 0.88);
+            const base64 = dataUrlOut.split(',')[1];
+            modal.classList.add('hidden');
+            cropState.resolve({ dataUrl: dataUrlOut, base64 });
+            cleanup();
+          };
+          function cleanup(){
+            viewport.onpointerdown=null; viewport.onpointermove=null; viewport.onpointerup=null; viewport.onwheel=null;
+          }
+          // close on backdrop
+          modal.onclick=(e)=>{ if(e.target.id==='cropEditor') { modal.classList.add('hidden'); cropState.reject(new Error('لغو شد')); cleanup(); }};
+        });
+      }
+
+      function fileToDataUrl(file){
+        return new Promise((res,rej)=>{
+          const r=new FileReader(); r.onerror=()=>rej(new Error('خواندن فایل ناموفق')); r.onload=()=>res(r.result); r.readAsDataURL(file);
+        });
+      }
+
       function getBaseSiteUrl() {
         const raw = (state.brand.publicUrl || window.location.origin + window.location.pathname).trim();
         return raw.replace(/index\.html$/i, '').replace(/\/+$/, '');
@@ -2889,13 +3129,17 @@
           const f = e.target.files && e.target.files[0];
           if (!f) return;
           try {
-            const { dataUrl, base64 } = await compressImageFile(f, 900, 0.88);
+            const rawDataUrl = await fileToDataUrl(f);
+            const { dataUrl, base64 } = await openImageCropEditor(rawDataUrl, f.name);
             pickedDataUrl = dataUrl;
             pickedBase64 = base64;
             document.getElementById('np_preview').src = dataUrl;
           } catch (err) {
-            document.getElementById('np_err').textContent = err.message;
-            document.getElementById('np_err').classList.remove('hidden');
+            if(err.message!=='لغو شد'){
+              document.getElementById('np_err').textContent = err.message;
+              document.getElementById('np_err').classList.remove('hidden');
+            }
+            e.target.value='';
           }
         });
 
@@ -3161,12 +3405,22 @@
           });
 
         } else if (currentAdminTab === 'prices') {
+          // Category filter state
+          window._adminPriceFilter = window._adminPriceFilter || 'all';
+          const catsForFilter = [{id:'all', title:'همه'}].concat(state.categories);
           body.innerHTML = `
-            <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px">
+            <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px">
               <div style="font-size:12.5px;color:var(--text-muted)">
-                برای تغییر عکس هر کیک روی <strong>«📷 تغییر عکس»</strong> بزنید و در پایان دکمه سبز پایین («ذخیره و انتشار آنی») را بزنید:
+                برای تغییر عکس هر کیک روی <strong>«📷 تغییر عکس»</strong> بزنید و در پایان دکمه سبز پایین را بزنید:
               </div>
               <button type="button" class="icon-btn admin-trigger" id="btnAddNewCake">➕ افزودن محصول جدید</button>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:10px 12px;background:var(--surface-soft);border:1px solid var(--border);border-radius:10px;margin-bottom:12px">
+              <span style="font-size:11.5px;font-weight:700;color:var(--text-muted)">فیلتر دسته‌بندی:</span>
+              ${catsForFilter.map(cf=>`
+                <button type="button" class="tab-pill ${window._adminPriceFilter===cf.id?'active':''}" data-pfilter="${cf.id}">${cf.id==='all'?'همه ('+toFa(state.items.length)+')': escapeHtml(cf.title)+' ('+toFa(state.items.filter(x=>x.category===cf.id).length)+')' }
+                </button>`).join('')}
+              <span style="margin-right:auto;font-size:11px;color:var(--text-muted)">${window._adminPriceFilter!=='all' ? 'نمایش: '+state.categories.find(c=>c.id===window._adminPriceFilter)?.title : ''}</span>
             </div>
             <div id="adminItemsList">
               ${state.items.map((it, idx) => `
@@ -3218,10 +3472,28 @@
               `).join('')}
             </div>`;
 
+          body.querySelectorAll('[data-pfilter]').forEach(btn=>{
+            btn.addEventListener('click',()=>{
+              collectAdminInputs();
+              window._adminPriceFilter = btn.dataset.pfilter;
+              renderAdminTab();
+            });
+          });
           document.getElementById('btnAddNewCake').addEventListener('click', () => {
             collectAdminInputs();
             openAddProductModal();
           });
+          // Apply filter to DOM after render
+          setTimeout(()=>{
+            const filtered = window._adminPriceFilter;
+            if(filtered && filtered!=='all'){
+              document.querySelectorAll('.edit-item-row').forEach(row=>{
+                const idx=+row.dataset.idx;
+                const it=state.items[idx];
+                if(it && it.category!==filtered) row.style.display='none';
+              });
+            }
+          },0);
 
           body.querySelectorAll('.ei-del').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -3264,30 +3536,79 @@
               if (!file) return;
               const idx = +inp.dataset.fidx;
               const toast = document.getElementById('adminToast');
-              toast.textContent = 'در حال بهینه‌سازی باکیفیت تصویر جدید...';
+              toast.textContent = 'باز کردن ویرایشگر قاب تصویر...';
               try {
                 collectAdminInputs();
-                const { dataUrl, base64 } = await compressImageFile(file, 900, 0.88);
+                const rawDataUrl = await fileToDataUrl(file);
+                const { dataUrl, base64 } = await openImageCropEditor(rawDataUrl, file.name);
                 const newRelPath = `assets/images/custom_${state.items[idx].id}_${Date.now()}.jpg`;
                 pendingImageUploads[newRelPath] = base64;
                 state.items[idx].image = newRelPath;
                 state.items[idx]._previewDataUrl = dataUrl;
-
-                // Also persist directly on preview server if running in Arena workspace
                 fetch('api/upload-image', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ path: newRelPath, base64 })
                 }).catch(() => {});
-
                 renderAdminTab();
                 renderAll();
-                toast.textContent = 'عکس جدید آماده شد ✓ حالا دکمه سبز «ذخیره و انتشار آنی» را بزنید تا برای همه گوشی‌ها منتشر شود!';
+                toast.textContent = 'عکس جدید با قاب دلخواه آماده شد ✓ حالا دکمه سبز «ذخیره و انتشار آنی» را بزنید!';
               } catch (err) {
-                toast.textContent = 'خطا در تصویر: ' + err.message;
+                if(err.message!=='لغو شد') toast.textContent = 'خطا در تصویر: ' + err.message;
+                else toast.textContent='ویرایش لغو شد';
+                inp.value='';
               }
             });
           });
+          // Logo upload handler (in design tab)
+          const logoUp = document.getElementById('f_logoUpload');
+          if(logoUp){
+            logoUp.addEventListener('change', async (e)=>{
+              const f=e.target.files&&e.target.files[0]; if(!f) return;
+              try{
+                const raw=await fileToDataUrl(f);
+                // for logo we don't need crop, just compress
+                const { dataUrl, base64 } = await compressImageFile(f, 400, 0.9);
+                const lp = `assets/images/logo_${Date.now()}.png`;
+                pendingImageUploads[lp]=base64;
+                document.getElementById('f_logoImage').value = lp;
+                // also show preview via dataUrl for immediate header preview
+                state.design.logoImage = dataUrl;
+                document.getElementById('logoPreviewImg').src=dataUrl; document.getElementById('logoPreviewImg').style.display='block';
+                fetch('api/upload-image',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path:lp, base64})}).catch(()=>{});
+                document.getElementById('adminToast').textContent='لوگو آپلود شد ✓ جایگاه و شفافیت را تنظیم و ذخیره کنید';
+                renderAll();
+              }catch(err){ document.getElementById('adminToast').textContent=err.message; }
+              e.target.value='';
+            });
+            // live preview sliders
+            ['f_logoOpacity','f_logoBlur','f_logoSize','f_logoPosition'].forEach(id=>{
+              const el=document.getElementById(id);
+              if(!el) return;
+              el.addEventListener('input',()=>{
+                collectAdminInputs(); renderAll();
+                const op=document.getElementById('logoOpVal'); if(op) op.textContent=document.getElementById('f_logoOpacity').value+'%';
+                const bl=document.getElementById('logoBlurVal'); if(bl) bl.textContent=document.getElementById('f_logoBlur').value+'px';
+                const sz=document.getElementById('logoSizeVal'); if(sz) sz.textContent=document.getElementById('f_logoSize').value+'px';
+              });
+              el.addEventListener('change',()=>{ collectAdminInputs(); renderAll(); });
+            });
+            const btnRem=document.getElementById('btnRemoveLogo');
+            if(btnRem) btnRem.addEventListener('click',()=>{
+              document.getElementById('f_logoImage').value='';
+              document.getElementById('logoPreviewImg').style.display='none';
+              state.design.logoImage=''; collectAdminInputs(); renderAll();
+              document.getElementById('adminToast').textContent='لوگو حذف شد';
+            });
+            // sync preview img src input
+            const logoImgInput=document.getElementById('f_logoImage');
+            if(logoImgInput) logoImgInput.addEventListener('input',()=>{
+              const v=logoImgInput.value.trim();
+              const prev=document.getElementById('logoPreviewImg');
+              if(v){ prev.src=v; prev.style.display='block'; }
+              else prev.style.display='none';
+            });
+          }
 
         } else if (currentAdminTab === 'customers') {
           const base = getBaseSiteUrl();
@@ -3497,10 +3818,23 @@
               <div class="field"><label>رنگ پس‌زمینه سایت</label><input type="color" id="f_bgColor" value="${d.bgColor||'#FAF8F5'}" style="height:42px;padding:4px"></div>
               <div class="field"><label>تعداد ستون نمایش منو</label><select id="f_gridCols"><option value="2" ${d.gridColumns==2?'selected':''}>۲ ستون</option><option value="3" ${d.gridColumns==3?'selected':''}>۳ ستون (پیشنهادی)</option><option value="4" ${d.gridColumns==4?'selected':''}>۴ ستون</option></select></div>
               <div class="field"><label>اندازه فونت</label><select id="f_fontScale"><option value="small" ${d.fontScale==='small'?'selected':''}>کوچک</option><option value="normal" ${d.fontScale==='normal'?'selected':''}>معمولی</option><option value="large" ${d.fontScale==='large'?'selected':''}>بزرگ</option></select></div>
-              <div class="field" style="grid-column:1/-1; display:flex; gap:10px; align-items:center; padding:10px; background:var(--bg); border-radius:10px; border:1px solid var(--border)">
-                <label style="flex:1"><input type="checkbox" id="f_showMonogram" ${d.showMonogram?'checked':''}> نمایش مونوگرام لوگو کنار نام برند</label>
-                <input id="f_monogramText" value="${escapeHtml(d.monogramText||'LC')}" placeholder="LC" style="width:80px">
-                <input id="f_logoImage" value="${escapeHtml(d.logoImage||'')}" placeholder="لینک لوگو (اختیاری)" style="flex:1">
+              <div class="field" style="grid-column:1/-1; padding:10px; background:var(--bg); border-radius:10px; border:1px solid var(--border)">
+                <label style="font-weight:700; display:block; margin-bottom:8px">لوگوی هدر — آپلود و جایگاه</label>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px">
+                  <label class="icon-btn admin-trigger" style="cursor:pointer">📷 آپلود لوگو<input type="file" accept="image/*" id="f_logoUpload" class="hidden"></label>
+                  <select id="f_logoPosition" style="min-width:150px"><option value="hidden" ${(d.logoPosition||'hidden')==='hidden'?'selected':''}>بدون لوگو</option><option value="top-right" ${d.logoPosition==='top-right'?'selected':''}>بالا راست</option><option value="top-left" ${d.logoPosition==='top-left'?'selected':''}>بالا چپ</option><option value="top-center" ${d.logoPosition==='top-center'?'selected':''}>وسط بالا</option><option value="header-bg" ${d.logoPosition==='header-bg'?'selected':''}>پس‌زمینه هدر</option></select>
+                  <label style="font-size:11px">شفافیت <input type="range" id="f_logoOpacity" min="10" max="100" value="${d.logoOpacity!=null?d.logoOpacity:100}" style="width:90px; vertical-align:middle"> <span id="logoOpVal">${d.logoOpacity!=null?d.logoOpacity:100}%</span></label>
+                  <label style="font-size:11px">بلر <input type="range" id="f_logoBlur" min="0" max="12" value="${d.logoBlur!=null?d.logoBlur:0}" style="width:70px; vertical-align:middle"> <span id="logoBlurVal">${d.logoBlur!=null?d.logoBlur:0}px</span></label>
+                  <label style="font-size:11px">اندازه <input type="range" id="f_logoSize" min="28" max="140" value="${d.logoSize||56}" style="width:70px; vertical-align:middle"> <span id="logoSizeVal">${d.logoSize||56}px</span></label>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center">
+                  <img id="logoPreviewImg" src="${d.logoImage||''}" style="height:44px; border-radius:8px; border:1px solid var(--border); display:${d.logoImage?'block':'none'}; object-fit:contain; background:#fff; padding:2px">
+                  <input id="f_logoImage" value="${escapeHtml(d.logoImage||'')}" placeholder="یا لینک مستقیم لوگو را اینجا پیست کنید" style="flex:1">
+                  <button type="button" class="icon-btn btn-danger" id="btnRemoveLogo" style="height:32px">حذف لوگو</button>
+                </div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:6px">جایگاه به انتخاب شما: راست/چپ/وسط یا محو در پشت هدر — شفافیت و بلر هم قابل تنظیمه</div>
+                <label style="font-size:11px; display:flex; align-items:center; gap:6px; margin-top:8px"><input type="checkbox" id="f_showMonogram" ${d.showMonogram?'checked':''}> نمایش مونوگرام متنی (LC) وقتی لوگو ندارید</label>
+                <input id="f_monogramText" value="${escapeHtml(d.monogramText||'LC')}" placeholder="LC" style="width:80px; margin-top:6px; display:${d.showMonogram?'block':'none'}">
               </div>
               <div class="field" style="grid-column:1/-1; display:flex; gap:10px; align-items:center; padding:10px; background:var(--bg); border-radius:10px; border:1px solid var(--border)">
                 <label style="flex:1"><input type="checkbox" id="f_showBake" ${d.showBakeStatus?'checked':''}> نمایش نوار وضعیت پخت روزانه</label>
@@ -3633,9 +3967,18 @@
           d.bgColor = document.getElementById('f_bgColor').value;
           d.gridColumns = parseInt(document.getElementById('f_gridCols').value,10)||3;
           d.fontScale = document.getElementById('f_fontScale').value;
+          const lgPosEl=document.getElementById('f_logoPosition');
+          if(lgPosEl){
+            d.logoPosition = lgPosEl.value;
+            d.logoOpacity = parseInt(document.getElementById('f_logoOpacity').value,10)||100;
+            d.logoBlur = parseInt(document.getElementById('f_logoBlur').value,10)||0;
+            d.logoSize = parseInt(document.getElementById('f_logoSize').value,10)||56;
+            d.logoImage = document.getElementById('f_logoImage').value.trim();
+          } else {
+            d.logoImage = document.getElementById('f_logoImage').value.trim();
+          }
           d.showMonogram = document.getElementById('f_showMonogram').checked;
-          d.monogramText = document.getElementById('f_monogramText').value.trim() || 'LC';
-          d.logoImage = document.getElementById('f_logoImage').value.trim();
+          d.monogramText = (document.getElementById('f_monogramText')||{value:'LC'}).value.trim() || 'LC';
           d.showBakeStatus = document.getElementById('f_showBake').checked;
           d.bakeStatusText = document.getElementById('f_bakeText').value.trim();
           d.bakeStatusDot = document.getElementById('f_bakeDot').value;
