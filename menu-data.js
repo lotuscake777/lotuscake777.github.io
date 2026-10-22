@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1792712950086,
+  "updatedAt": 1792712998632,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
@@ -343,7 +343,7 @@ window.MENU_DATA = {
     "fontScale": "normal",
     "showMonogram": false,
     "monogramText": "LC",
-    "logoImage": "assets/images/logo_1792712945172.png",
+    "logoImage": "assets/images/logo_1792712991187.png",
     "showBakeStatus": false,
     "bakeStatusText": "پذیرش سفارش پخت روزانه فعال است",
     "bakeStatusDot": "#1f6f4a",
@@ -370,7 +370,7 @@ window.MENU_DATA = {
       "برش‌خورده استاندارد کافه",
       "قالب کامل (بدون برش)"
     ],
-    "logoPosition": "header-bg",
+    "logoPosition": "top-center",
     "logoOpacity": 70,
     "logoBlur": 0,
     "logoSize": 72,
