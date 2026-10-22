@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1792704812967,
+  "updatedAt": 1792705170303,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
@@ -46,7 +46,7 @@ window.MENU_DATA = {
       "image": "assets/images/k01-snickers.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k02",
@@ -57,8 +57,8 @@ window.MENU_DATA = {
       "price": "۸۹۰,۰۰۰",
       "image": "assets/images/k02-pistachio.jpg",
       "available": true,
-      "badge": "امضای سرآشپز",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k03",
@@ -70,7 +70,7 @@ window.MENU_DATA = {
       "image": "assets/images/k03-double-choc.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k04",
@@ -82,7 +82,7 @@ window.MENU_DATA = {
       "image": "assets/images/k04-lotus.jpg",
       "available": true,
       "badge": "پرفروش کافه‌ها",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k05",
@@ -94,7 +94,7 @@ window.MENU_DATA = {
       "image": "assets/images/k05-red-velvet.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k06",
@@ -106,7 +106,7 @@ window.MENU_DATA = {
       "image": "assets/images/k06-raffaello.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k07",
@@ -118,7 +118,7 @@ window.MENU_DATA = {
       "image": "assets/images/k07-moist-choc.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k08",
@@ -130,7 +130,7 @@ window.MENU_DATA = {
       "image": "assets/images/k08-mocha.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k09",
@@ -142,7 +142,7 @@ window.MENU_DATA = {
       "image": "assets/images/k09-carrot-walnut.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k10",
@@ -154,7 +154,7 @@ window.MENU_DATA = {
       "image": "assets/images/k10-zebra.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k11",
@@ -166,7 +166,7 @@ window.MENU_DATA = {
       "image": "assets/images/k11-tiramisu-round.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k12",
@@ -178,7 +178,7 @@ window.MENU_DATA = {
       "image": "assets/images/k12-tiramisu-cup.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "c01",
@@ -190,7 +190,7 @@ window.MENU_DATA = {
       "image": "assets/images/c01-san-sebastian.jpg",
       "available": true,
       "badge": "محبوب‌ترین",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "c02",
@@ -202,7 +202,7 @@ window.MENU_DATA = {
       "image": "assets/images/c02-choc-san-sebastian.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "c03",
@@ -214,7 +214,7 @@ window.MENU_DATA = {
       "image": "assets/images/c03-pomegranate.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "c04",
@@ -226,7 +226,7 @@ window.MENU_DATA = {
       "image": "assets/images/c04-newyork.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "c05",
@@ -238,7 +238,7 @@ window.MENU_DATA = {
       "image": "assets/images/c05-tiramisu.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "c06",
@@ -250,7 +250,7 @@ window.MENU_DATA = {
       "image": "assets/images/c06-nutella.jpg",
       "available": true,
       "badge": "ویژه ویترین",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "s01",
@@ -262,7 +262,7 @@ window.MENU_DATA = {
       "image": "assets/images/s01-pomegranate.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "s02",
@@ -274,7 +274,7 @@ window.MENU_DATA = {
       "image": "assets/images/s02-newyork.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "s03",
@@ -286,7 +286,7 @@ window.MENU_DATA = {
       "image": "assets/images/s03-nutella.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "s04",
@@ -298,7 +298,7 @@ window.MENU_DATA = {
       "image": "assets/images/s04-tiramisu.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "s05",
@@ -310,7 +310,7 @@ window.MENU_DATA = {
       "image": "assets/images/s05-chocolate.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
     }
   ],
   "orderConfig": {
