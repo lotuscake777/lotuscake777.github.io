@@ -1,19 +1,19 @@
 window.MENU_DATA = {
-  "updatedAt": 1792700046853,
+  "updatedAt": 1792703037302,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
     "ghBranch": "main"
   },
   "brand": {
-    "name": "Lotus Caker - Menu",
+    "name": "کارگاه کیک و شیرینی دست‌ساز",
     "tagline": "پخت روزانه با مواد اولیه تازه • ویژه سرو کافه، مهمانی و سفارش خانگی",
-    "standardBadge": "استاندارد سرو: قالب  سایز ۲۰ / ۸ اسلایس",
+    "standardBadge": "استاندارد سرو: قالب کامل ۸ اسلایس",
     "orderNote": "تمامی سفارش‌ها به‌صورت پخت روز آماده می‌شوند • لطفاً حداقل ۲۴ ساعت قبل هماهنگ فرمایید",
-    "phone": "09366919696",
+    "phone": "09120000000",
     "whatsapp": "989120000000",
-    "instagram": "lotuscaker",
-    "telegram": "lotuscaker",
+    "instagram": "your.bakery",
+    "telegram": "your_bakery",
     "publicUrl": "https://lotuscaker.github.io",
     "defaultTheme": "light",
     "orderingEnabled": true
@@ -44,7 +44,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۷۸۰,۰۰۰",
       "image": "assets/images/k01-snickers.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k02",
@@ -54,7 +56,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۸۹۰,۰۰۰",
       "image": "assets/images/k02-pistachio.jpg",
-      "available": true
+      "available": true,
+      "badge": "امضای سرآشپز",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k03",
@@ -64,7 +68,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۷۹۰,۰۰۰",
       "image": "assets/images/k03-double-choc.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k04",
@@ -74,7 +80,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۸۲۰,۰۰۰",
       "image": "assets/images/k04-lotus.jpg",
-      "available": true
+      "available": true,
+      "badge": "پرفروش کافه‌ها",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k05",
@@ -84,7 +92,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۷۶۰,۰۰۰",
       "image": "assets/images/k05-red-velvet.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k06",
@@ -94,7 +104,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۸۴۰,۰۰۰",
       "image": "assets/images/k06-raffaello.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k07",
@@ -104,7 +116,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۷۲۰,۰۰۰",
       "image": "assets/images/k07-moist-choc.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k08",
@@ -114,7 +128,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۷۵۰,۰۰۰",
       "image": "assets/images/k08-mocha.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k09",
@@ -124,7 +140,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۶۸۰,۰۰۰",
       "image": "assets/images/k09-carrot-walnut.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k10",
@@ -134,7 +152,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۶۵۰,۰۰۰",
       "image": "assets/images/k10-zebra.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k11",
@@ -144,7 +164,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۸۳۰,۰۰۰",
       "image": "assets/images/k11-tiramisu-round.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "k12",
@@ -154,7 +176,9 @@ window.MENU_DATA = {
       "serving": "ظرف ۳۰۰ سی‌سی",
       "price": "۱۶۵,۰۰۰",
       "image": "assets/images/k12-tiramisu-cup.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "c01",
@@ -164,7 +188,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۸۸۰,۰۰۰",
       "image": "assets/images/c01-san-sebastian.jpg",
-      "available": true
+      "available": true,
+      "badge": "محبوب‌ترین",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "c02",
@@ -174,7 +200,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۹۴۰,۰۰۰",
       "image": "assets/images/c02-choc-san-sebastian.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "c03",
@@ -184,7 +212,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۸۹۰,۰۰۰",
       "image": "assets/images/c03-pomegranate.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "c04",
@@ -194,7 +224,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۸۶۰,۰۰۰",
       "image": "assets/images/c04-newyork.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "c05",
@@ -204,7 +236,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۹۲۰,۰۰۰",
       "image": "assets/images/c05-tiramisu.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "c06",
@@ -214,7 +248,9 @@ window.MENU_DATA = {
       "serving": "۸ اسلایس",
       "price": "۹۵۰,۰۰۰",
       "image": "assets/images/c06-nutella.jpg",
-      "available": true
+      "available": true,
+      "badge": "ویژه ویترین",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "s01",
@@ -224,7 +260,9 @@ window.MENU_DATA = {
       "serving": "تک‌نفره",
       "price": "۱۳۵,۰۰۰",
       "image": "assets/images/s01-pomegranate.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "s02",
@@ -234,7 +272,9 @@ window.MENU_DATA = {
       "serving": "تک‌نفره",
       "price": "۱۲۵,۰۰۰",
       "image": "assets/images/s02-newyork.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "s03",
@@ -244,7 +284,9 @@ window.MENU_DATA = {
       "serving": "تک‌نفره",
       "price": "۱۴۵,۰۰۰",
       "image": "assets/images/s03-nutella.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "s04",
@@ -254,7 +296,9 @@ window.MENU_DATA = {
       "serving": "تک‌نفره",
       "price": "۱۴۰,۰۰۰",
       "image": "assets/images/s04-tiramisu.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     },
     {
       "id": "s05",
@@ -264,13 +308,15 @@ window.MENU_DATA = {
       "serving": "تک‌نفره",
       "price": "۱۴۵,۰۰۰",
       "image": "assets/images/s05-chocolate.jpg",
-      "available": true
+      "available": true,
+      "badge": "",
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۴ روز • بسته‌بندی ایمن حمل"
     }
   ],
   "orderConfig": {
     "enabled": true,
     "inboxTopic": "lotus_ord_c0c6774381dd56a86fb97273",
-    "notifyEmail": "mohamad.farahani666@gmail.com",
+    "notifyEmail": "",
     "publicKeyJwk": {
       "key_ops": [
         "encrypt"
@@ -289,5 +335,41 @@ window.MENU_DATA = {
     "adminPassHash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"
   },
   "vipCustomers": [],
+  "design": {
+    "palette": "espresso",
+    "accentColor": "#7a5435",
+    "bgColor": "#faf8f5",
+    "gridColumns": 3,
+    "fontScale": "normal",
+    "showMonogram": true,
+    "monogramText": "LC",
+    "logoImage": "",
+    "showBakeStatus": true,
+    "bakeStatusText": "پذیرش سفارش پخت روزانه فعال است",
+    "bakeStatusDot": "#1f6f4a",
+    "showTrustBar": true,
+    "trustItems": [
+      "پخت تازه روزانه",
+      "مواد اولیه ممتاز و خالص",
+      "ارسال تخصصی ویژه کافه‌ها"
+    ],
+    "showPerSlicePrice": true,
+    "defaultShelfLife": "ماندگاری در یخچال ویترینی (۴ درجه): تا ۴ روز",
+    "showInfoBox": true,
+    "infoBoxTitle": "همکاری ویژه با کافه‌ها و مجموعه‌ها",
+    "showSocialSection": true,
+    "socialCtaText": "ما را در شبکه‌های اجتماعی دنبال کنید",
+    "socialDisplayHandle": "@your.bakery",
+    "instagramUrl": "https://instagram.com/your.bakery",
+    "telegramUrl": "https://t.me/your_bakery",
+    "deliverySlots": [
+      "بازه صبح (۹ الی ۱۲)",
+      "بازه عصر (۱۶ الی ۲۰)"
+    ],
+    "cutOptions": [
+      "برش‌خورده استاندارد کافه",
+      "قالب کامل (بدون برش)"
+    ]
+  },
   "encryptedAccounts": {}
 };
