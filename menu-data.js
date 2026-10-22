@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1792703576102,
+  "updatedAt": 1792703617174,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
@@ -15,7 +15,7 @@ window.MENU_DATA = {
     "instagram": "lotuscaker",
     "telegram": "lotuscaker",
     "publicUrl": "https://lotuscaker.github.io",
-    "defaultTheme": "dark",
+    "defaultTheme": "light",
     "orderingEnabled": true
   },
   "categories": [
