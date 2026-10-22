@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1792712925226,
+  "updatedAt": 1792712950086,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
@@ -343,7 +343,7 @@ window.MENU_DATA = {
     "fontScale": "normal",
     "showMonogram": false,
     "monogramText": "LC",
-    "logoImage": "assets/images/logo_1792712857838.png",
+    "logoImage": "assets/images/logo_1792712945172.png",
     "showBakeStatus": false,
     "bakeStatusText": "پذیرش سفارش پخت روزانه فعال است",
     "bakeStatusDot": "#1f6f4a",
