@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1792703617174,
+  "updatedAt": 1792704812967,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
@@ -337,7 +337,7 @@ window.MENU_DATA = {
   "vipCustomers": [],
   "design": {
     "palette": "espresso",
-    "accentColor": "#1ac197",
+    "accentColor": "#008a86",
     "bgColor": "#faf8f5",
     "gridColumns": 3,
     "fontScale": "normal",
