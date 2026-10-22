@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1792703037302,
+  "updatedAt": 1792703309807,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
@@ -337,17 +337,17 @@ window.MENU_DATA = {
   "vipCustomers": [],
   "design": {
     "palette": "espresso",
-    "accentColor": "#7a5435",
+    "accentColor": "#1ac197",
     "bgColor": "#faf8f5",
     "gridColumns": 3,
     "fontScale": "normal",
-    "showMonogram": true,
+    "showMonogram": false,
     "monogramText": "LC",
     "logoImage": "",
-    "showBakeStatus": true,
+    "showBakeStatus": false,
     "bakeStatusText": "پذیرش سفارش پخت روزانه فعال است",
     "bakeStatusDot": "#1f6f4a",
-    "showTrustBar": true,
+    "showTrustBar": false,
     "trustItems": [
       "پخت تازه روزانه",
       "مواد اولیه ممتاز و خالص",
@@ -359,9 +359,9 @@ window.MENU_DATA = {
     "infoBoxTitle": "همکاری ویژه با کافه‌ها و مجموعه‌ها",
     "showSocialSection": true,
     "socialCtaText": "ما را در شبکه‌های اجتماعی دنبال کنید",
-    "socialDisplayHandle": "@your.bakery",
-    "instagramUrl": "https://instagram.com/your.bakery",
-    "telegramUrl": "https://t.me/your_bakery",
+    "socialDisplayHandle": "@lotuscaker",
+    "instagramUrl": "https://instagram.com/lotuscaker",
+    "telegramUrl": "https://t.me/lotuscaker",
     "deliverySlots": [
       "بازه صبح (۹ الی ۱۲)",
       "بازه عصر (۱۶ الی ۲۰)"
