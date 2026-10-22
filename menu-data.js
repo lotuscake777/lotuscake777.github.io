@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1792705170303,
+  "updatedAt": 1792705265441,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
@@ -7,7 +7,7 @@ window.MENU_DATA = {
   },
   "brand": {
     "name": "Lotus Cacker - Menu",
-    "tagline": "پخت روزانه با مواد اولیه تازه • ویژه سرو کافه، مهمانی و سفارش خانگی",
+    "tagline": "پخت روزانه با مواد اولیه تازه و با کیفیت • ویژه سرو کافه، مهمانی و سفارش خانگی",
     "standardBadge": "استاندارد سرو: قالب کامل ۸ اسلایس",
     "orderNote": "تمامی سفارش‌ها به‌صورت پخت روز آماده می‌شوند • لطفاً حداقل ۲۴ ساعت قبل هماهنگ فرمایید",
     "phone": "09366919696",
