@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1792699438998,
+  "updatedAt": 1792700046853,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
@@ -36,56 +36,6 @@ window.MENU_DATA = {
     }
   ],
   "items": [
-    {
-      "id": "item_1792696350134",
-      "category": "cakes",
-      "name": "کیک جدید دست‌ساز",
-      "serving": "۸ اسلایس",
-      "desc": "تهیه شده با مواد اولیه تازه روز",
-      "price": "۱,۲۰۰,۰۰۰",
-      "available": true,
-      "image": "assets/images/k01-snickers.jpg"
-    },
-    {
-      "id": "item_1792696325109",
-      "category": "cakes",
-      "name": "کیک جدید دست‌ساز",
-      "serving": "۸ اسلایس",
-      "desc": "تهیه شده با مواد اولیه تازه روز",
-      "price": "۱,۲۰۰,۰۰۰",
-      "available": true,
-      "image": "assets/images/k01-snickers.jpg"
-    },
-    {
-      "id": "item_1792696324313",
-      "category": "cakes",
-      "name": "کیک جدید دست‌ساز",
-      "serving": "۸ اسلایس",
-      "desc": "تهیه شده با مواد اولیه تازه روز",
-      "price": "۱,۲۰۰,۰۰۰",
-      "available": true,
-      "image": "assets/images/k01-snickers.jpg"
-    },
-    {
-      "id": "item_1792696321422",
-      "category": "cakes",
-      "name": "کیک جدید دست‌ساز",
-      "serving": "۸ اسلایس",
-      "desc": "تهیه شده با مواد اولیه تازه روز",
-      "price": "۱,۲۰۰,۰۰۰",
-      "available": true,
-      "image": "assets/images/k01-snickers.jpg"
-    },
-    {
-      "id": "item_1792696318393",
-      "category": "cakes",
-      "name": "کیک جدید دست‌ساز",
-      "serving": "۸ اسلایس",
-      "desc": "تهیه شده با مواد اولیه تازه روز",
-      "price": "۱,۲۰۰,۰۰۰",
-      "available": true,
-      "image": "assets/images/k01-snickers.jpg"
-    },
     {
       "id": "k01",
       "category": "cakes",
