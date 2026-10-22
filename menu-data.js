@@ -1,19 +1,19 @@
 window.MENU_DATA = {
-  "updatedAt": 1792679876742,
+  "updatedAt": 1792684681760,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
     "ghBranch": "main"
   },
   "brand": {
-    "name": "کارگاه کیک و شیرینی دست‌ساز",
+    "name": "Lotus Cacker - Menu",
     "tagline": "پخت روزانه با مواد اولیه تازه • ویژه سرو کافه، مهمانی و سفارش خانگی",
-    "standardBadge": "استاندارد سرو: قالب کامل ۸ اسلایس",
+    "standardBadge": "استاندارد سرو: قالب  سایز ۲۰ / ۸ اسلایس",
     "orderNote": "تمامی سفارش‌ها به‌صورت پخت روز آماده می‌شوند • لطفاً حداقل ۲۴ ساعت قبل هماهنگ فرمایید",
-    "phone": "09120000000",
-    "whatsapp": "989120000000",
-    "instagram": "your.bakery",
-    "telegram": "your_bakery",
+    "phone": "09366919696",
+    "whatsapp": "989366919696",
+    "instagram": "lotuscaker",
+    "telegram": "lotuscaker",
     "publicUrl": "https://lotuscaker.github.io",
     "defaultTheme": "light"
   },
@@ -265,5 +265,6 @@ window.MENU_DATA = {
       "image": "assets/images/s05-chocolate.jpg",
       "available": true
     }
-  ]
+  ],
+  "vipCustomers": []
 };
