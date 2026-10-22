@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1792703558534,
+  "updatedAt": 1792703576102,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
