@@ -878,8 +878,8 @@
     @media (max-width: 640px) {
       .top-bar { padding: 9px 0 11px; }
       #headerLogoBg, #headerLogoTopCenter, #headerLogoSideL, #headerLogoSideR { display:none !important; }
-      .mobile-logo-wrap:not(.hidden) { display:block; text-align:center; height:64px; margin:0 auto 2px; }
-      .mobile-logo-wrap img { display:block; width:min(148px,44vw); height:62px; object-fit:contain; margin:0 auto; opacity:1 !important; filter:none !important; }
+      .mobile-logo-wrap:not(.hidden) { display:block; text-align:center; height:74px; margin:0 auto 2px; }
+      .mobile-logo-wrap img { display:block; width:auto; max-width:44vw; max-height:72px; object-fit:contain; margin:0 auto; }
       .mobile-header-menu-toggle { display:inline-flex; position:absolute; top:9px; right:12px; z-index:12; width:40px; height:40px; align-items:center; justify-content:center; border:1px solid var(--border-strong); border-radius:12px; background:var(--surface); color:var(--text); font-size:20px; cursor:pointer; box-shadow:var(--shadow-sm); }
       .mobile-header-menu { position:absolute; top:54px; right:12px; z-index:30; width:min(260px,calc(100vw - 28px)); padding:8px; border:1px solid var(--border-strong); border-radius:14px; background:var(--surface); box-shadow:var(--shadow-md); }
       .mobile-header-menu.open { display:grid; gap:6px; }
@@ -1176,7 +1176,7 @@
   </div>
   <script src="assets/qrcode.min.js"></script>
   <script src="assets/jszip.min.js"></script>
-  <script src="menu-data.js?v=1792789814"></script>
+  <script src="menu-data.js?v=1792789924"></script>
   <script>
     (function () {
       const FA_DIGITS = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
@@ -1919,7 +1919,8 @@
             const mobileLogoWrap = document.getElementById('mobileLogoWrap');
             if(mobileLogoWrap){
               if(imgSrc && pos!=='hidden'){
-                mobileLogoWrap.innerHTML = `<img src="${imgSrc}" alt="لوگوی لوتوس کیکر">`;
+                const mobileLogoHeight=Math.max(52,Math.min(72,size));
+                mobileLogoWrap.innerHTML = `<img src="${imgSrc}" alt="لوگوی لوتوس کیکر" style="height:${mobileLogoHeight}px;opacity:${op};filter:${blur?'blur('+blur+'px)':''}">`;
                 mobileLogoWrap.classList.remove('hidden');
               } else {
                 mobileLogoWrap.innerHTML = '';
