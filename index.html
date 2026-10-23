@@ -870,6 +870,61 @@
       padding: 4px 6px;
       color: var(--text-muted);
     }
+
+
+    /* Responsive mobile layout: same app state/data as desktop, adjusted presentation only. */
+    .mobile-logo-wrap, .mobile-header-menu-toggle, .mobile-header-menu,
+    .admin-mobile-nav-toggle, .admin-mobile-nav-menu { display:none; }
+    @media (max-width: 640px) {
+      .top-bar { padding: 9px 0 11px; }
+      #headerLogoBg, #headerLogoTopCenter, #headerLogoSideL, #headerLogoSideR { display:none !important; }
+      .mobile-logo-wrap:not(.hidden) { display:block; text-align:center; height:64px; margin:0 auto 2px; }
+      .mobile-logo-wrap img { display:block; width:min(148px,44vw); height:62px; object-fit:contain; margin:0 auto; opacity:1 !important; filter:none !important; }
+      .mobile-header-menu-toggle { display:inline-flex; position:absolute; top:9px; right:12px; z-index:12; width:40px; height:40px; align-items:center; justify-content:center; border:1px solid var(--border-strong); border-radius:12px; background:var(--surface); color:var(--text); font-size:20px; cursor:pointer; box-shadow:var(--shadow-sm); }
+      .mobile-header-menu { position:absolute; top:54px; right:12px; z-index:30; width:min(260px,calc(100vw - 28px)); padding:8px; border:1px solid var(--border-strong); border-radius:14px; background:var(--surface); box-shadow:var(--shadow-md); }
+      .mobile-header-menu.open { display:grid; gap:6px; }
+      .mobile-header-menu button { width:100%; min-height:44px; padding:9px 12px; border:1px solid var(--border); border-radius:10px; background:var(--surface-soft); color:var(--text); text-align:right; font:inherit; font-size:13px; font-weight:700; cursor:pointer; }
+      .top-row { flex-direction:column; align-items:center; justify-content:center; gap:7px; }
+      .brand-wrap { min-width:0; width:100%; justify-content:center !important; text-align:center; }
+      .brand-wrap > div:last-child { width:100%; }
+      .eyebrow-badge { display:none; }
+      .brand-title { font-size:17px; line-height:1.35; }
+      .brand-tagline { margin-top:3px; font-size:11px; }
+      .top-actions { width:100%; justify-content:center; gap:7px; }
+      .top-actions .icon-btn { min-height:38px; height:38px; padding:0 10px; font-size:11.5px; }
+      #themeLabel { display:none; }
+      #btnThemeToggle { width:40px; padding:0; }
+
+      .admin-modal { padding:7px; align-items:stretch; }
+      .admin-panel { width:100%; height:100%; max-height:100%; border-radius:16px; }
+      .admin-header { padding:10px 12px; gap:8px; }
+      .admin-header h2 { font-size:14px !important; line-height:1.5; }
+      .admin-header p { font-size:10.5px !important; line-height:1.55; margin-top:3px; }
+      .admin-header > button { flex:0 0 auto; min-height:40px; padding:0 9px; font-size:11px; }
+      .admin-tabs { display:block; position:relative; padding:8px 10px; z-index:8; }
+      .admin-tabs > .admin-tab { display:none !important; }
+      .admin-mobile-nav-toggle { display:flex; width:100%; min-height:44px; align-items:center; justify-content:space-between; gap:10px; padding:8px 12px; border:1px solid var(--border-strong); border-radius:11px; background:var(--surface); color:var(--text); font:inherit; font-size:13px; font-weight:800; text-align:right; cursor:pointer; }
+      .admin-mobile-nav-menu { display:none; position:absolute; top:calc(100% - 1px); right:10px; left:10px; max-height:min(55vh,420px); overflow:auto; grid-template-columns:1fr 1fr; gap:7px; padding:9px; border:1px solid var(--border-strong); border-radius:12px; background:var(--surface); box-shadow:var(--shadow-md); }
+      .admin-mobile-nav-menu.open { display:grid; }
+      .admin-mobile-tab { min-height:44px; padding:7px 8px; border:1px solid var(--border); border-radius:10px; background:var(--surface-soft); color:var(--text); font:inherit; font-size:11.5px; font-weight:700; cursor:pointer; }
+      .admin-mobile-tab.active { background:var(--accent); border-color:var(--accent); color:var(--accent-contrast); }
+      .admin-body { padding:12px; }
+      .admin-body input:not([type="checkbox"]):not([type="radio"]), .admin-body select, .admin-body textarea { min-height:48px; padding:10px 12px; font-size:16px; border-radius:11px; }
+      .admin-body button, .admin-body a.icon-btn { min-height:42px; }
+      .admin-body .cat-row { grid-template-columns:1fr !important; gap:7px !important; padding:9px; margin-bottom:10px !important; border:1px solid var(--border); border-radius:12px; background:var(--surface); }
+      .admin-body .cat-row .cat-del { width:100%; min-height:42px !important; }
+      .admin-footer { padding:8px 10px; gap:6px; justify-content:center; }
+      .admin-footer > .status-toast { width:100%; text-align:center; font-size:11px; }
+      .admin-footer > div { width:100%; display:grid !important; grid-template-columns:minmax(105px,.85fr) minmax(155px,1.3fr); gap:7px !important; }
+      .admin-footer > div > button { min-height:46px; height:auto; padding:7px 6px; font-size:10.5px; line-height:1.35; }
+      .edit-item-row { grid-template-columns:1fr !important; gap:8px; padding:10px; }
+      .edit-item-row > * { grid-column:1/-1 !important; }
+      .edit-item-row .photo-box { flex-direction:row; justify-content:flex-start; }
+      .edit-item-row .photo-box img { width:82px; height:68px; }
+      .edit-item-row .field { margin:0; }
+      .edit-item-row input[type="checkbox"] { width:20px; height:20px; }
+    }
+
   </style>
 </head>
 <body>
@@ -893,7 +948,14 @@
   <header class="top-bar" id="mainHeaderBar" style="position:relative; overflow:hidden">
     <div id="headerLogoBg" class="header-logo-bg hidden"></div>
     <div class="container" style="position:relative; z-index:1">
-      <div id="headerLogoTopCenter" class="hidden" style="text-align:center; padding-bottom:8px"></div>
+      <div id="mobileLogoWrap" class="mobile-logo-wrap hidden" aria-label="لوگوی لوتوس کیکر"></div>
+    <button type="button" class="mobile-header-menu-toggle" id="btnMobileHeaderMenu" aria-label="باز کردن منوی سایت" aria-expanded="false">☰</button>
+    <nav class="mobile-header-menu" id="mobileHeaderMenu" aria-label="منوی سریع سایت">
+      <button type="button" data-mobile-action="products">🍰 رفتن به محصولات</button>
+      <button type="button" data-mobile-action="register">👤 ورود / ثبت‌نام</button>
+      <button type="button" data-mobile-action="social">◎ شبکه‌های اجتماعی</button>
+    </nav>
+    <div id="headerLogoTopCenter" class="hidden" style="text-align:center; padding-bottom:8px"></div>
       <div class="top-row">
         <div id="headerLogoSideL" class="hidden"></div>
         <div class="brand-wrap" style="display:flex;align-items:center;gap:12px">
@@ -1053,6 +1115,17 @@
       </div>
 
       <div class="admin-tabs">
+        <button type="button" class="admin-mobile-nav-toggle" id="adminMobileNavToggle" aria-expanded="false">☰ <span id="adminMobileCurrentLabel">۱. سفارشات</span> <span>⌄</span></button>
+        <div class="admin-mobile-nav-menu" id="adminMobileNavMenu" aria-label="انتخاب بخش پنل مدیریت">
+          <button type="button" class="admin-mobile-tab" data-atab="orders">🔔 ۱. سفارشات</button>
+          <button type="button" class="admin-mobile-tab" data-atab="registrations">👥 ۲. ثبت‌نام مشتریان</button>
+          <button type="button" class="admin-mobile-tab" data-atab="prices">📦 ۳. محصولات</button>
+          <button type="button" class="admin-mobile-tab" data-atab="customers">⭐ ۴. صفحات اختصاصی</button>
+          <button type="button" class="admin-mobile-tab" data-atab="brand">🏪 ۵. مشخصات برند و رمز</button>
+          <button type="button" class="admin-mobile-tab" data-atab="qr">🔳 ۶. ساخت QR Code</button>
+          <button type="button" class="admin-mobile-tab" data-atab="design">🎨 ۷. طراحی و ظاهر</button>
+          <button type="button" class="admin-mobile-tab" data-atab="sync">☁️ ۸. آپلود گیت‌هاب</button>
+        </div>
         <button class="admin-tab active" data-atab="orders" type="button">
           🔔 ۱. سفارشات <span class="badge-dot hidden" id="tabOrdersBadge">۰</span>
         </button>
@@ -1103,7 +1176,7 @@
   </div>
   <script src="assets/qrcode.min.js"></script>
   <script src="assets/jszip.min.js"></script>
-  <script src="menu-data.js?v=1792715490"></script>
+  <script src="menu-data.js?v=1792789814"></script>
   <script>
     (function () {
       const FA_DIGITS = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
@@ -1843,6 +1916,16 @@
             };
             // hide all first
             Object.values(containers).forEach(el=>{ if(el){ el.classList.add('hidden'); el.innerHTML=''; el.style.opacity=''; el.style.filter=''; el.style.backgroundImage=''; }});
+            const mobileLogoWrap = document.getElementById('mobileLogoWrap');
+            if(mobileLogoWrap){
+              if(imgSrc && pos!=='hidden'){
+                mobileLogoWrap.innerHTML = `<img src="${imgSrc}" alt="لوگوی لوتوس کیکر">`;
+                mobileLogoWrap.classList.remove('hidden');
+              } else {
+                mobileLogoWrap.innerHTML = '';
+                mobileLogoWrap.classList.add('hidden');
+              }
+            }
             const mono = document.getElementById('elMonogram');
             if(mono){
               if(imgSrc && pos==='monogram' || (d.showMonogram && !imgSrc)){
@@ -2467,6 +2550,24 @@
       }
 
       document.getElementById('btnRegisterCustomer').addEventListener('click', () => openRegisterModal());
+      (function bindMobileSiteMenu(){
+        const toggle=document.getElementById('btnMobileHeaderMenu');
+        const menu=document.getElementById('mobileHeaderMenu');
+        if(!toggle || !menu) return;
+        const close=()=>{ menu.classList.remove('open'); toggle.setAttribute('aria-expanded','false'); };
+        toggle.addEventListener('click',()=>{
+          const open=menu.classList.toggle('open');
+          toggle.setAttribute('aria-expanded',open?'true':'false');
+        });
+        menu.querySelectorAll('[data-mobile-action]').forEach(btn=>btn.addEventListener('click',()=>{
+          const action=btn.dataset.mobileAction; close();
+          if(action==='register') document.getElementById('btnRegisterCustomer').click();
+          if(action==='products'){ const target=document.querySelector('.items-grid, .items-list') || document.querySelector('.items-section'); if(target) target.scrollIntoView({behavior:'smooth',block:'start'}); }
+          if(action==='social') { const box=document.getElementById('socialLuxuryBox'); if(box && !box.classList.contains('hidden')) box.scrollIntoView({behavior:'smooth',block:'center'}); }
+        }));
+        document.addEventListener('click',e=>{ if(!menu.contains(e.target) && e.target!==toggle) close(); });
+        document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
+      })();
       document.getElementById('registerModal').addEventListener('click', e => {
         if (e.target.id === 'registerModal') e.target.classList.add('hidden');
       });
@@ -2901,14 +3002,34 @@
         document.getElementById('adminModal').classList.add('hidden');
       });
 
-      document.querySelectorAll('.admin-tab').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectAdminInputs();
-          currentAdminTab = btn.dataset.atab;
-          document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('active', b === btn));
-          renderAdminTab();
+      function syncAdminMobileNavigation(){
+        const names={orders:'🔔 ۱. سفارشات',registrations:'👥 ۲. ثبت‌نام مشتریان',prices:'📦 ۳. محصولات',customers:'⭐ ۴. صفحات اختصاصی',brand:'🏪 ۵. مشخصات برند و رمز',qr:'🔳 ۶. ساخت QR Code',design:'🎨 ۷. طراحی و ظاهر',sync:'☁️ ۸. آپلود گیت‌هاب'};
+        document.querySelectorAll('.admin-tab,.admin-mobile-tab').forEach(b=>b.classList.toggle('active',b.dataset.atab===currentAdminTab));
+        const label=document.getElementById('adminMobileCurrentLabel');
+        if(label) label.textContent=names[currentAdminTab] || 'انتخاب بخش';
+      }
+      function activateAdminTab(tab){
+        collectAdminInputs();
+        currentAdminTab=tab;
+        syncAdminMobileNavigation();
+        const menu=document.getElementById('adminMobileNavMenu');
+        const toggle=document.getElementById('adminMobileNavToggle');
+        if(menu) menu.classList.remove('open');
+        if(toggle) toggle.setAttribute('aria-expanded','false');
+        renderAdminTab();
+      }
+      document.querySelectorAll('.admin-tab,.admin-mobile-tab').forEach(btn=>btn.addEventListener('click',()=>activateAdminTab(btn.dataset.atab)));
+      (function bindMobileAdminNavigation(){
+        const toggle=document.getElementById('adminMobileNavToggle');
+        const menu=document.getElementById('adminMobileNavMenu');
+        if(!toggle || !menu) return;
+        toggle.addEventListener('click',()=>{
+          const open=menu.classList.toggle('open');
+          toggle.setAttribute('aria-expanded',open?'true':'false');
         });
-      });
+        document.addEventListener('click',e=>{ if(!menu.contains(e.target) && e.target!==toggle && !toggle.contains(e.target)){ menu.classList.remove('open'); toggle.setAttribute('aria-expanded','false'); } });
+        syncAdminMobileNavigation();
+      })();
 
       function makeQrSvgString(url, sizePx) {
         const qr = qrcode(0, 'M');
@@ -3204,6 +3325,7 @@
       }
 
       function renderAdminTab() {
+        syncAdminMobileNavigation();
         const body = document.getElementById('adminBody');
 
         if (currentAdminTab === 'orders') {
