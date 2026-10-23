@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1792716197292,
+  "updatedAt": 1792716358607,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
@@ -371,9 +371,9 @@ window.MENU_DATA = {
       "قالب کامل (بدون برش)"
     ],
     "logoPosition": "header-bg",
-    "logoOpacity": 20,
-    "logoBlur": 1,
-    "logoSize": 72,
+    "logoOpacity": 70,
+    "logoBlur": 0,
+    "logoSize": 28,
     "showSplash": true,
     "splashDuration": 1800
   },
