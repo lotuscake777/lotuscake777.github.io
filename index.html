@@ -393,6 +393,16 @@
       position: absolute; inset: 0; background-repeat: no-repeat; background-position: center;
       background-size: contain; pointer-events: none; z-index: 0;
     }
+
+    .lotus-watermark { position:absolute; z-index:5; display:block; width:min(var(--lotus-watermark-size,38px),34%); max-height:36%; height:auto; object-fit:contain; pointer-events:none; filter:drop-shadow(0 1px 2px rgba(0,0,0,.24)); }
+    .card-img-wrap img.lotus-watermark { width:min(var(--lotus-watermark-size,38px),34%); height:auto; max-height:36%; object-fit:contain; }
+    .modal-img img.lotus-watermark { width:min(var(--lotus-watermark-size,38px),22%); height:auto; max-height:24%; object-fit:contain; }
+    .card:hover .card-img-wrap img.lotus-watermark { transform:none; }
+    .lotus-watermark.pos-bottom-left { left:8px; bottom:8px; }
+    .lotus-watermark.pos-bottom-right { right:8px; bottom:8px; }
+    .lotus-watermark.pos-top-left { left:8px; top:8px; }
+    .lotus-watermark.pos-top-right { right:8px; top:8px; }
+    .modal-img .lotus-watermark { width:min(var(--lotus-watermark-size,38px),22%); max-height:24%; }
     /* Image crop editor */
     .crop-overlay { position: fixed; inset:0; z-index:200; background: rgba(0,0,0,0.75); display:grid; place-items:center; padding:16px; }
     .crop-card { background: var(--surface); border-radius:16px; padding:16px; width: 100%; max-width: 560px; box-shadow: var(--shadow-modal); }
@@ -878,11 +888,14 @@
     @media (max-width: 640px) {
       .top-bar { padding: 9px 0 11px; }
       #headerLogoBg, #headerLogoTopCenter, #headerLogoSideL, #headerLogoSideR { display:none !important; }
-      .mobile-logo-wrap:not(.hidden) { display:block; text-align:center; height:74px; margin:0 auto 2px; }
-      .mobile-logo-wrap img { display:block; width:auto; max-width:44vw; max-height:72px; object-fit:contain; margin:0 auto; }
-      .mobile-header-menu-toggle { display:inline-flex; position:absolute; top:9px; right:12px; z-index:12; width:40px; height:40px; align-items:center; justify-content:center; border:1px solid var(--border-strong); border-radius:12px; background:var(--surface); color:var(--text); font-size:20px; cursor:pointer; box-shadow:var(--shadow-sm); }
-      .mobile-header-menu { position:absolute; top:54px; right:12px; z-index:30; width:min(260px,calc(100vw - 28px)); padding:8px; border:1px solid var(--border-strong); border-radius:14px; background:var(--surface); box-shadow:var(--shadow-md); }
+      .mobile-logo-wrap:not(.hidden) { display:block; text-align:center; height:110px; margin:0 auto 1px; }
+      .mobile-logo-wrap img { display:block; width:auto; max-width:min(220px,65vw); max-height:106px; object-fit:contain; margin:0 auto; }
+      .mobile-header-menu-toggle { display:inline-flex; position:absolute; top:9px; right:12px; z-index:1002; width:40px; height:40px; align-items:center; justify-content:center; border:1px solid var(--border-strong); border-radius:12px; background:var(--surface); color:var(--text); font-size:20px; cursor:pointer; box-shadow:var(--shadow-sm); }
+      .mobile-header-menu { display:none; position:fixed; top:120px; right:12px; z-index:1002; width:min(280px,calc(100vw - 28px)); max-height:calc(100dvh - 140px); overflow:auto; padding:8px; border:1px solid var(--border-strong); border-radius:14px; background:var(--surface); box-shadow:var(--shadow-md); }
       .mobile-header-menu.open { display:grid; gap:6px; }
+    .mobile-header-menu-backdrop { display:none; position:fixed; inset:0; z-index:1000; background:rgba(20,18,16,.24); }
+    .mobile-header-menu-backdrop.open { display:block; }
+    #mainHeaderBar.mobile-menu-active { overflow:visible !important; z-index:1001; }
       .mobile-header-menu button { width:100%; min-height:44px; padding:9px 12px; border:1px solid var(--border); border-radius:10px; background:var(--surface-soft); color:var(--text); text-align:right; font:inherit; font-size:13px; font-weight:700; cursor:pointer; }
       .top-row { flex-direction:column; align-items:center; justify-content:center; gap:7px; }
       .brand-wrap { min-width:0; width:100%; justify-content:center !important; text-align:center; }
@@ -890,10 +903,12 @@
       .eyebrow-badge { display:none; }
       .brand-title { font-size:17px; line-height:1.35; }
       .brand-tagline { margin-top:3px; font-size:11px; }
-      .top-actions { width:100%; justify-content:center; gap:7px; }
+      .top-actions { position:static; width:100%; justify-content:center; gap:7px; order:1; }
+      .brand-wrap { order:2; }
       .top-actions .icon-btn { min-height:38px; height:38px; padding:0 10px; font-size:11.5px; }
       #themeLabel { display:none; }
-      #btnThemeToggle { width:40px; padding:0; }
+      #btnThemeToggle { position:absolute; top:9px; left:12px; z-index:1002; width:40px; padding:0; }
+      #mainHeaderBar { overflow:visible !important; }
 
       .admin-modal { padding:7px; align-items:stretch; }
       .admin-panel { width:100%; height:100%; max-height:100%; border-radius:16px; }
@@ -955,6 +970,7 @@
       <button type="button" data-mobile-action="register">👤 ورود / ثبت‌نام</button>
       <button type="button" data-mobile-action="social">◎ شبکه‌های اجتماعی</button>
     </nav>
+    <div class="mobile-header-menu-backdrop" id="mobileHeaderMenuBackdrop" aria-hidden="true"></div>
     <div id="headerLogoTopCenter" class="hidden" style="text-align:center; padding-bottom:8px"></div>
       <div class="top-row">
         <div id="headerLogoSideL" class="hidden"></div>
@@ -1040,6 +1056,7 @@
     <div class="modal-card" role="dialog" aria-modal="true">
       <div class="modal-img">
         <img id="mImg" src="" alt="">
+        <span id="modalLotusWatermarkSlot"></span>
         <button class="modal-close" type="button" id="btnCloseDetail">&times;</button>
       </div>
       <div class="modal-content">
@@ -1176,7 +1193,7 @@
   </div>
   <script src="assets/qrcode.min.js"></script>
   <script src="assets/jszip.min.js"></script>
-  <script src="menu-data.js?v=1792789924"></script>
+  <script src="menu-data.js?v=1792791505"></script>
   <script>
     (function () {
       const FA_DIGITS = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
@@ -1236,6 +1253,18 @@
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;');
+      }
+
+      function getLotusWatermarkHtml(extraClass=''){
+        const d=state.design||{};
+        if(d.showLotusWatermark===false) return '';
+        const src=d.lotusWatermarkImage||'assets/images/lotus-petal-watermark.png';
+        if(!src) return '';
+        const size=Math.max(24,Math.min(64,Number(d.lotusWatermarkSize)||38));
+        const opacity=Math.max(25,Math.min(100,Number(d.lotusWatermarkOpacity)||84))/100;
+        const valid=['bottom-left','bottom-right','top-left','top-right'];
+        const pos=valid.includes(d.lotusWatermarkPosition)?d.lotusWatermarkPosition:'bottom-left';
+        return `<img class="lotus-watermark pos-${pos} ${extraClass}" src="${escapeHtml(src)}" alt="" aria-hidden="true" style="--lotus-watermark-size:${size}px;opacity:${opacity}">`;
       }
 
       // UTF-8 <-> Base64 helpers
@@ -1329,6 +1358,11 @@
         dd.logoOpacity = dd.logoOpacity != null ? dd.logoOpacity : 100;
         dd.logoBlur = dd.logoBlur != null ? dd.logoBlur : 0;
         dd.logoSize = dd.logoSize || 56; // px height
+        dd.showLotusWatermark = dd.showLotusWatermark !== false;
+        dd.lotusWatermarkImage = dd.lotusWatermarkImage || 'assets/images/lotus-petal-watermark.png';
+        dd.lotusWatermarkSize = dd.lotusWatermarkSize || 38;
+        dd.lotusWatermarkOpacity = dd.lotusWatermarkOpacity != null ? dd.lotusWatermarkOpacity : 84;
+        dd.lotusWatermarkPosition = dd.lotusWatermarkPosition || 'bottom-left';
         dd.showBakeStatus = dd.showBakeStatus !== false;
         dd.bakeStatusText = dd.bakeStatusText || 'پذیرش سفارش پخت روزانه فعال است';
         dd.bakeStatusDot = dd.bakeStatusDot || '#1F6F4A';
@@ -2091,12 +2125,14 @@
                   const badgeHtml = item.badge ? `<span class="card-badge">${escapeHtml(item.badge)}</span>` : '';
                   const perSliceText = getPerSliceText(item);
                   const perSliceHtml = perSliceText ? `<div class="per-slice-price">${perSliceText}</div>` : '';
+                  const watermarkHtml = getLotusWatermarkHtml();
                   return `
                   <article class="card" data-id="${item.id}">
                     <div class="card-img-wrap">
                       <img src="${item.image}" alt="${escapeHtml(item.name)}" loading="lazy">
                       ${badgeHtml}
                       ${item.available === false ? '<div class="soldout-overlay"><span>اتمام موجودی روز</span></div>' : ''}
+                      ${watermarkHtml}
                     </div>
                     <div class="card-body">
                       <div>
@@ -2174,6 +2210,7 @@
         detailItemId = id;
         document.getElementById('mImg').src = item.image;
         document.getElementById('mImg').alt = item.name;
+        const wmSlot=document.getElementById('modalLotusWatermarkSlot'); if(wmSlot) wmSlot.innerHTML=getLotusWatermarkHtml();
         document.getElementById('mTitle').textContent = item.name;
         document.getElementById('mServing').textContent = toFa(item.serving);
         document.getElementById('mDesc').textContent = item.desc;
@@ -2555,11 +2592,16 @@
         const toggle=document.getElementById('btnMobileHeaderMenu');
         const menu=document.getElementById('mobileHeaderMenu');
         if(!toggle || !menu) return;
-        const close=()=>{ menu.classList.remove('open'); toggle.setAttribute('aria-expanded','false'); };
+        const backdrop=document.getElementById('mobileHeaderMenuBackdrop');
+        const header=document.getElementById('mainHeaderBar');
+        const close=()=>{ menu.classList.remove('open'); if(backdrop) backdrop.classList.remove('open'); if(header) header.classList.remove('mobile-menu-active'); toggle.setAttribute('aria-expanded','false'); };
         toggle.addEventListener('click',()=>{
-          const open=menu.classList.toggle('open');
+          const open=!menu.classList.contains('open');
+          if(open){ const rect=header?header.getBoundingClientRect():{bottom:0}; menu.style.top=Math.max(8,Math.min(rect.bottom+6,window.innerHeight-180))+'px'; menu.classList.add('open'); if(backdrop) backdrop.classList.add('open'); if(header) header.classList.add('mobile-menu-active'); }
+          else close();
           toggle.setAttribute('aria-expanded',open?'true':'false');
         });
+        if(backdrop) backdrop.addEventListener('click',close);
         menu.querySelectorAll('[data-mobile-action]').forEach(btn=>btn.addEventListener('click',()=>{
           const action=btn.dataset.mobileAction; close();
           if(action==='register') document.getElementById('btnRegisterCustomer').click();
@@ -3986,6 +4028,19 @@
                 <label style="font-size:11px; display:flex; align-items:center; gap:6px; margin-top:8px"><input type="checkbox" id="f_showMonogram" ${d.showMonogram?'checked':''}> نمایش مونوگرام متنی (LC) وقتی لوگو ندارید</label>
                 <input id="f_monogramText" value="${escapeHtml(d.monogramText||'LC')}" placeholder="LC" style="width:80px; margin-top:6px; display:${d.showMonogram?'block':'none'}">
               </div>
+              <div class="field" style="grid-column:1/-1; padding:12px; background:var(--bg); border-radius:10px; border:1px solid var(--border)">
+                <label style="font-weight:800;display:block;margin-bottom:8px">🌸 نشان گل لوتوس روی عکس محصولات</label>
+                <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><input type="checkbox" id="f_showLotusWatermark" ${d.showLotusWatermark!==false?'checked':''}> نمایش نشان گل لوتوس روی عکس کیک‌ها</label>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                  <img id="lotusWatermarkPreview" src="${escapeHtml(d.lotusWatermarkImage||'assets/images/lotus-petal-watermark.png')}" alt="پیش‌نمایش گل لوتوس" style="width:48px;height:48px;object-fit:contain;background:#fff;border:1px solid var(--border);border-radius:8px;padding:3px">
+                  <label style="font-size:11px">اندازه <input type="range" id="f_lotusWatermarkSize" min="24" max="64" value="${d.lotusWatermarkSize||38}" style="width:95px;vertical-align:middle"> <span id="lotusWmSizeVal">${d.lotusWatermarkSize||38}px</span></label>
+                  <label style="font-size:11px">شفافیت <input type="range" id="f_lotusWatermarkOpacity" min="25" max="100" value="${d.lotusWatermarkOpacity!=null?d.lotusWatermarkOpacity:84}" style="width:95px;vertical-align:middle"> <span id="lotusWmOpacityVal">${d.lotusWatermarkOpacity!=null?d.lotusWatermarkOpacity:84}%</span></label>
+                  <label style="font-size:11px">جایگاه <select id="f_lotusWatermarkPosition"><option value="bottom-left" ${(d.lotusWatermarkPosition||'bottom-left')==='bottom-left'?'selected':''}>پایین چپ</option><option value="bottom-right" ${d.lotusWatermarkPosition==='bottom-right'?'selected':''}>پایین راست</option><option value="top-left" ${d.lotusWatermarkPosition==='top-left'?'selected':''}>بالا چپ</option><option value="top-right" ${d.lotusWatermarkPosition==='top-right'?'selected':''}>بالا راست</option></select></label>
+                  <label class="icon-btn admin-trigger" style="cursor:pointer">📷 تغییر نشان<input type="file" accept="image/*" id="f_lotusWatermarkUpload" class="hidden"></label>
+                  <input type="hidden" id="f_lotusWatermarkImage" value="${escapeHtml(d.lotusWatermarkImage||'assets/images/lotus-petal-watermark.png')}">
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:7px">پیش‌فرض: گوشهٔ پایین چپ؛ اندازه و شفافیت قابل تنظیم است. تصویر جایگزین پس از انتشار در همهٔ دستگاه‌ها استفاده می‌شود.</div>
+              </div>
               <div class="field" style="grid-column:1/-1; display:flex; gap:10px; align-items:center; padding:10px; background:var(--bg); border-radius:10px; border:1px solid var(--border)">
                 <label style="flex:1"><input type="checkbox" id="f_showBake" ${d.showBakeStatus?'checked':''}> نمایش نوار وضعیت پخت روزانه</label>
                 <input id="f_bakeText" value="${escapeHtml(d.bakeStatusText||'')}" style="flex:2">
@@ -4044,6 +4099,24 @@
                 if(!el) return;
                 const upd=()=>{ collectAdminInputs(); renderAll(); const op=document.getElementById('logoOpVal'); if(op) op.textContent=document.getElementById('f_logoOpacity').value+'%'; const bl=document.getElementById('logoBlurVal'); if(bl) bl.textContent=document.getElementById('f_logoBlur').value+'px'; const sz=document.getElementById('logoSizeVal'); if(sz) sz.textContent=document.getElementById('f_logoSize').value+'px'; };
                 el.addEventListener('input',upd); el.addEventListener('change',upd);
+              });
+              const wmEnabled=document.getElementById('f_showLotusWatermark');
+              const wmUpload=document.getElementById('f_lotusWatermarkUpload');
+              const refreshWm=()=>{ collectAdminInputs(); renderAll(); const sz=document.getElementById('lotusWmSizeVal'); const op=document.getElementById('lotusWmOpacityVal'); if(sz) sz.textContent=document.getElementById('f_lotusWatermarkSize').value+'px'; if(op) op.textContent=document.getElementById('f_lotusWatermarkOpacity').value+'%'; };
+              ['f_showLotusWatermark','f_lotusWatermarkSize','f_lotusWatermarkOpacity','f_lotusWatermarkPosition'].forEach(id=>{ const el=document.getElementById(id); if(el){ el.addEventListener('input',refreshWm); el.addEventListener('change',refreshWm); } });
+              if(wmUpload) wmUpload.addEventListener('change',async e=>{
+                const f=e.target.files&&e.target.files[0]; if(!f)return;
+                try{
+                  const {dataUrl,base64}=await compressImageFile(f,500,0.92);
+                  const path=`assets/images/lotus_watermark_${Date.now()}.png`;
+                  pendingImageUploads[path]=base64;
+                  document.getElementById('f_lotusWatermarkImage').value=path;
+                  state.design.lotusWatermarkImage=path;
+                  const prev=document.getElementById('lotusWatermarkPreview'); if(prev)prev.src=dataUrl;
+                  fetch('api/upload-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path,base64})}).catch(()=>{});
+                  collectAdminInputs(); renderAll(); document.getElementById('adminToast').textContent='نشان گل لوتوس بارگذاری شد؛ برای همه گوشی‌ها ذخیره و انتشار را بزنید ✓';
+                }catch(err){document.getElementById('adminToast').textContent='خطا در بارگذاری نشان: '+err.message;}
+                e.target.value='';
               });
               const btnRem2=document.getElementById('btnRemoveLogo');
               if(btnRem2) btnRem2.addEventListener('click',()=>{
@@ -4168,6 +4241,14 @@
             d.logoImage = document.getElementById('f_logoImage').value.trim();
           } else {
             d.logoImage = document.getElementById('f_logoImage').value.trim();
+          }
+          const wmEnabled=document.getElementById('f_showLotusWatermark');
+          if(wmEnabled){
+            d.showLotusWatermark=wmEnabled.checked;
+            d.lotusWatermarkSize=parseInt(document.getElementById('f_lotusWatermarkSize').value,10)||38;
+            d.lotusWatermarkOpacity=parseInt(document.getElementById('f_lotusWatermarkOpacity').value,10)||84;
+            d.lotusWatermarkPosition=document.getElementById('f_lotusWatermarkPosition').value;
+            d.lotusWatermarkImage=document.getElementById('f_lotusWatermarkImage').value.trim()||'assets/images/lotus-petal-watermark.png';
           }
           d.showMonogram = document.getElementById('f_showMonogram').checked;
           d.monogramText = (document.getElementById('f_monogramText')||{value:'LC'}).value.trim() || 'LC';
