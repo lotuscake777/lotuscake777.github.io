@@ -118,7 +118,7 @@
       letter-spacing: -0.3px;
       color: var(--text);
       line-height: 1.3;
-      cursor: pointer;
+      cursor: default;
       user-select: none;
     }
 
@@ -179,6 +179,7 @@
     }
 
     .hidden { display: none !important; }
+    html, body { background:#FAF8F5; }
 
     .sticky-controls {
       position: sticky;
@@ -413,11 +414,13 @@
     /* Splash full-screen luxury intro */
     .splash-screen {
       position: fixed; inset:0; z-index: 300; background: #FAF8F5; display: grid; place-items: center;
-      transition: opacity 900ms ease, visibility 900ms ease;
+      opacity:1; visibility:visible; will-change:opacity; transform:translateZ(0);
+      transition: opacity 420ms ease, visibility 420ms ease;
     }
     .splash-screen.hide { opacity:0; visibility:hidden; pointer-events:none; }
-    .splash-logo { width: min(360px, 68vw); max-height: 44vh; object-fit: contain; filter: drop-shadow(0 8px 28px rgba(0,0,0,0.08)); animation: splashIn 900ms ease; }
-    @keyframes splashIn { from { opacity:0; transform: scale(0.96) translateY(8px); } to { opacity:1; transform: scale(1) translateY(0); } }
+    .splash-logo { width:min(360px,68vw); max-height:44vh; object-fit:contain; filter:drop-shadow(0 8px 28px rgba(0,0,0,.08)); animation:splashIn 420ms cubic-bezier(.2,.75,.25,1) both; }
+    @keyframes splashIn { from { opacity:0; transform:scale(.97); } to { opacity:1; transform:scale(1); } }
+    @media(prefers-reduced-motion:reduce){.splash-screen{transition-duration:160ms}.splash-logo{animation-duration:160ms}}
     .crop-viewport img { position:absolute; left:50%; top:50%; transform-origin: center center; will-change: transform; max-width:none; max-height:none; }
     .bake-status-bar {
       background: var(--surface-soft); border-bottom: 1px solid var(--border);
@@ -883,20 +886,12 @@
 
 
     /* Responsive mobile layout: same app state/data as desktop, adjusted presentation only. */
-    .mobile-logo-wrap, .mobile-header-menu-toggle, .mobile-header-menu,
-    .admin-mobile-nav-toggle, .admin-mobile-nav-menu { display:none; }
+    .mobile-logo-wrap, .admin-mobile-nav-menu { display:none; }
     @media (max-width: 640px) {
       .top-bar { padding: 9px 0 11px; }
       #headerLogoBg, #headerLogoTopCenter, #headerLogoSideL, #headerLogoSideR { display:none !important; }
-      .mobile-logo-wrap:not(.hidden) { display:block; text-align:center; height:110px; margin:0 auto 1px; }
+      .mobile-logo-wrap:not(.hidden) { display:block; text-align:center; height:110px; margin:0 auto 1px; cursor:pointer; touch-action:manipulation; }
       .mobile-logo-wrap img { display:block; width:auto; max-width:min(220px,65vw); max-height:106px; object-fit:contain; margin:0 auto; }
-      .mobile-header-menu-toggle { display:inline-flex; position:absolute; top:9px; right:12px; z-index:1002; width:40px; height:40px; align-items:center; justify-content:center; border:1px solid var(--border-strong); border-radius:12px; background:var(--surface); color:var(--text); font-size:20px; cursor:pointer; box-shadow:var(--shadow-sm); }
-      .mobile-header-menu { display:none; position:fixed; top:120px; right:12px; z-index:1002; width:min(280px,calc(100vw - 28px)); max-height:calc(100dvh - 140px); overflow:auto; padding:8px; border:1px solid var(--border-strong); border-radius:14px; background:var(--surface); box-shadow:var(--shadow-md); }
-      .mobile-header-menu.open { display:grid; gap:6px; }
-    .mobile-header-menu-backdrop { display:none; position:fixed; inset:0; z-index:1000; background:rgba(20,18,16,.24); }
-    .mobile-header-menu-backdrop.open { display:block; }
-    #mainHeaderBar.mobile-menu-active { overflow:visible !important; z-index:1001; }
-      .mobile-header-menu button { width:100%; min-height:44px; padding:9px 12px; border:1px solid var(--border); border-radius:10px; background:var(--surface-soft); color:var(--text); text-align:right; font:inherit; font-size:13px; font-weight:700; cursor:pointer; }
       .top-row { flex-direction:column; align-items:center; justify-content:center; gap:7px; }
       .brand-wrap { min-width:0; width:100%; justify-content:center !important; text-align:center; }
       .brand-wrap > div:last-child { width:100%; }
@@ -918,9 +913,7 @@
       .admin-header > button { flex:0 0 auto; min-height:40px; padding:0 9px; font-size:11px; }
       .admin-tabs { display:block; position:relative; padding:8px 10px; z-index:8; }
       .admin-tabs > .admin-tab { display:none !important; }
-      .admin-mobile-nav-toggle { display:flex; width:100%; min-height:44px; align-items:center; justify-content:space-between; gap:10px; padding:8px 12px; border:1px solid var(--border-strong); border-radius:11px; background:var(--surface); color:var(--text); font:inherit; font-size:13px; font-weight:800; text-align:right; cursor:pointer; }
-      .admin-mobile-nav-menu { display:none; position:absolute; top:calc(100% - 1px); right:10px; left:10px; max-height:min(55vh,420px); overflow:auto; grid-template-columns:1fr 1fr; gap:7px; padding:9px; border:1px solid var(--border-strong); border-radius:12px; background:var(--surface); box-shadow:var(--shadow-md); }
-      .admin-mobile-nav-menu.open { display:grid; }
+      .admin-mobile-nav-menu { display:grid; position:static; max-height:none; overflow:visible; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; padding:9px 0; border:0; border-radius:0; background:transparent; box-shadow:none; }
       .admin-mobile-tab { min-height:44px; padding:7px 8px; border:1px solid var(--border); border-radius:10px; background:var(--surface-soft); color:var(--text); font:inherit; font-size:11.5px; font-weight:700; cursor:pointer; }
       .admin-mobile-tab.active { background:var(--accent); border-color:var(--accent); color:var(--accent-contrast); }
       .admin-body { padding:12px; }
@@ -940,12 +933,37 @@
       .edit-item-row input[type="checkbox"] { width:20px; height:20px; }
     }
 
-  </style>
+  
+      .payment-choice{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:10px 12px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);color:var(--text);text-align:right;font:inherit;cursor:pointer}
+      .payment-choice.active{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 18%,transparent);background:var(--surface-soft)}
+      .payment-choice strong{white-space:nowrap;color:var(--accent);font-size:11.5px}
+      .payment-hint{font-size:11.5px;color:var(--text-muted);line-height:1.7}
+      .payment-card-info{display:grid;gap:8px;padding:10px;border-radius:10px;background:var(--surface);border:1px solid var(--border)}
+      .payment-card-info small{display:block;font-size:10.5px;color:var(--text-muted)}.payment-card-info b{display:block;font-size:13px;margin-top:3px}
+      .card-number-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:8px;border-top:1px solid var(--border)}
+      .card-number-row button{border:1px solid var(--border-strong);border-radius:8px;background:var(--surface-soft);padding:7px 9px;color:var(--text);font:inherit;font-size:11px;cursor:pointer}
+      .payment-warning,.accounting-alert{padding:10px;border-radius:9px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:11.5px;line-height:1.8}
+      .receipt-upload-label{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:8px;padding:9px;border:1px dashed var(--border-strong);border-radius:9px;font-size:12px;font-weight:700;cursor:pointer}.receipt-upload-label span{color:#dc2626}.receipt-upload-label input{max-width:100%;font:inherit;font-size:11px}
+      .accounting-wrap{display:grid;gap:14px}.accounting-privacy-note{display:grid;gap:3px;padding:13px;border-radius:12px;background:var(--ok-soft);border:1px solid var(--border);font-size:12px;line-height:1.75}.accounting-privacy-note b{font-size:13px}.accounting-privacy-note span,.accounting-toolbar span{color:var(--text-muted)}
+      .accounting-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.accounting-toolbar h3{margin:0 0 3px;font-size:16px}.accounting-actions{display:flex;gap:7px}.accounting-actions button,.accounting-periods button{border:1px solid var(--border-strong);border-radius:9px;background:var(--surface);color:var(--text);padding:8px 11px;font:inherit;font-size:11.5px;cursor:pointer}.accounting-periods{display:flex;gap:7px}.accounting-periods button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+      .accounting-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.accounting-cards>div{padding:12px;border-radius:11px;border:1px solid var(--border);background:var(--surface-soft);display:grid;gap:6px}.accounting-cards small{font-size:10.5px;color:var(--text-muted)}.accounting-cards b{font-size:15px}.accounting-cards i{font-size:10px;font-style:normal;color:var(--text-muted)}.accounting-cards .positive b{color:#16734b}.accounting-cards .negative b{color:#b42318}.accounting-substats{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:11.5px;color:var(--text-muted)}.accounting-substats b{color:var(--text)}
+      .accounting-section{padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}.accounting-section summary{font-weight:800;font-size:13px;cursor:pointer}.accounting-section>p,.accounting-hint{font-size:11px;color:var(--text-muted);line-height:1.7}.accounting-cost-list{display:grid;gap:7px;margin:10px 0}.accounting-cost-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(170px,240px);align-items:center;gap:10px;padding:8px;border-radius:9px;background:var(--surface-soft)}.accounting-cost-row small,.accounting-cost-row label span{display:block;font-size:10px;color:var(--text-muted)}.accounting-cost-row input,.accounting-entry-form input,.accounting-entry-form select{width:100%;box-sizing:border-box;padding:9px;border:1px solid var(--border-strong);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:12px}.accounting-entry-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}.accounting-entry-form label{display:grid;gap:5px;font-size:11px;font-weight:700}.accounting-entry-form .wide{grid-column:1/-1}.accounting-entry-form button{grid-column:1/-1;justify-self:start}.accounting-table-wrap{overflow:auto;margin-top:10px}.accounting-table{width:100%;border-collapse:collapse;min-width:680px;font-size:11px}.accounting-table th,.accounting-table td{padding:8px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}.accounting-table th{color:var(--text-muted);font-weight:700}.accounting-table td:nth-child(4){white-space:normal;min-width:120px}
+      @media(max-width:650px){.accounting-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.accounting-cost-row{grid-template-columns:1fr}.accounting-entry-form{grid-template-columns:1fr}.accounting-entry-form .wide,.accounting-entry-form button{grid-column:1}.accounting-actions button{padding:7px 8px}.payment-choice{align-items:flex-start;flex-direction:column}}
+
+      .order-payment-admin{display:grid;gap:5px;padding:10px 12px;margin-bottom:10px;border-radius:10px;background:var(--surface-soft);border:1px solid var(--border);font-size:11.8px;line-height:1.65}.order-payment-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px}.receipt-archive-hint{align-self:center;color:#9a3412;font-size:10.5px}
+
+      .accounting-periods{align-items:center;flex-wrap:wrap}.accounting-periods button:disabled{opacity:.45;cursor:not-allowed}.accounting-period-label{margin-right:auto;font-size:11px;color:var(--text-muted)}
+
+    @media(max-width:640px){
+      .card-img-wrap img.lotus-watermark{width:16px!important;max-height:18%!important}
+      .modal-img img.lotus-watermark{width:16px!important;max-height:18%!important}
+    }
+</style>
 </head>
 <body>
 
-  <div id="splashScreen" class="splash-screen hidden">
-    <img id="splashLogoImg" src="" alt="Logo" class="splash-logo">
+  <div id="splashScreen" class="splash-screen" aria-label="در حال آماده‌سازی منو">
+    <img id="splashLogoImg" src="assets/images/logo-lotus-caker-transparent.png" alt="لوگوی لوتوس" class="splash-logo" fetchpriority="high" decoding="async">
   </div>
   <div class="lux-toast" id="luxuryToast"></div>
 
@@ -963,14 +981,7 @@
   <header class="top-bar" id="mainHeaderBar" style="position:relative; overflow:hidden">
     <div id="headerLogoBg" class="header-logo-bg hidden"></div>
     <div class="container" style="position:relative; z-index:1">
-      <div id="mobileLogoWrap" class="mobile-logo-wrap hidden" aria-label="لوگوی لوتوس کیکر"></div>
-    <button type="button" class="mobile-header-menu-toggle" id="btnMobileHeaderMenu" aria-label="باز کردن منوی سایت" aria-expanded="false">☰</button>
-    <nav class="mobile-header-menu" id="mobileHeaderMenu" aria-label="منوی سریع سایت">
-      <button type="button" data-mobile-action="products">🍰 رفتن به محصولات</button>
-      <button type="button" data-mobile-action="register">👤 ورود / ثبت‌نام</button>
-      <button type="button" data-mobile-action="social">◎ شبکه‌های اجتماعی</button>
-    </nav>
-    <div class="mobile-header-menu-backdrop" id="mobileHeaderMenuBackdrop" aria-hidden="true"></div>
+      <div id="mobileLogoWrap" class="mobile-logo-wrap hidden" aria-label="لوگوی لوتوس کیکر" title="برای ورود به پنل مدیریت، لوگو را ۵ بار سریع لمس کنید"></div>
     <div id="headerLogoTopCenter" class="hidden" style="text-align:center; padding-bottom:8px"></div>
       <div class="top-row">
         <div id="headerLogoSideL" class="hidden"></div>
@@ -978,7 +989,7 @@
           <div class="monogram-badge hidden" id="elMonogram">LC</div>
           <div>
             <div class="eyebrow-badge" id="elStandardBadge">استاندارد سرو: قالب کامل ۸ اسلایس</div>
-            <h1 class="brand-title" id="elBrandName" title="برای ورود به پنل مدیریت ۵ بار ضربه بزنید">کارگاه کیک و شیرینی دست‌ساز</h1>
+            <h1 class="brand-title" id="elBrandName">کارگاه کیک و شیرینی دست‌ساز</h1>
             <p class="brand-tagline" id="elTagline"></p>
           </div>
         </div>
@@ -1132,7 +1143,6 @@
       </div>
 
       <div class="admin-tabs">
-        <button type="button" class="admin-mobile-nav-toggle" id="adminMobileNavToggle" aria-expanded="false">☰ <span id="adminMobileCurrentLabel">۱. سفارشات</span> <span>⌄</span></button>
         <div class="admin-mobile-nav-menu" id="adminMobileNavMenu" aria-label="انتخاب بخش پنل مدیریت">
           <button type="button" class="admin-mobile-tab" data-atab="orders">🔔 ۱. سفارشات</button>
           <button type="button" class="admin-mobile-tab" data-atab="registrations">👥 ۲. ثبت‌نام مشتریان</button>
@@ -1142,6 +1152,7 @@
           <button type="button" class="admin-mobile-tab" data-atab="qr">🔳 ۶. ساخت QR Code</button>
           <button type="button" class="admin-mobile-tab" data-atab="design">🎨 ۷. طراحی و ظاهر</button>
           <button type="button" class="admin-mobile-tab" data-atab="sync">☁️ ۸. آپلود گیت‌هاب</button>
+          <button type="button" class="admin-mobile-tab" data-atab="accounting">📊 ۹. حسابداری</button>
         </div>
         <button class="admin-tab active" data-atab="orders" type="button">
           🔔 ۱. سفارشات <span class="badge-dot hidden" id="tabOrdersBadge">۰</span>
@@ -1155,6 +1166,7 @@
         <button class="admin-tab" data-atab="qr" type="button">🔳 ۶. ساخت QR Code</button>
         <button class="admin-tab" data-atab="design" type="button">🎨 ۷. طراحی و ظاهر</button>
         <button class="admin-tab" data-atab="sync" type="button">☁️ ۸. آپلود گیت‌هاب</button>
+        <button class="admin-tab" data-atab="accounting" type="button">📊 ۹. حسابداری</button>
       </div>
 
       <div class="admin-body" id="adminBody"></div>
@@ -1193,9 +1205,51 @@
   </div>
   <script src="assets/qrcode.min.js"></script>
   <script src="assets/jszip.min.js"></script>
-  <script src="menu-data.js?v=1792791505"></script>
+  <script id="menuDataFallbackBootstrap">
+    /*MENU_DATA_FALLBACK_START*/window.__MENU_DATA_FALLBACK_B64__="eyJ1cGRhdGVkQXQiOjE3OTI3OTQzNTYxMzcsImNsb3VkIjp7ImdoT3duZXIiOiJsb3R1c2Nha2VyIiwiZ2hSZXBvIjoibG90dXNjYWtlci5naXRodWIuaW8iLCJnaEJyYW5jaCI6Im1haW4ifSwiYnJhbmQiOnsibmFtZSI6IiIsInRhZ2xpbmUiOiIiLCJzdGFuZGFyZEJhZGdlIjoiIiwib3JkZXJOb3RlIjoi2KrZhdin2YXbjCDYs9mB2KfYsdi04oCM2YfYpyDYqNmH4oCM2LXZiNix2Kog2b7YrtiqINix2YjYsiDYotmF2KfYr9mHINmF24zigIzYtNmI2YbYryDigKIg2YTYt9mB2KfZiyDYrdiv2KfZgtmEINuy27Qg2LPYp9i52Kog2YLYqNmEINmH2YXYp9mH2YbaryDZgdix2YXYp9uM24zYryIsInBob25lIjoiMDkzNjY5MTk2OTYiLCJ3aGF0c2FwcCI6Ijk4OTEyMDAwMDAwMCIsImluc3RhZ3JhbSI6ImxvdHVzY2FrZXIiLCJ0ZWxlZ3JhbSI6ImxvdHVzY2FrZXIiLCJwdWJsaWNVcmwiOiJodHRwczovL2xvdHVzY2FrZXIuZ2l0aHViLmlvIiwiZGVmYXVsdFRoZW1lIjoibGlnaHQiLCJvcmRlcmluZ0VuYWJsZWQiOnRydWUsInBheW1lbnRDYXJkTnVtYmVyIjoiIiwicGF5bWVudENhcmRIb2xkZXIiOiIifSwiY2F0ZWdvcmllcyI6W3siaWQiOiJjYWtlcyIsInRpdGxlIjoi2qnbjNqp4oCM2YfYpyIsInN1YnRpdGxlIjoi2YLYp9mE2Kgg2LPYp9uM2LIg27LbsCAvINu4INin2LPZhNin24zYsyJ9LHsiaWQiOiJjaGVlc2VjYWtlcyIsInRpdGxlIjoi2obbjNiy2qnbjNqp4oCM2YfYpyIsInN1YnRpdGxlIjoi2YLYp9mE2Kgg2LPYp9uM2LIg27LbtCDZiCDbstu1IC8g27HbsCDYp9iz2YTYp9uM2LMifSx7ImlkIjoic2luZ2xlcyIsInRpdGxlIjoi2obbjNiy2qnbjNqp4oCM2YfYp9uMINiq2qnigIzZhtmB2LHZhyIsInN1YnRpdGxlIjoi2YjbjNqY2Ycg2YjbjNiq2LHbjNmGINqp2KfZgdmH2Iwg2KzYudio2Ycg2YfYr9uM2Ycg2Ygg2b7YsNuM2LHYp9uM24wg2KraqeKAjNmG2YHYsdmHIn1dLCJpdGVtcyI6W3siaWQiOiJrMDEiLCJjYXRlZ29yeSI6ImNha2VzIiwibmFtZSI6Itqp24zaqSDYp9iz2YbbjNqp2LHYsiIsImRlc2MiOiLYrtin2YXZhyDYtNqp2YTYp9iq24wg2LTbjNix24zYjCDYr9ix24zZviDYs9izINqp2KfYsdin2YXZhCDYr9iz2KrigIzYs9in2LIg2Ygg2KjYp9iv2KfZheKAjNiy2YXbjNmG24wg2qnYp9ix2KfZhdmE24wiLCJzZXJ2aW5nIjoi27gg2KfYs9mE2KfbjNizIiwicHJpY2UiOiLbt9u427As27DbsNuwIiwiaW1hZ2UiOiJhc3NldHMvaW1hZ2VzL2swMS1zbmlja2Vycy5qcGciLCJhdmFpbGFibGUiOnRydWUsImJhZGdlIjoiIiwic2hlbGZMaWZlIjoi2YXYp9mG2K/ar9in2LHbjCDYqtin2LLZhyDYr9ixINuM2K7ahtin2YQg27Qg2K/Ysdis2Yc6INu3INix2YjYsiDigKIg2KjYs9iq2YfigIzYqNmG2K/bjCDYp9uM2YXZhiDYrdmF2YQifSx7ImlkIjoiazAyIiwiY2F0ZWdvcnkiOiJjYWtlcyIsIm5hbWUiOiLaqduM2qkg2b7Ys9iq2YciLCJkZXNjIjoi2K7Yp9mF2Ycg2qnYsdmH4oCM2b7Ys9iq2Ycg2K7Yp9mE2LXYjCDYrtmE2KfZhCDZvtiz2KrZhyDYqtin2LLZhyDZiCDYqtiy2KbbjNmGINqv2YQg2YXYrdmF2K/bjCIsInNlcnZpbmciOiLbuCDYp9iz2YTYp9uM2LMiLCJwcmljZSI6Itu427nbsCzbsNuw27AiLCJpbWFnZSI6ImFzc2V0cy9pbWFnZXMvazAyLXBpc3RhY2hpby5qcGciLCJhdmFpbGFibGUiOnRydWUsImJhZGdlIjoiIiwic2hlbGZMaWZlIjoi2YXYp9mG2K/ar9in2LHbjCDYqtin2LLZhyDYr9ixINuM2K7ahtin2YQg27Qg2K/Ysdis2Yc6INu3INix2YjYsiDigKIg2KjYs9iq2YfigIzYqNmG2K/bjCDYp9uM2YXZhiDYrdmF2YQifSx7ImlkIjoiazAzIiwiY2F0ZWdvcnkiOiJjYWtlcyIsIm5hbWUiOiLaqduM2qkg2K/YqNmEINqG2KfaqdmE2KoiLCJkZXNjIjoi2KfYs9mB2YbYrCDYtNqp2YTYp9iq24zYjCDYrtin2YXZhyDaqdin2qnYp9im2Ygt2YbZiNiq2YTYp9iMINqv2KfZhtin2LQg2obYsdiu2LTbjCDZiCDYtNqp2YTYp9iqINiz2qnZh+KAjNin24wiLCJzZXJ2aW5nIjoi27gg2KfYs9mE2KfbjNizIiwicHJpY2UiOiLbt9u527As27DbsNuwIiwiaW1hZ2UiOiJhc3NldHMvaW1hZ2VzL2swMy1kb3VibGUtY2hvYy5qcGciLCJhdmFpbGFibGUiOnRydWUsImJhZGdlIjoiIiwic2hlbGZMaWZlIjoi2YXYp9mG2K/ar9in2LHbjCDYqtin2LLZhyDYr9ixINuM2K7ahtin2YQg27Qg2K/Ysdis2Yc6INu3INix2YjYsiDigKIg2KjYs9iq2YfigIzYqNmG2K/bjCDYp9uM2YXZhiDYrdmF2YQifSx7ImlkIjoiazA0IiwiY2F0ZWdvcnkiOiJjYWtlcyIsIm5hbWUiOiLaqduM2qkg2YTZiNiq2YjYsyIsImRlc2MiOiLaqdix2YUg2Ygg2LPYsyDaqdix2YXigIzYqNuM2LPaqdmI24zYqiDZhNmI2KrZiNizINqG2LHYrti024wg2KjYpyDYqNuM2LPaqdmI24zYqiDaqdin2LHYp9mF2YTbjCIsInNlcnZpbmciOiLbuCDYp9iz2YTYp9uM2LMiLCJwcmljZSI6Itu427LbsCzbsNuw27AiLCJpbWFnZSI6ImFzc2V0cy9pbWFnZXMvazA0LWxvdHVzLmpwZyIsImF2YWlsYWJsZSI6dHJ1ZSwiYmFkZ2UiOiLZvtix2YHYsdmI2LQg2qnYp9mB2YfigIzZh9inIiwic2hlbGZMaWZlIjoi2YXYp9mG2K/ar9in2LHbjCDYqtin2LLZhyDYr9ixINuM2K7ahtin2YQg27Qg2K/Ysdis2Yc6INu3INix2YjYsiDigKIg2KjYs9iq2YfigIzYqNmG2K/bjCDYp9uM2YXZhiDYrdmF2YQifSx7ImlkIjoiazA1IiwiY2F0ZWdvcnkiOiJjYWtlcyIsIm5hbWUiOiLaqduM2qkg2LHYryDZiNmE2YjYqiIsImRlc2MiOiLZhNin24zZh+KAjNmH2KfbjCDYp9iz2YHZhtisINmF2K7ZhdmE24wg2YLYsdmF2LIg2KjYpyDaqdix2YUg2b7ZhtuM2LHbjCDZhNi324zZgSDYs9mB24zYryIsInNlcnZpbmciOiLbuCDYp9iz2YTYp9uM2LMiLCJwcmljZSI6Itu327bbsCzbsNuw27AiLCJpbWFnZSI6ImFzc2V0cy9pbWFnZXMvazA1LXJlZC12ZWx2ZXQuanBnIiwiYXZhaWxhYmxlIjp0cnVlLCJiYWRnZSI6IiIsInNoZWxmTGlmZSI6ItmF2KfZhtiv2q/Yp9ix24wg2KrYp9iy2Ycg2K/YsSDbjNiu2obYp9mEINu0INiv2LHYrNmHOiDbtyDYsdmI2LIg4oCiINio2LPYqtmH4oCM2KjZhtiv24wg2KfbjNmF2YYg2K3ZhdmEIn0seyJpZCI6ImswNiIsImNhdGVnb3J5IjoiY2FrZXMiLCJuYW1lIjoi2qnbjNqpINix2KfZgdin2KbZhNmIIiwiZGVzYyI6Itqp2KfZiNixINm+2YjYr9ixINmG2KfYsdqv24zZhNiMINqp2LHZhSDZhNi324zZgSDYs9mB24zYr9iMINiq2LHYp9mB2YQg2LHYp9mB2KfYptmE2Ygg2Ygg2LTaqdmE2KfYqiDYqNmI2KbZhtmIIiwic2VydmluZyI6Itu4INin2LPZhNin24zYsyIsInByaWNlIjoi27jbtNuwLNuw27DbsCIsImltYWdlIjoiYXNzZXRzL2ltYWdlcy9rMDYtcmFmZmFlbGxvLmpwZyIsImF2YWlsYWJsZSI6dHJ1ZSwiYmFkZ2UiOiIiLCJzaGVsZkxpZmUiOiLZhdin2YbYr9qv2KfYsduMINiq2KfYstmHINiv2LEg24zYrtqG2KfZhCDbtCDYr9ix2KzZhzog27cg2LHZiNiyIOKAoiDYqNiz2KrZh+KAjNio2YbYr9uMINin24zZhdmGINit2YXZhCJ9LHsiaWQiOiJrMDciLCJjYXRlZ29yeSI6ImNha2VzIiwibmFtZSI6Itqp24zaqSDYrtuM2LMg2LTaqdmE2KfYqtuMIiwiZGVzYyI6Itin2LPZgdmG2Kwg2LTaqdmE2KfYqtuMINii2LrYtNiq2Ycg2KjZhyDYs9izINi02qnZhNin2KrbjCDar9ix2YUg2KjYpyDYsdmI2qnYtCDar9in2YbYp9i0INio2LHYp9mCIiwic2VydmluZyI6Itu4INin2LPZhNin24zYsyIsInByaWNlIjoi27fbstuwLNuw27DbsCIsImltYWdlIjoiYXNzZXRzL2ltYWdlcy9rMDctbW9pc3QtY2hvYy5qcGciLCJhdmFpbGFibGUiOnRydWUsImJhZGdlIjoiIiwic2hlbGZMaWZlIjoi2YXYp9mG2K/ar9in2LHbjCDYqtin2LLZhyDYr9ixINuM2K7ahtin2YQg27Qg2K/Ysdis2Yc6INu3INix2YjYsiDigKIg2KjYs9iq2YfigIzYqNmG2K/bjCDYp9uM2YXZhiDYrdmF2YQifSx7ImlkIjoiazA4IiwiY2F0ZWdvcnkiOiJjYWtlcyIsIm5hbWUiOiLaqduM2qkg2YXZiNqp2KciLCJkZXNjIjoi2KfYs9mB2YbYrCDYtNqp2YTYp9iqLdmC2YfZiNmH2Iwg2K7Yp9mF2Ycg2YbYs9qp2KfZgdmH2Iwg2K/YsduM2b4g2q/Yp9mG2KfYtCDZiCDYtNqp2YjZgdmHINiu2KfZhdmHIiwic2VydmluZyI6Itu4INin2LPZhNin24zYsyIsInByaWNlIjoi27fbtduwLNuw27DbsCIsImltYWdlIjoiYXNzZXRzL2ltYWdlcy9rMDgtbW9jaGEuanBnIiwiYXZhaWxhYmxlIjp0cnVlLCJiYWRnZSI6IiIsInNoZWxmTGlmZSI6ItmF2KfZhtiv2q/Yp9ix24wg2KrYp9iy2Ycg2K/YsSDbjNiu2obYp9mEINu0INiv2LHYrNmHOiDbtyDYsdmI2LIg4oCiINio2LPYqtmH4oCM2KjZhtiv24wg2KfbjNmF2YYg2K3ZhdmEIn0seyJpZCI6ImswOSIsImNhdGVnb3J5IjoiY2FrZXMiLCJuYW1lIjoi2qnbjNqpINmH2YjbjNisINmIINqv2LHYr9mIIiwiZGVzYyI6Itio2KfZgdiqINiu2KfZhtqv24wg2YXYudi32LEg2KjZhyDYr9in2LHahtuM2YYg2KjYpyDar9ix2K/ZiNuMINiq2KfYstmHINiu2LHYr9i02K/ZhyDYsdmI24wg2LPYt9itIiwic2VydmluZyI6Itu4INin2LPZhNin24zYsyIsInByaWNlIjoi27bbuNuwLNuw27DbsCIsImltYWdlIjoiYXNzZXRzL2ltYWdlcy9rMDktY2Fycm90LXdhbG51dC5qcGciLCJhdmFpbGFibGUiOnRydWUsImJhZGdlIjoiIiwic2hlbGZMaWZlIjoi2YXYp9mG2K/ar9in2LHbjCDYqtin2LLZhyDYr9ixINuM2K7ahtin2YQg27Qg2K/Ysdis2Yc6INu3INix2YjYsiDigKIg2KjYs9iq2YfigIzYqNmG2K/bjCDYp9uM2YXZhiDYrdmF2YQifSx7ImlkIjoiazEwIiwiY2F0ZWdvcnkiOiJjYWtlcyIsIm5hbWUiOiLaqduM2qkg2LLYqNix2KciLCJkZXNjIjoi2KfYs9mB2YbYrCDYrtin2Ybar9uMINiv2YjYsdmG2q8g2K3ZhNmC2YfigIzYp9uMINmI2KfZhtuM2YTbjCDZiCDYtNqp2YTYp9iq24wg2KjYpyDYqNin2YHYqiDZhNi324zZgSIsInNlcnZpbmciOiLbuCDYp9iz2YTYp9uM2LMiLCJwcmljZSI6Itu227XbsCzbsNuw27AiLCJpbWFnZSI6ImFzc2V0cy9pbWFnZXMvazEwLXplYnJhLmpwZyIsImF2YWlsYWJsZSI6dHJ1ZSwiYmFkZ2UiOiIiLCJzaGVsZkxpZmUiOiLZhdin2YbYr9qv2KfYsduMINiq2KfYstmHINiv2LEg24zYrtqG2KfZhCDbtCDYr9ix2KzZhzog27cg2LHZiNiyIOKAoiDYqNiz2KrZh+KAjNio2YbYr9uMINin24zZhdmGINit2YXZhCJ9LHsiaWQiOiJrMTEiLCJjYXRlZ29yeSI6ImNha2VzIiwibmFtZSI6Itqp24zaqSDYqtuM2LHYp9mF24zYs9mIIiwiZGVzYyI6ItmE2KfbjNmH4oCM2YfYp9uMINin2LPZgdmG2Kwg2KLYuti02KrZhyDYqNmHINin2LPZvtix2LPZiNiMINqp2LHZhSDZhdin2LPaqdin2LHZvtmI2YbZhyDZiCDZvtmI2K/YsSDaqdin2qnYp9im2YgiLCJzZXJ2aW5nIjoi27gg2KfYs9mE2KfbjNizIiwicHJpY2UiOiLbuNuz27As27DbsNuwIiwiaW1hZ2UiOiJhc3NldHMvaW1hZ2VzL2sxMS10aXJhbWlzdS1yb3VuZC5qcGciLCJhdmFpbGFibGUiOnRydWUsImJhZGdlIjoiIiwic2hlbGZMaWZlIjoi2YXYp9mG2K/ar9in2LHbjCDYqtin2LLZhyDYr9ixINuM2K7ahtin2YQg27Qg2K/Ysdis2Yc6INu3INix2YjYsiDigKIg2KjYs9iq2YfigIzYqNmG2K/bjCDYp9uM2YXZhiDYrdmF2YQifSx7ImlkIjoiazEyIiwiY2F0ZWdvcnkiOiJjYWtlcyIsIm5hbWUiOiLYqtuM2LHYp9mF24zYs9mIINi42LHZgduMIiwiZGVzYyI6ItmE2KfbjNmHINmE24zYr9uM4oCM2YHbjNmG2q/YsSDYoti62LTYqtmHINio2Ycg2YLZh9mI2Ycg2Ygg2qnYsdmFINm+2YbbjNix24wg2YXYp9iz2qnYp9ix2b7ZiNmG2YciLCJzZXJ2aW5nIjoi2LjYsdmBINuz27DbsCDYs9uM4oCM2LPbjCIsInByaWNlIjoi27Hbttu1LNuw27DbsCIsImltYWdlIjoiYXNzZXRzL2ltYWdlcy9rMTItdGlyYW1pc3UtY3VwLmpwZyIsImF2YWlsYWJsZSI6dHJ1ZSwiYmFkZ2UiOiIiLCJzaGVsZkxpZmUiOiLZhdin2YbYr9qv2KfYsduMINiq2KfYstmHINiv2LEg24zYrtqG2KfZhCDbtCDYr9ix2KzZhzog27cg2LHZiNiyIOKAoiDYqNiz2KrZh+KAjNio2YbYr9uMINin24zZhdmGINit2YXZhCJ9LHsiaWQiOiJjMDEiLCJjYXRlZ29yeSI6ImNoZWVzZWNha2VzIiwibmFtZSI6ItqG24zYstqp24zaqSDYs9mG4oCM2LPYqNin2LPYqtuM2YYg2YLYp9mE2Kgg2LPYp9uM2LIg27LbsCIsImRlc2MiOiLahtuM2LLaqduM2qkg2KrZhtmI2LHbjCDYqNinINix2YjbjNmHINqp2KfYsdin2YXZhNuMINiz2YjYrtiq2Ycg2Ygg2KjYp9mB2Kog2K/Yp9iu2YTbjCDaqdin2YXZhNin2Ysg2qnYsdmF24wiLCJzZXJ2aW5nIjoi27gg2KfYs9mE2KfbjNizIiwicHJpY2UiOiLbuNu427As27DbsNuwIiwiaW1hZ2UiOiJhc3NldHMvaW1hZ2VzL2MwMS1zYW4tc2ViYXN0aWFuLmpwZyIsImF2YWlsYWJsZSI6dHJ1ZSwiYmFkZ2UiOiLZhdit2KjZiNio4oCM2KrYsduM2YYiLCJzaGVsZkxpZmUiOiLZhdin2YbYr9qv2KfYsduMINiq2KfYstmHINiv2LEg24zYrtqG2KfZhCDbtCDYr9ix2KzZhzog27cg2LHZiNiyIOKAoiDYqNiz2KrZh+KAjNio2YbYr9uMINin24zZhdmGINit2YXZhCJ9LHsiaWQiOiJjMDIiLCJjYXRlZ29yeSI6ImNoZWVzZWNha2VzIiwibmFtZSI6ItqG24zYstqp24zaqSDYs9mG4oCM2LPYqNin2LPYqtuM2YYg2LTaqdmE2KfYqtuMINmC2KfZhNioINiz2KfbjNiyINuy27AiLCJkZXNjIjoi2obbjNiy2qnbjNqpINi02qnZhNin2KrbjCDYqtmG2YjYsduMINio2Kcg2K/bjNmI2KfYsdmHINio2LHYtNiq2YfYjCDar9in2YbYp9i0INmIINiq2YjYquKAjNmB2LHZhtqv24wg2KrYp9iy2YciLCJzZXJ2aW5nIjoi27gg2KfYs9mE2KfbjNizIiwicHJpY2UiOiLbudu027As27DbsNuwIiwiaW1hZ2UiOiJhc3NldHMvaW1hZ2VzL2MwMi1jaG9jLXNhbi1zZWJhc3RpYW4uanBnIiwiYXZhaWxhYmxlIjp0cnVlLCJiYWRnZSI6IiIsInNoZWxmTGlmZSI6ItmF2KfZhtiv2q/Yp9ix24wg2KrYp9iy2Ycg2K/YsSDbjNiu2obYp9mEINu0INiv2LHYrNmHOiDbtyDYsdmI2LIg4oCiINio2LPYqtmH4oCM2KjZhtiv24wg2KfbjNmF2YYg2K3ZhdmEIn0seyJpZCI6ImMwMyIsImNhdGVnb3J5IjoiY2hlZXNlY2FrZXMiLCJuYW1lIjoi2obbjNiy2qnbjNqpINin2YbYp9ixIiwiZGVzYyI6Itqp2LHZhSDZvtmG24zYsduMINiv2YjZhNin24zZhyDYp9mG2KfYsSDYqNinINix2YjbjNmHINqY2YTZhyDYtNmB2KfZgSDZiCDYr9in2YbZh+KAjNmH2KfbjCDYqtin2LLZhyDYp9mG2KfYsSIsInNlcnZpbmciOiLbsduwINin2LPZhNin24zYsyIsInByaWNlIjoi27jbuduwLNuw27DbsCIsImltYWdlIjoiYXNzZXRzL2ltYWdlcy9jMDMtcG9tZWdyYW5hdGUuanBnIiwiYXZhaWxhYmxlIjp0cnVlLCJiYWRnZSI6IiIsInNoZWxmTGlmZSI6ItmF2KfZhtiv2q/Yp9ix24wg2KrYp9iy2Ycg2K/YsSDbjNiu2obYp9mEINu0INiv2LHYrNmHOiDbtyDYsdmI2LIg4oCiINio2LPYqtmH4oCM2KjZhtiv24wg2KfbjNmF2YYg2K3ZhdmEIn0seyJpZCI6ImMwNCIsImNhdGVnb3J5IjoiY2hlZXNlY2FrZXMiLCJuYW1lIjoi2obbjNiy2qnbjNqpINmG24zZiNuM2YjYsdqp24wiLCJkZXNjIjoi2obbjNiy2qnbjNqpINqp2YTYp9iz24zaqSDZvtiu2KrZh+KAjNi02K/ZhyDYqNinINqp2LHYp9iz2Kog2KjbjNiz2qnZiNuM2KrbjCDaqdix2YfigIzYp9uMINmIINio2KfZgdiqINi62YbbjCIsInNlcnZpbmciOiLbsduwINin2LPZhNin24zYsyIsInByaWNlIjoi27jbttuwLNuw27DbsCIsImltYWdlIjoiYXNzZXRzL2ltYWdlcy9jMDQtbmV3eW9yay5qcGciLCJhdmFpbGFibGUiOnRydWUsImJhZGdlIjoiIiwic2hlbGZMaWZlIjoi2YXYp9mG2K/ar9in2LHbjCDYqtin2LLZhyDYr9ixINuM2K7ahtin2YQg27Qg2K/Ysdis2Yc6INu3INix2YjYsiDigKIg2KjYs9iq2YfigIzYqNmG2K/bjCDYp9uM2YXZhiDYrdmF2YQifSx7ImlkIjoiYzA1IiwiY2F0ZWdvcnkiOiJjaGVlc2VjYWtlcyIsIm5hbWUiOiLahtuM2LLaqduM2qkg2KrbjNix2KfZhduM2LPZiCIsImRlc2MiOiLYr9uM2YjYp9ix2Ycg2YTbjNiv24zigIzZgduM2Ybar9ix2Iwg2YTYp9uM2Ycg2qnYsdmFINm+2YbbjNix24wg2YXYp9iz2qnYp9ix2b7ZiNmG2YfYjCDYrtin2YXZhyDZhdin2LPZiNix2YfigIzYp9uMINmIINqp2Kfaqdin2KbZiCIsInNlcnZpbmciOiLbsduwINin2LPZhNin24zYsyIsInByaWNlIjoi27nbstuwLNuw27DbsCIsImltYWdlIjoiYXNzZXRzL2ltYWdlcy9jMDUtdGlyYW1pc3UuanBnIiwiYXZhaWxhYmxlIjp0cnVlLCJiYWRnZSI6IiIsInNoZWxmTGlmZSI6ItmF2KfZhtiv2q/Yp9ix24wg2KrYp9iy2Ycg2K/YsSDbjNiu2obYp9mEINu0INiv2LHYrNmHOiDbtyDYsdmI2LIg4oCiINio2LPYqtmH4oCM2KjZhtiv24wg2KfbjNmF2YYg2K3ZhdmEIn0seyJpZCI6ImMwNiIsImNhdGVnb3J5IjoiY2hlZXNlY2FrZXMiLCJuYW1lIjoi2obbjNiy2qnbjNqpINmG2YjYqtmE2KciLCJkZXNjIjoi2b7Yp9uM2Ycg2KfYs9mB2YbYrCDYtNqp2YTYp9iq24zYjCDaqdix2YUg2b7ZhtuM2LHbjCDZhtmI2KrZhNin2Iwg2K7Yp9mF2Ycg2YXYp9iz2YjYsdmH4oCM2KfbjCDZiCDYqtix2KfZgdmEINi02qnZhNin2KrbjCIsInNlcnZpbmciOiLbsduwINin2LPZhNin24zYsyIsInByaWNlIjoi27nbtduwLNuw27DbsCIsImltYWdlIjoiYXNzZXRzL2ltYWdlcy9jMDYtbnV0ZWxsYS5qcGciLCJhdmFpbGFibGUiOnRydWUsImJhZGdlIjoi2YjbjNqY2Ycg2YjbjNiq2LHbjNmGIiwic2hlbGZMaWZlIjoi2YXYp9mG2K/ar9in2LHbjCDYqtin2LLZhyDYr9ixINuM2K7ahtin2YQg27Qg2K/Ysdis2Yc6INu3INix2YjYsiDigKIg2KjYs9iq2YfigIzYqNmG2K/bjCDYp9uM2YXZhiDYrdmF2YQifSx7ImlkIjoiczAxIiwiY2F0ZWdvcnkiOiJzaW5nbGVzIiwibmFtZSI6ItqG24zYstqp24zaqSDYp9mG2KfYsSDYqtqp4oCM2YbZgdix2YciLCJkZXNjIjoi2qnYsdmFINm+2YbbjNix24wg2YXYsdmF2LHbjCDYp9mG2KfYsSDYqNinINix2YjbjNmHINiv2KfZhtmH4oCM2YfYp9uMINiq2KfYstmHINin2YbYp9ixINix2YjbjCDYstuM2LHaqduM2qnbjCDYqtqp4oCM2YbZgdix2YciLCJzZXJ2aW5nIjoi2KraqeKAjNmG2YHYsdmHIiwicHJpY2UiOiLbsduz27Us27DbsNuwIiwiaW1hZ2UiOiJhc3NldHMvaW1hZ2VzL3MwMS1wb21lZ3JhbmF0ZS5qcGciLCJhdmFpbGFibGUiOnRydWUsImJhZGdlIjoiIiwic2hlbGZMaWZlIjoi2YXYp9mG2K/ar9in2LHbjCDYqtin2LLZhyDYr9ixINuM2K7ahtin2YQg27Qg2K/Ysdis2Yc6INu3INix2YjYsiDigKIg2KjYs9iq2YfigIzYqNmG2K/bjCDYp9uM2YXZhiDYrdmF2YQifSx7ImlkIjoiczAyIiwiY2F0ZWdvcnkiOiJzaW5nbGVzIiwibmFtZSI6ItqG24zYstqp24zaqSDZhtuM2YjbjNmI2LHaqduMINiq2qnigIzZhtmB2LHZhyIsImRlc2MiOiLahtuM2LLaqduM2qkg2KrZhtmI2LHbjCDaqdmE2KfYs9uM2qkg2KraqeKAjNmG2YHYsdmHINio2Kcg2KjYp9mB2Kog2YXYqtix2KfaqdmFINmIINqp2LHZhduMIiwic2VydmluZyI6Itiq2qnigIzZhtmB2LHZhyIsInByaWNlIjoi27Hbstu1LNuw27DbsCIsImltYWdlIjoiYXNzZXRzL2ltYWdlcy9zMDItbmV3eW9yay5qcGciLCJhdmFpbGFibGUiOnRydWUsImJhZGdlIjoiIiwic2hlbGZMaWZlIjoi2YXYp9mG2K/ar9in2LHbjCDYqtin2LLZhyDYr9ixINuM2K7ahtin2YQg27Qg2K/Ysdis2Yc6INu3INix2YjYsiDigKIg2KjYs9iq2YfigIzYqNmG2K/bjCDYp9uM2YXZhiDYrdmF2YQifSx7ImlkIjoiczAzIiwiY2F0ZWdvcnkiOiJzaW5nbGVzIiwibmFtZSI6ItqG24zYstqp24zaqSDZhtmI2KrZhNinINiq2qnigIzZhtmB2LHZhyIsImRlc2MiOiLYp9iz2YHZhtisINi02qnZhNin2KrbjNiMINqp2LHZhSDZvtmG24zYsduMINmG2YjYqtmE2Kcg2Ygg2KrYsdin2YHZhCDYtNqp2YTYp9iq24wg2K/Ys9iq4oCM2LPYp9iyIiwic2VydmluZyI6Itiq2qnigIzZhtmB2LHZhyIsInByaWNlIjoi27HbtNu1LNuw27DbsCIsImltYWdlIjoiYXNzZXRzL2ltYWdlcy9zMDMtbnV0ZWxsYS5qcGciLCJhdmFpbGFibGUiOnRydWUsImJhZGdlIjoiIiwic2hlbGZMaWZlIjoi2YXYp9mG2K/ar9in2LHbjCDYqtin2LLZhyDYr9ixINuM2K7ahtin2YQg27Qg2K/Ysdis2Yc6INu3INix2YjYsiDigKIg2KjYs9iq2YfigIzYqNmG2K/bjCDYp9uM2YXZhiDYrdmF2YQifSx7ImlkIjoiczA0IiwiY2F0ZWdvcnkiOiJzaW5nbGVzIiwibmFtZSI6ItqG24zYstqp24zaqSDYqtuM2LHYp9mF24zYs9mIINiq2qnigIzZhtmB2LHZhyIsImRlc2MiOiLYr9uM2YjYp9ix2Ycg2YTbjNiv24zigIzZgduM2Ybar9ix2Iwg2qnYsdmFINmF2KfYs9qp2KfYsdm+2YjZhtmHINmIINi02qnZiNmB2YfigIzZh9in24wg2K7Yp9mF2Ycg2KjYpyDZvtmI2K/YsSDaqdin2qnYp9im2YgiLCJzZXJ2aW5nIjoi2KraqeKAjNmG2YHYsdmHIiwicHJpY2UiOiLbsdu027As27DbsNuwIiwiaW1hZ2UiOiJhc3NldHMvaW1hZ2VzL3MwNC10aXJhbWlzdS5qcGciLCJhdmFpbGFibGUiOnRydWUsImJhZGdlIjoiIiwic2hlbGZMaWZlIjoi2YXYp9mG2K/ar9in2LHbjCDYqtin2LLZhyDYr9ixINuM2K7ahtin2YQg27Qg2K/Ysdis2Yc6INu3INix2YjYsiDigKIg2KjYs9iq2YfigIzYqNmG2K/bjCDYp9uM2YXZhiDYrdmF2YQifSx7ImlkIjoiczA1IiwiY2F0ZWdvcnkiOiJzaW5nbGVzIiwibmFtZSI6ItqG24zYstqp24zaqSDYtNqp2YTYp9iq24wg2YXbjNmI2YfigIzYp9uMIiwiZGVzYyI6Itix2Yjaqdi0INqv2KfZhtin2LQg2LTaqdmE2KfYqiDYqtmE2K7YjCDYtNqp2YjZgdmHINiu2KfZhdmHINiz2YHbjNivINmIINmF24zZiNmH4oCM2YfYp9uMINiq2KfYstmHINmB2LXZhCIsInNlcnZpbmciOiLYqtqp4oCM2YbZgdix2YciLCJwcmljZSI6Itux27TbtSzbsNuw27AiLCJpbWFnZSI6ImFzc2V0cy9pbWFnZXMvczA1LWNob2NvbGF0ZS5qcGciLCJhdmFpbGFibGUiOnRydWUsImJhZGdlIjoiIiwic2hlbGZMaWZlIjoi2YXYp9mG2K/ar9in2LHbjCDYqtin2LLZhyDYr9ixINuM2K7ahtin2YQg27Qg2K/Ysdis2Yc6INu3INix2YjYsiDigKIg2KjYs9iq2YfigIzYqNmG2K/bjCDYp9uM2YXZhiDYrdmF2YQifV0sIm9yZGVyQ29uZmlnIjp7ImVuYWJsZWQiOnRydWUsImluYm94VG9waWMiOiJsb3R1c19vcmRfYzBjNjc3NDM4MWRkNTZhODZmYjk3MjczIiwibm90aWZ5RW1haWwiOiJ3d3cubG90dXNjYWtlckBnbWFpbC5jb20iLCJwdWJsaWNLZXlKd2siOnsia2V5X29wcyI6WyJlbmNyeXB0Il0sImV4dCI6dHJ1ZSwia3R5IjoiUlNBIiwibiI6IjVWWmJEUjhlaDZqLWdZRmdtUTRyUmJVMEdhTVFFdFpweGl2NFBtNHVfdWhCYXRRYWdHT3BSelJCa0plSC0ySGhRUmVxWGhseURhR1h0cE5RWTJfQkxTQnkxUmV0SjdwTTNGcXZNU0c5UDhqRUh1SW5iVzVQSnB6UnQyWHc0R3lTendNVXhkTVY0c2xKZnI2ZEVOUWRKWmtWRW1HSDNGZlZNS3E2czVaeFVGVmozSkNyRnc3NlB6U1JjdWQwb1FTR2VHWWxpMEM2VXE5OWJIUms1YXhxRkx0dnJvYmk0V3pkSG4tZ1RjUGpnOHo1NGdIR3BqeUN3ZTllS0R0aEtnZzUzd2JWVjhkZTlEd0RxNl80ZEF1ek84UnotWHctWW53YnBVTFM3cWN4TjhadUd5dHZFc1V3WVB2QkhURnZTcGtDVkFiYVFGdlRLVnQ5N0MyUTFlZ1ZDUSIsImUiOiJBUUFCIiwiYWxnIjoiUlNBLU9BRVAtMjU2In0sIndyYXBwZWRQcml2YXRlS2V5Ijp7InNhbHQiOiI4QkY0eEIxc3k2RmRUQzBYNjFsaSt3PT0iLCJpdiI6IjkrWWp3b3oyRDVoeDZsUWIiLCJjdCI6InRsWGZqQTRFYUdyaDBNUzNFall6b0h2WnRGS1dJZVBHSUxibk1JeXZ6TFluZDhFcFN5Q2ZyUE5yV1Y5b2NCQVRVRXM0NDhiVmRPSjQrcU9WOGVkKzdHUEtLd2pmSGhrYjAraklsTzZBWGRUMEZDK05Vd0RnZkV3ZWR4NDhOZDVYcXFwUmt5UHZkQXhpQ2MvdGhsOXVsSE1DNEl6SlpsYWlzUjQybDZjdnZvNVZHVFZZY0dDOWpFMUZleGdBbTdNb2RkNkdWQU5ibTkyNUF2VDJLM2w4cWM3bEF0TkJCRFpvUis0TG54aHhRMXBrelFlSFNUVUtIcHV6U3ZGdDlEMndBYWdEZncySWk1WlhqQ09GT1UzQWl1NVFKT0U0Zk5DMDdqNXdKbitLV2Y4Y2ZDMEtibjRKNWlTV0l5WW14ZEpoVmdXb3dBOVpNNFIxd21CSVZyZEdnUEY0cU1QUUZyUHNpNk5TTFFZbFJMUkIrUDlpaHgwRGlpa3htTU42SmJmWEl3V1Bpc1dRS01VelFkNmJTVU9VT0FXNnhobnhoMEJDcmN0WU8rYi91bCt0OExKWkEzenB0a1NqZzkyZ3gyN2VRT0M2akxYSHBDblFTNG5PM2pnUWNSVStBTm45WTNTMWp5Y0pPWkZiYjZsUitpa0VPRlJEZnN2MnRvM2sxOC9md1NhbHBUaXdCV3kvNmhKQW1Qb1NsVzFIa25vWU5qcm5TUnUvQUE5S0xESElBNjJoNEVKR0YydjdkMXFJSTNFaGdoVDA5ZWlSZ25GWlFDWm5hZGxtc1pXL0xNNmdLNThTVEI3QUJVOG9TYndWbVBDRVg3WHRtNTdOdTN6T3NLbmNnY01JK015MDd1QnZ4M25BWGczb0RRcmw5aE1SMWxUN3BCWURUOHFtTUkweVE2OUtJSnJHL2dJckZlUGpYb0l6cXNVakVHNGxSdmx5VFRQUXM0WUdnQmZNY292b1gvbTlEMmxxWmVVZ1VCc0NERDQ1VEQ1YmNCejRINXd6WThZRks2OEY3UktuTDZNZWlvUC9DYUV3ZzcwdStlZUtmSnpaODNhNXpMcHE0U0ZBQ2Naa1BMREhOUW1tNnEzZXVoc2pwSWEvRkNmakxCN3U3b2szdEVVSzhvYjRpOFlVM1FpSHVMcjZYWmtmSDZLbWtENjFiUGRDNjBHdjE0b0tvUkZ3OTQvMkQyY1VtQ1lKVUkrMVkyQ1pDQTR6ck0zVW02WXdqcDgrWmR1cjVhNGNhOVYzTG1LeE5Vb2pRZlNjd1dPQUk3bW9oZ2JBRkpMV2R0TXFFQkNiQWp5WlNGUm10NnJVamlZUDk4ZHdDTDdDaSt5Mjd6ei9MYVdWZkRyc0U5UlR0Z0NNMTBRd3BqS0ZoYVZIT1BWWlJiTm1LdUR4QmRRVm14TGdMbjB2VWd2bVRVeENGR2s2SGM3MDJpUmdwbnM2TDZ1MXFzSFowWnRVYXVXN3drQnJ1Z2huOXdKSGJTQ1JQNFpiR2xJejV4UHJkR1lwd0pDOVZOT0VQVnl3M0dheC90TUhxTUFZRXJudm56aUJTa2tGOHJ5TE5oRU1MQzhHVHRFSGtLcU9VTHVnMUwyc01rQXMrd2pNMnZsQytGR01rWUlvdW1Jdjh1STZuOTlJNnl5RWloQVVEM05RN0VpUDJhSmpGOEtCdFdsSlg5NFBHU1hlQWRuQ3pFQTNnTlRleDdNTjhYMG1QTmRJM3hlSnJoK3ZOY0RLT2UzZUV3cCtsM1lxWXZLODFoUFNvZlM3cGpLbE15ejJOa2ZFeEJLS3ZkaFpqSEREbFdSNWh2UUZQUUVJbWk1R0tWMVhvVUFQRWowa3dCOWh5Rk5BMy94Rm5uQ1ZDd0s1Wi9TQ2Nxc29wVHpsenpkYjl4R1N2NGFFdkY5QTFCWFZON0N6VjExMUtUQ0RGVmw5T0d3UjcyTDl1d25aWmFLUmV0a01qaWE5WlY1NGROUWlYMGdYdnZqSVB5QmVvNlBmNGtNdTJ4S2hYLzNZTzB4THVDRzNXL1Q1WFRrWGJGOTRtek9UNjFmY0ZuU0J1ZEJFRElzd3NPaVVZZlVuTjBXdlFkclFHUjM4NDFqQ3NyR1dBRUNLaCtXR3JCSG4vWFhqN1VSZDFRcC85Um5ITzlqVzBweGQzQ0ROcVk0SFNZZVdxUEtxRE12YjdnRGZRdVVPejk2bityVnNCckhHWHU1enIwa2lHbVE2ODNjVmdhRy80NWhQbUlYa092RjQzSWJVaXdHNDFmVkFsSnFOenBnQ096OEVtV3pHQWtsSUxIQ2ppNHB3cXY0WTZQSTY5TGFXNiszUDVTZ2JVWm9wZlE0aTE2OWNMczNIK3BTU2JWZ3dXQTFkTmp6b01lbmdpamwwV2pSODh4cnRnY3JWeTVIeVJFdEpxMDhxd0pqQVdHQWs4TEdDalBqSXJiMktNWjJQNnlvNC9oT3lIT3o0N1J5UzNWZXB1WW9rdWh6K2oxVFZ5WExSd0dTOSs1elh2RXNSSCt3aEtvK2RWanFwbTAwYUhjemZRZmdKTTl1ZkdTbFQxMGdIcHR5UkN6dzJWUE9NVnpkNjZaTWFzNVJmSXVQaVM3RXp4RHlhZzFNZTJnL0hGS09jNFVoTGFteGxRU2R4Wk5XSE9yMzRNNkJLUm1waDZNdlVCSVRCSys5d2VKdTFNLzhQV3JOdVk3bHhiNzZ3MUJpNTVBb0czOXpQZitDK2RBWFhoTDArNmdTb25HYStlYSsrUnRQcFRtWVVjTmxDeHlZNmRUakpDRitCM1Q1aWVXeFdFYlp5T0JZUUJGejBlTzNzdXg2Q1ZVMzFjcFBsL2I4OFRHWGpQOUlIVnRpRldEclF5NGtHei9jc29IbjlqeGR4N0tRMVZwUTYyYUJYNlhCbE02QXh3MC9NZTE4R3hOdXdKaGhHekpvVHlUSUhhTXFFQXNaYmtqVEdrOFZHZk5GMUxBVXp0M3plSkZJWXprR0IrUTlYMnR2Y3NSaz0ifSwiYWRtaW5QYXNzSGFzaCI6IjAzYWM2NzQyMTZmM2UxNWM3NjFlZTFhNWUyNTVmMDY3OTUzNjIzYzhiMzg4YjQ0NTllMTNmOTc4ZDdjODQ2ZjQifSwidmlwQ3VzdG9tZXJzIjpbXSwiZGVzaWduIjp7InBhbGV0dGUiOiJlc3ByZXNzbyIsImFjY2VudENvbG9yIjoiIzAwOGE4NiIsImJnQ29sb3IiOiIjZmFmOGY1IiwiZ3JpZENvbHVtbnMiOjMsImZvbnRTY2FsZSI6Im5vcm1hbCIsInNob3dNb25vZ3JhbSI6ZmFsc2UsIm1vbm9ncmFtVGV4dCI6IkxDIiwibG9nb0ltYWdlIjoiYXNzZXRzL2ltYWdlcy9sb2dvLWxvdHVzLWNha2VyLXRyYW5zcGFyZW50LnBuZyIsInNob3dCYWtlU3RhdHVzIjpmYWxzZSwiYmFrZVN0YXR1c1RleHQiOiLZvtiw24zYsdi0INiz2YHYp9ix2LQg2b7YrtiqINix2YjYstin2YbZhyDZgdi52KfZhCDYp9iz2KoiLCJiYWtlU3RhdHVzRG90IjoiIzFmNmY0YSIsInNob3dUcnVzdEJhciI6ZmFsc2UsInRydXN0SXRlbXMiOlsi2b7YrtiqINiq2KfYstmHINix2YjYstin2YbZhyIsItmF2YjYp9ivINin2YjZhNuM2Ycg2YXZhdiq2KfYsiDZiCDYrtin2YTYtSIsItin2LHYs9in2YQg2KrYrti12LXbjCDZiNuM2pjZhyDaqdin2YHZh+KAjNmH2KciXSwic2hvd1BlclNsaWNlUHJpY2UiOnRydWUsImRlZmF1bHRTaGVsZkxpZmUiOiLZhdin2YbYr9qv2KfYsduMINiv2LEg24zYrtqG2KfZhCDZiNuM2KrYsduM2YbbjCAo27Qg2K/Ysdis2YcpOiDYqtinINu0INix2YjYsiIsInNob3dJbmZvQm94Ijp0cnVlLCJpbmZvQm94VGl0bGUiOiLZh9mF2qnYp9ix24wg2YjbjNqY2Ycg2KjYpyDaqdin2YHZh+KAjNmH2Kcg2Ygg2YXYrNmF2YjYudmH4oCM2YfYpyIsInNob3dTb2NpYWxTZWN0aW9uIjp0cnVlLCJzb2NpYWxDdGFUZXh0Ijoi2YXYpyDYsdinINiv2LEg2LTYqNqp2YfigIzZh9in24wg2KfYrNiq2YXYp9i524wg2K/Zhtio2KfZhCDaqdmG24zYryIsInNvY2lhbERpc3BsYXlIYW5kbGUiOiJAbG90dXNjYWtlciIsImluc3RhZ3JhbVVybCI6Imh0dHBzOi8vaW5zdGFncmFtLmNvbS9sb3R1c2Nha2VyIiwidGVsZWdyYW1VcmwiOiJodHRwczovL3QubWUvbG90dXNjYWtlciIsImRlbGl2ZXJ5U2xvdHMiOlsi2KjYp9iy2Ycg2LXYqNitICjbuSDYp9mE24wg27HbsikiLCLYqNin2LLZhyDYudi12LEgKNux27Yg2KfZhNuMINuy27ApIl0sImN1dE9wdGlvbnMiOlsi2KjYsdi04oCM2K7ZiNix2K/ZhyDYp9iz2KrYp9mG2K/Yp9ix2K8g2qnYp9mB2YciLCLZgtin2YTYqCDaqdin2YXZhCAo2KjYr9mI2YYg2KjYsdi0KSJdLCJsb2dvUG9zaXRpb24iOiJoZWFkZXItYmciLCJsb2dvT3BhY2l0eSI6NzAsImxvZ29CbHVyIjowLCJsb2dvU2l6ZSI6MjgsInNob3dTcGxhc2giOnRydWUsInNwbGFzaER1cmF0aW9uIjoxODAwLCJzaG93TG90dXNXYXRlcm1hcmsiOnRydWUsImxvdHVzV2F0ZXJtYXJrSW1hZ2UiOiJhc3NldHMvaW1hZ2VzL2xvdHVzLXBldGFsLXdhdGVybWFyay5wbmciLCJsb3R1c1dhdGVybWFya1NpemUiOjM4LCJsb3R1c1dhdGVybWFya09wYWNpdHkiOjg0LCJsb3R1c1dhdGVybWFya1Bvc2l0aW9uIjoiYm90dG9tLWxlZnQifSwiZW5jcnlwdGVkQWNjb3VudHMiOnt9LCJhY2NvdW50aW5nQ29zdFNuYXBzaG90RW52ZWxvcGUiOiIifQ==";/*MENU_DATA_FALLBACK_END*/
+    try{const bin=atob(window.__MENU_DATA_FALLBACK_B64__);const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));window.__MENU_DATA_FALLBACK__=JSON.parse(new TextDecoder().decode(bytes));}catch(_){window.__MENU_DATA_FALLBACK__=null;}
+  </script>
+  <script src="menu-data.js?v=1792794357306"></script>
   <script>
     (function () {
+      const splashOverlay=document.getElementById('splashScreen');
+      const splashImage=document.getElementById('splashLogoImg');
+      const splashBootstrap=(window.MENU_DATA||window.__MENU_DATA_FALLBACK__||{});
+      const splashDesign=splashBootstrap.design||{};
+      const splashStarted=performance.now();
+      const splashDefaultLogo='assets/images/logo-lotus-caker-transparent.png';
+      const splashShouldShow=splashDesign.showSplash!==false && !!(splashDesign.logoImage||splashDefaultLogo);
+      const splashMinMs=Math.max(900,Math.min(1500,Number(splashDesign.splashDuration)||1300));
+      let splashAppReady=false,splashLogoReady=false,splashReleaseScheduled=false;
+      function releaseSplash(){
+        if(!splashOverlay||!splashShouldShow||!splashAppReady||!splashLogoReady||splashReleaseScheduled)return;
+        splashReleaseScheduled=true;
+        const remain=Math.max(0,splashMinMs-(performance.now()-splashStarted));
+        setTimeout(()=>{
+          splashOverlay.classList.add('hide');
+          setTimeout(()=>{splashOverlay.classList.add('hidden');document.body.style.overflow='';},440);
+        },remain);
+      }
+      function signalSplashAppReady(){splashAppReady=true;releaseSplash();}
+      if(splashOverlay){
+        if(!splashShouldShow){splashOverlay.classList.add('hidden');document.body.style.overflow='';splashAppReady=true;splashLogoReady=true;}
+        else{
+          splashOverlay.classList.remove('hidden','hide');document.body.style.overflow='hidden';
+          const desiredLogo=splashDesign.logoImage||splashDefaultLogo;
+          if(splashImage&&splashImage.getAttribute('src')!==desiredLogo)splashImage.src=desiredLogo;
+          if(splashImage){
+            const onLogoReady=()=>{splashLogoReady=true;releaseSplash();};
+            splashImage.addEventListener('load',onLogoReady,{once:true});
+            splashImage.addEventListener('error',()=>{
+              if(splashImage.getAttribute('src')!==splashDefaultLogo)splashImage.src=splashDefaultLogo;
+              else onLogoReady();
+            },{once:true});
+            if(splashImage.complete&&splashImage.naturalWidth>0)onLogoReady();
+            if(splashImage.decode)splashImage.decode().then(onLogoReady).catch(()=>{});
+          }else splashLogoReady=true;
+          setTimeout(()=>{if(!splashLogoReady){splashLogoReady=true;releaseSplash();}},3600);
+        }
+      }
       const FA_DIGITS = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
       const EN_MAP = { '۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9','٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9' };
 
@@ -1337,9 +1391,15 @@
 
       function ensureOrderConfig(targetState) {
         if (!targetState) return targetState;
-        targetState.vipCustomers = targetState.vipCustomers || [];
+        targetState.vipCustomers = Array.isArray(targetState.vipCustomers)?targetState.vipCustomers:[];
+        targetState.items = Array.isArray(targetState.items)?targetState.items:[];
+        targetState.categories = Array.isArray(targetState.categories)?targetState.categories:[];
         targetState.encryptedAccounts = targetState.encryptedAccounts || {};
         targetState.design = targetState.design || {};
+        targetState.brand = targetState.brand || {};
+        targetState.brand.paymentCardNumber = targetState.brand.paymentCardNumber || '';
+        targetState.brand.paymentCardHolder = targetState.brand.paymentCardHolder || '';
+        targetState.accountingCostSnapshotEnvelope = targetState.accountingCostSnapshotEnvelope || '';
         // Default design values (editable without coding in Admin -> Design tab)
         const dd = targetState.design;
         dd.palette = dd.palette || 'espresso';
@@ -1392,7 +1452,8 @@
         return targetState;
       }
 
-      let state = ensureOrderConfig(JSON.parse(JSON.stringify(window.MENU_DATA)));
+      const initialMenuData=window.MENU_DATA||window.__MENU_DATA_FALLBACK__||{brand:{name:'Lotus Caker'},design:{logoImage:'assets/images/logo-lotus-caker-transparent.png'},categories:[],items:[],vipCustomers:[],cloud:{}};
+      let state = ensureOrderConfig(JSON.parse(JSON.stringify(initialMenuData)));
 
       // Active VIP Customer Page detection (?c=slug OR logged-in account discount!)
       const urlParams = new URLSearchParams(location.search);
@@ -1587,6 +1648,18 @@
       let unlockedAdminPassword = sessionStorage.getItem('lotus_admin_pass_session') || '';
       let unlockedPrivateKey = null;
       let adminOrders = JSON.parse(localStorage.getItem('lotus_admin_orders_cache_v1') || '[]');
+      let accountingVault = { version:1, updatedAt:0, productCostHistory:{}, entries:[], receiptBlobs:{} };
+      let accountingVaultLoaded = false;
+      let accountingVaultDirty = false;
+      let accountingVaultLoadError = '';
+      let accountingPasswordChangedThisSession = false;
+      let passwordChangePendingDeploy = false;
+      const paymentConfirmInFlight = new Set();
+      let pendingProductCosts = {};
+      let accountingPeriod = 'week';
+      let accountingPeriodOffset = 0;
+      let selectedPaymentOption = '';
+      let selectedReceiptFile = null;
       let liveOrderEventSource = null;
       let pendingImageUploads = {}; // relPath -> base64 string (no prefix)
 
@@ -1713,9 +1786,14 @@
           for (const vo of vaultOrders) {
             const idx = adminOrders.findIndex(x => x.id === vo.id);
             if (idx === -1) adminOrders.push(vo);
-            else if ((vo.updatedStatusAt || 0) > (adminOrders[idx].updatedStatusAt || 0)) {
-              adminOrders[idx].status = vo.status;
-              adminOrders[idx].updatedStatusAt = vo.updatedStatusAt;
+            else {
+              if ((vo.updatedStatusAt || 0) > (adminOrders[idx].updatedStatusAt || 0)) {
+                adminOrders[idx].status = vo.status;
+                adminOrders[idx].updatedStatusAt = vo.updatedStatusAt;
+              }
+              if ((vo.paymentUpdatedAt || 0) > (adminOrders[idx].paymentUpdatedAt || 0)) {
+                ['paymentReceived','paymentStatus','paymentEvents','receiptReviewedAt','cogsRecognized','costMissing','paymentUpdatedAt'].forEach(k=>{if(k in vo)adminOrders[idx][k]=vo[k];});
+              }
             }
           }
           adminOrders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -1725,6 +1803,7 @@
       }
 
       async function saveOrdersVaultToGithub() {
+        if(passwordChangePendingDeploy)return false;
         const cfg = detectCloudRepo();
         if (!cfg.token || !cfg.ghOwner || !cfg.ghRepo || !unlockedAdminPassword) return;
         try {
@@ -1759,10 +1838,184 @@
         } catch (_) {}
       }
 
+      function emptyAccountingVault(){return {version:1,updatedAt:0,productCostHistory:{},entries:[],receiptBlobs:{}};}
+      function mergeAccountingVaults(a,b){
+        const out=emptyAccountingVault();
+        const entries=new Map();
+        [...(a?.entries||[]),...(b?.entries||[])].forEach(e=>{if(e&&e.id){const old=entries.get(e.id);if(!old||(e.updatedAt||0)>(old.updatedAt||0))entries.set(e.id,e);}});
+        out.entries=Array.from(entries.values()).sort((x,y)=>(y.date||0)-(x.date||0));
+        const ids=new Set([...Object.keys(a?.productCostHistory||{}),...Object.keys(b?.productCostHistory||{})]);
+        for(const id of ids){
+          const byTime=new Map();
+          [...(a?.productCostHistory?.[id]||[]),...(b?.productCostHistory?.[id]||[])].forEach(v=>{if(v&&Number.isFinite(Number(v.effectiveAt)))byTime.set(Number(v.effectiveAt),v);});
+          out.productCostHistory[id]=Array.from(byTime.values()).sort((x,y)=>x.effectiveAt-y.effectiveAt);
+        }
+        out.receiptBlobs={...(a?.receiptBlobs||{}),...(b?.receiptBlobs||{})};
+        out.version=1;out.updatedAt=Math.max(a?.updatedAt||0,b?.updatedAt||0);
+        return out;
+      }
+      async function encryptAccountingVault(vault){
+        const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+        const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(unlockedAdminPassword),'PBKDF2',false,['deriveKey']);
+        const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt']);
+        const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(vault)));
+        return {v:1,kdf:'PBKDF2-SHA256-250000',salt:arrayBufferToBase64(salt.buffer),iv:arrayBufferToBase64(iv.buffer),ct:arrayBufferToBase64(ct)};
+      }
+      async function decryptAccountingVault(envelope){
+        const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(unlockedAdminPassword),'PBKDF2',false,['deriveKey']);
+        const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:base64ToUint8(envelope.salt),iterations:envelope.kdf==='PBKDF2-SHA256-250000'?250000:100000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+        const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:base64ToUint8(envelope.iv)},key,base64ToUint8(envelope.ct));
+        return mergeAccountingVaults(emptyAccountingVault(),JSON.parse(new TextDecoder().decode(plain)));
+      }
+      async function fetchRemoteAccountingVault(){
+        const cfg=detectCloudRepo(); if(!cfg.ghOwner||!cfg.ghRepo)return null;
+        const url=`https://api.github.com/repos/${encodeURIComponent(cfg.ghOwner)}/${encodeURIComponent(cfg.ghRepo)}/contents/accounting-vault.enc.json?ref=${encodeURIComponent(cfg.ghBranch)}&t=${Date.now()}`;
+        const headers=cfg.token?{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json'}:{'Accept':'application/vnd.github+json'};
+        const res=await fetch(url,{headers,cache:'no-store'}); if(res.status===404)return null; if(!res.ok)throw new Error('خواندن دفتر رمزگذاری‌شده ناموفق بود ('+res.status+')');
+        const meta=await res.json(); const envelope=JSON.parse(base64ToUtf8(meta.content)); return await decryptAccountingVault(envelope);
+      }
+      async function loadAccountingVaultFromGithub(force=false){
+        if(accountingVaultLoaded&&!force)return;
+        let local=emptyAccountingVault();
+        try{const stored=localStorage.getItem('lotus_accounting_vault_enc_v1');if(stored)local=await decryptAccountingVault(JSON.parse(stored));}catch(_){local=emptyAccountingVault();}
+        try{const remote=await fetchRemoteAccountingVault();accountingVault=mergeAccountingVaults(local,remote||emptyAccountingVault());accountingVaultLoadError='';}
+        catch(err){accountingVault=local;accountingVaultLoadError=err.message||'دفتر مالی از مخزن خوانده نشد.';}
+        accountingVaultLoaded=true;
+      }
+      async function saveAccountingVaultToGithub(){
+        if(!accountingVaultLoaded)await loadAccountingVaultFromGithub();
+        if(!unlockedAdminPassword)throw new Error('ابتدا پنل مدیریت را باز کنید.');
+        if(passwordChangePendingDeploy)throw new Error('رمز جدید آماده است؛ ابتدا سایت را از تب همگام‌سازی منتشر کنید تا تنظیمات و دفترهای رمزگذاری‌شده با هم به‌روزرسانی شوند.');
+        if(unlockedAdminPassword.length<10 || !/[A-Za-z]/.test(unlockedAdminPassword) || !/\d/.test(unlockedAdminPassword))
+          throw new Error('برای حفاظت از اطلاعات مالی، ابتدا رمز مدیریت را به حداقل ۱۰ نویسه شامل حرف و عدد تغییر دهید.');
+        const cfg=detectCloudRepo();
+        if(!cfg.token||!cfg.ghOwner||!cfg.ghRepo){ accountingVaultDirty=true; throw new Error('برای همگام‌سازی امن دفتر بین دستگاه‌ها، کلید GitHub را در تب آپلود سایت تنظیم کنید.'); }
+        let remote=null;
+        try{remote=await fetchRemoteAccountingVault();}
+        catch(err){if(!accountingPasswordChangedThisSession)throw err;}
+        accountingVault=mergeAccountingVaults(accountingVault,remote||emptyAccountingVault());
+        accountingVault.updatedAt=Date.now();
+        const apiUrl=`https://api.github.com/repos/${encodeURIComponent(cfg.ghOwner)}/${encodeURIComponent(cfg.ghRepo)}/contents/accounting-vault.enc.json`;
+        const headers={'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json','Content-Type':'application/json'};
+        let envelope=null,saved=false;
+        for(let attempt=0;attempt<2&&!saved;attempt++){
+          envelope=await encryptAccountingVault(accountingVault);
+          let sha;const g=await fetch(apiUrl+'?ref='+encodeURIComponent(cfg.ghBranch)+'&t='+Date.now(),{headers,cache:'no-store'});if(g.ok)sha=(await g.json()).sha;
+          const payload={message:'Sync encrypted Lotus Caker accounting vault',content:utf8ToBase64(JSON.stringify(envelope)),branch:cfg.ghBranch};if(sha)payload.sha=sha;
+          const put=await fetch(apiUrl,{method:'PUT',headers,body:JSON.stringify(payload)});
+          if(put.ok){saved=true;break;}
+          if(put.status===409&&attempt===0){
+            let latest=null;try{latest=await fetchRemoteAccountingVault();}catch(err){if(!accountingPasswordChangedThisSession)throw err;}
+            accountingVault=mergeAccountingVaults(accountingVault,latest||emptyAccountingVault());accountingVault.updatedAt=Date.now();continue;
+          }
+          const e=await put.json().catch(()=>({}));throw new Error(e.message||'ذخیرهٔ امن دفتر حسابداری انجام نشد.');
+        }
+        if(!saved)throw new Error('همگام‌سازی هم‌زمان دفتر موفق نشد؛ دوباره تلاش کنید.');
+        try{localStorage.setItem('lotus_accounting_vault_enc_v1',JSON.stringify(envelope));}catch(_){}
+        accountingPasswordChangedThisSession=false;accountingVaultDirty=false;return true;
+      }
+      function accountingPasswordIsStrong(){return !!unlockedAdminPassword&&unlockedAdminPassword.length>=10&&/[A-Za-z]/.test(unlockedAdminPassword)&&/\d/.test(unlockedAdminPassword);}
+      function accountingPeriodRange(period=accountingPeriod){
+        const now=new Date(),offset=period===accountingPeriod?accountingPeriodOffset:0,start=new Date(now.getFullYear(),now.getMonth(),now.getDate());let end;
+        if(period==='week'){const wd=(start.getDay()+6)%7;start.setDate(start.getDate()-wd+offset*7);end=new Date(start);end.setDate(end.getDate()+7);}
+        else if(period==='month'){start.setDate(1);start.setMonth(start.getMonth()+offset);end=new Date(start.getFullYear(),start.getMonth()+1,1);}
+        else {start.setMonth(0,1);start.setFullYear(start.getFullYear()+offset);end=new Date(start.getFullYear()+1,0,1);}
+        return {start:start.getTime(),end:end.getTime()};
+      }
+      function accountingPeriodLabel(){const names={week:'این هفته',month:'این ماه',year:'امسال'};if(accountingPeriodOffset===0)return names[accountingPeriod];const r=accountingPeriodRange();return accountingFormatDate(r.start)+' تا '+accountingFormatDate(r.end-1);}
+      function accountingFormatDate(ts){try{return new Date(ts).toLocaleDateString('fa-IR',{year:'numeric',month:'short',day:'numeric'});}catch(_){return new Date(ts).toLocaleDateString();}}
+      function accountingPeriodEntries(){const r=accountingPeriodRange();return (accountingVault.entries||[]).filter(x=>Number(x.date)>=r.start&&Number(x.date)<r.end);}
+      function accountingTotals(entries){
+        const sum=(arr,fn)=>arr.reduce((n,x)=>n+(Number(fn(x))||0),0);
+        const income=entries.filter(x=>x.type==='income'),expenses=entries.filter(x=>x.type==='expense'),cogs=entries.filter(x=>x.type==='cogs');
+        const sales=sum(income.filter(x=>x.kind==='order-payment'),x=>x.amount),otherIncome=sum(income.filter(x=>x.kind!=='order-payment'),x=>x.amount);
+        const directCost=sum(cogs,x=>x.amount),operating=sum(expenses.filter(x=>x.operating!==false),x=>x.amount),cashOut=sum(expenses,x=>x.amount);
+        return {sales,otherIncome,directCost,operating,cashIn:sales+otherIncome,cashOut,profit:sales+otherIncome-directCost-operating,balance:sales+otherIncome-cashOut};
+      }
+      function orderCostTotal(ord){
+        const snap=ord&&ord.costSnapshot&&typeof ord.costSnapshot==='object'?ord.costSnapshot:{};let sum=0;
+        for(const item of (ord.items||[])){
+          const x=snap[item.id];let cost=x&&x.cost!=null&&Number(x.effectiveAt)<=Number(ord.createdAt)?Number(x.cost):getProductCostAt(item.id,Number(ord.createdAt));
+          if(cost==null||!Number.isFinite(cost))return null;sum+=cost*(Number(item.qty)||1);
+        }
+        return Math.round(sum);
+      }
+      function accountingDateInput(ts=Date.now()){const d=new Date(ts);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+      function accountingInputDateToTs(value){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(value||'');return m?new Date(+m[1],+m[2]-1,+m[3],12,0,0,0).getTime():Date.now();}
+      function accountingToast(text){const el=document.getElementById('adminToast');if(el)el.textContent=text;}
+      function renderAccountingTab(body){
+        const periodNames={week:accountingPeriodLabel(),month:accountingPeriodLabel(),year:accountingPeriodLabel()},entries=accountingPeriodEntries(),tot=accountingTotals(entries);
+        const allEntries=[...(accountingVault.entries||[])].sort((a,b)=>Number(b.date)-Number(a.date));
+        const pending=adminOrders.filter(o=>o.kind!=='registration'&&o.status!=='cancelled').reduce((n,o)=>n+Math.max(0,(Number(o.total)||0)-(Number(o.paymentReceived)||0)),0);
+        const missingCosts=adminOrders.filter(o=>o.kind!=='registration'&&Number(o.paymentReceived)>0&&orderCostTotal(o)==null).length;
+        const costRows=(state.items||[]).map(it=>{const cost=Object.prototype.hasOwnProperty.call(pendingProductCosts,it.id)?pendingProductCosts[it.id]:currentProductCost(it.id);return `<div class="accounting-cost-row"><div><b>${escapeHtml(it.name)}</b><small>${escapeHtml(it.serving||'')}</small></div><label><span>هزینهٔ یک قالب کامل (تومان)</span><input dir="ltr" class="accounting-cost-input" data-product-cost="${escapeHtml(it.id)}" inputmode="numeric" value="${cost==null?'':formatPriceFa(cost)}" placeholder="وارد نشده"></label></div>`}).join('');
+        const tableRows=allEntries.slice(0,60).map(x=>{const label=x.type==='income'?'دریافت':x.type==='cogs'?'بهای تمام‌شده':'هزینه';const color=x.type==='income'?'#16734b':x.type==='cogs'?'#8b5cf6':'#c2410c';return `<tr><td>${accountingFormatDate(x.date)}</td><td><span style="color:${color};font-weight:800">${label}</span></td><td>${escapeHtml(x.category||'—')}</td><td>${escapeHtml(x.note||'')}</td><td>${x.orderId?`<span dir="ltr">${escapeHtml(x.orderId)}</span>`:'—'}</td><td dir="ltr" style="font-weight:800">${formatPriceFa(x.amount||0)}</td></tr>`}).join('');
+        const weak=!accountingPasswordIsStrong();
+        body.innerHTML=`<div class="accounting-wrap">
+          <div class="accounting-privacy-note"><b>دفتر مالی خصوصی و رمزگذاری‌شده</b><span>قیمت تمام‌شده، سود و تراکنش‌ها در فایل جداگانه رمزگذاری می‌شوند و وارد menu-data.js یا صفحهٔ مشتری نمی‌شوند. برای همگام‌سازی بین دستگاه‌ها، هر دستگاه مدیریت باید کلید GitHub را در تب همگام‌سازی داشته باشد.</span></div>
+          ${weak?'<div class="accounting-alert">⚠️ رمز مدیریت فعلی ضعیف است. پیش از ثبت یا تأیید پرداخت، از تب «مشخصات» یک رمز دست‌کم ۱۰ نویسه‌ای شامل حرف لاتین و عدد تعیین کنید. دفتر مالی تا آن زمان فقط قابل مشاهده است.</div>':''}
+          ${accountingVaultLoadError?`<div class="accounting-alert">خطا در خواندن دفتر همگام‌شده: ${escapeHtml(accountingVaultLoadError)}. رمز عبور را تغییر ندهید یا داده‌ای ذخیره نکنید تا خطا بررسی شود.</div>`:''}
+          ${passwordChangePendingDeploy?'<div class="accounting-alert">رمز جدید در انتظار انتشار است؛ تا تکمیل انتشار از ثبت هزینه، تراکنش یا تأیید پرداخت خودداری کنید.</div>':''}
+          <div class="accounting-toolbar"><div><h3>گزارش سود و زیان</h3><span>درآمد سفارش فقط پس از تأیید دریافت وجه ثبت می‌شود.</span></div><div class="accounting-actions"><button type="button" id="btnRefreshAccounting">همگام‌سازی ↻</button><button type="button" id="btnExportAccounting">خروجی CSV</button></div></div>
+          <div class="accounting-periods"><button type="button" id="btnAcctPrev" aria-label="دوره قبل">‹ قبلی</button>${[['week','هفتگی'],['month','ماهانه'],['year','سالانه']].map(([k,n])=>`<button type="button" class="${accountingPeriod===k?'active':''}" data-acct-period="${k}">${n}</button>`).join('')}<button type="button" id="btnAcctNext" ${accountingPeriodOffset>=0?'disabled':''} aria-label="دوره بعد">بعدی ›</button><b class="accounting-period-label">${accountingPeriodLabel()}</b></div>
+          <div class="accounting-cards"><div><small>وصول سفارش‌ها · ${periodNames[accountingPeriod]}</small><b>${formatPriceFa(tot.sales)} <i>تومان</i></b></div><div><small>درآمدهای متفرقه</small><b>${formatPriceFa(tot.otherIncome)} <i>تومان</i></b></div><div><small>بهای تمام‌شدهٔ محصولات</small><b>${formatPriceFa(tot.directCost)} <i>تومان</i></b></div><div><small>هزینه‌های عملیاتی</small><b>${formatPriceFa(tot.operating)} <i>تومان</i></b></div><div class="${tot.profit>=0?'positive':'negative'}"><small>سود / زیان خالص</small><b>${formatPriceFa(tot.profit)} <i>تومان</i></b></div><div><small>ورودی نقدی</small><b>${formatPriceFa(tot.cashIn)} <i>تومان</i></b></div><div><small>خروجی نقدی</small><b>${formatPriceFa(tot.cashOut)} <i>تومان</i></b></div><div class="${tot.balance>=0?'positive':'negative'}"><small>تغییر خالص نقدی</small><b>${formatPriceFa(tot.balance)} <i>تومان</i></b></div></div>
+          <div class="accounting-substats"><span>ماندهٔ دریافتنی سفارش‌ها: <b>${formatPriceFa(pending)} تومان</b></span><span>سفارش دارای بهای تمام‌شدهٔ نامشخص: <b>${toFa(missingCosts)}</b></span><span>گزارش: <b>${periodNames[accountingPeriod]}</b></span></div>
+          <details class="accounting-section" open><summary>قیمت تمام‌شدهٔ محصولات — یک قالب کامل</summary><p>مقادیر فقط داخل دفتر رمزگذاری‌شده ذخیره می‌شوند؛ در منو یا منبع عمومی سایت منتشر نمی‌شوند. پس از ثبت هزینه‌ها، برای استفاده از snapshot رمزگذاری‌شده در سفارش‌های جدید، یک بار سایت را از تب همگام‌سازی منتشر کنید.</p><div class="accounting-cost-list">${costRows||'<div class="empty-state">محصولی ثبت نشده است.</div>'}</div><button type="button" id="btnSaveProductCosts" class="icon-btn btn-green" ${weak?'disabled':''}>ذخیره و ثبت تاریخچهٔ هزینه‌ها 🔒</button></details>
+          <details class="accounting-section" open><summary>ثبت درآمد متفرقه یا هزینه</summary><form id="accountingEntryForm" class="accounting-entry-form"><label>نوع<select id="acctType"><option value="income">درآمد دریافتی</option><option value="expense">هزینهٔ پرداخت‌شده</option></select></label><label>مبلغ (تومان)<input id="acctAmount" inputmode="numeric" required placeholder="مثلاً ۲۵۰۰۰۰"></label><label>دسته‌بندی<select id="acctCategory"><option value="other">سایر درآمد</option><option value="sales">فروش متفرقه</option><option value="ingredients">مواد اولیه / موجودی</option><option value="packaging">بسته‌بندی</option><option value="delivery">ارسال</option><option value="rent">اجاره</option><option value="utilities">قبوض و خدمات</option><option value="payroll">دستمزد</option><option value="other-expense">سایر هزینه‌ها</option></select></label><label>تاریخ<input id="acctDate" type="date" value="${accountingDateInput()}"></label><label class="wide">شرح کوتاه<input id="acctNote" maxlength="180" placeholder="توضیح اختیاری"></label><button type="submit" class="icon-btn btn-green" ${weak?'disabled':''}>ثبت تراکنش در دفتر رمزگذاری‌شده</button></form><div class="accounting-hint">هزینهٔ «مواد اولیه / موجودی» از سود عملیاتی کم نمی‌شود تا با بهای تمام‌شدهٔ محصولات دوباره‌شماری نشود؛ ولی در خروجی نقدی ثبت خواهد شد.</div></details>
+          <details class="accounting-section" open><summary>دفتر تراکنش‌ها (${toFa(allEntries.length)})</summary><div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>تاریخ</th><th>نوع</th><th>دسته</th><th>شرح</th><th>سفارش</th><th>مبلغ · تومان</th></tr></thead><tbody>${tableRows||'<tr><td colspan="6" class="empty-state">هنوز تراکنشی ثبت نشده است.</td></tr>'}</tbody></table></div></details>
+        </div>`;
+        body.querySelectorAll('[data-acct-period]').forEach(b=>b.addEventListener('click',()=>{accountingPeriod=b.dataset.acctPeriod;accountingPeriodOffset=0;renderAccountingTab(body);}));
+        document.getElementById('btnAcctPrev').onclick=()=>{accountingPeriodOffset--;renderAccountingTab(body);};
+        document.getElementById('btnAcctNext').onclick=()=>{if(accountingPeriodOffset<0)accountingPeriodOffset++;renderAccountingTab(body);};
+        document.getElementById('btnRefreshAccounting').onclick=async()=>{const b=document.getElementById('btnRefreshAccounting');b.disabled=true;b.textContent='در حال همگام‌سازی…';try{await loadAccountingVaultFromGithub(true);accountingToast('دفتر رمزگذاری‌شده همگام شد ✓');}catch(e){accountingToast(e.message);}finally{if(currentAdminTab==='accounting')renderAccountingTab(body);}};
+        document.getElementById('btnSaveProductCosts').onclick=async()=>{try{body.querySelectorAll('[data-product-cost]').forEach(inp=>{const s=toEnDigits(inp.value).replace(/[^0-9]/g,'').trim();const next=s?parseInt(s,10):null;if(next!==currentProductCost(inp.dataset.productCost))pendingProductCosts[inp.dataset.productCost]=next;});await applyPendingProductCosts();accountingToast('تاریخچهٔ هزینه‌ها به‌صورت رمزگذاری‌شده ذخیره شد ✓');renderAccountingTab(body);}catch(e){accountingToast(e.message);}};
+        document.getElementById('accountingEntryForm').onsubmit=async e=>{e.preventDefault();const amount=parsePriceNumber(document.getElementById('acctAmount').value);if(!(amount>0)){accountingToast('مبلغ باید بزرگ‌تر از صفر باشد.');return;}const type=document.getElementById('acctType').value,category=document.getElementById('acctCategory').value;const isInventory=type==='expense'&&category==='ingredients';const now=accountingInputDateToTs(document.getElementById('acctDate').value);const entry={id:'manual_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),type,kind:type==='income'?'manual-income':'manual-expense',amount:Math.round(amount),date:now,category,note:document.getElementById('acctNote').value.trim(),operating:!isInventory,createdAt:Date.now()};accountingVault.entries.push(entry);accountingVaultDirty=true;try{await saveAccountingVaultToGithub();accountingToast('تراکنش ثبت و همگام شد ✓');renderAccountingTab(body);}catch(err){accountingVault.entries=accountingVault.entries.filter(x=>x.id!==entry.id);accountingToast(err.message);}};
+        document.getElementById('btnExportAccounting').onclick=()=>{const header=['تاریخ','نوع','دسته','شرح','شناسه سفارش','مبلغ تومان'];const lines=[header,...entries.map(x=>[accountingFormatDate(x.date),x.type==='income'?'دریافت':x.type==='cogs'?'بهای تمام‌شده':'هزینه',x.category||'',x.note||'',x.orderId||'',x.amount||0])].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+lines],{type:'text/csv;charset=utf-8'}));a.download='lotus-accounting-'+accountingPeriod+'-'+accountingDateInput()+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
+      }
+
+      function getProductCostAt(productId,at=Date.now()){
+        const h=(accountingVault.productCostHistory||{})[productId]||[];let found=null;
+        for(const x of h){if(Number(x.effectiveAt)<=Number(at))found=x;else break;}
+        return found&&found.cost!=null?Number(found.cost):null;
+      }
+      function recordProductCost(productId,cost,effectiveAt=Date.now()){
+        accountingVault.productCostHistory=accountingVault.productCostHistory||{};
+        const h=accountingVault.productCostHistory[productId]||[];const last=h[h.length-1];
+        if(last && ((last.cost==null&&cost==null)||(last.cost!=null&&cost!=null&&Number(last.cost)===Number(cost))))return false;
+        h.push({cost:cost==null?null:Math.max(0,Math.round(Number(cost)||0)),effectiveAt,updatedAt:Date.now()});
+        accountingVault.productCostHistory[productId]=h;accountingVaultDirty=true;return true;
+      }
+      function currentProductCost(productId){return getProductCostAt(productId,Date.now());}
+      async function applyPendingProductCosts(){
+        const changes=Object.entries(pendingProductCosts);if(!changes.length)return false;
+        if(!unlockedPrivateKey)throw new Error('برای ثبت امن قیمت تمام‌شده، رمز مدیریت را وارد کنید.');
+        if(!accountingPasswordIsStrong())throw new Error('ابتدا رمز مدیریت را به حداقل ۱۰ نویسه شامل حرف لاتین و عدد تغییر دهید.');
+        for(const [id,cost] of changes)recordProductCost(id,cost,Date.now());
+        const items={};
+        for(const [id,h] of Object.entries(accountingVault.productCostHistory||{})){
+          const latest=h[h.length-1];if(latest)items[id]={cost:latest.cost,effectiveAt:latest.effectiveAt};
+        }
+        state.accountingCostSnapshotEnvelope=await encryptOrderPayload({kind:'LC_COST_SNAPSHOT_V1',updatedAt:Date.now(),items});
+        if(!passwordChangePendingDeploy)await saveAccountingVaultToGithub();
+        pendingProductCosts={};
+        return true;
+      }
+      async function hydrateOrderAccountingData(ord){
+        if(!ord||ord.kind==='registration')return ord;
+        if(ord.costSnapshotEnvelope){const snap=await decryptEnvelope(ord.costSnapshotEnvelope);if(snap&&snap.kind==='LC_COST_SNAPSHOT_V1')ord.costSnapshot=snap.items||{};}
+        if(ord.receiptInfo && isAllowedReceiptUrl(ord.receiptInfo.url) && accountingVaultLoaded && accountingPasswordIsStrong() && !accountingVault.receiptBlobs[ord.id]){
+          try{const r=await fetch(ord.receiptInfo.url);if(r.ok){const bytes=new Uint8Array(await r.arrayBuffer());accountingVault.receiptBlobs[ord.id]={ciphertext:arrayBufferToBase64(bytes.buffer),mime:ord.receiptInfo.mime||'application/octet-stream',archivedAt:Date.now()};accountingVaultDirty=true;}}
+          catch(_){}
+        }
+        return ord;
+      }
+
       async function fetchLiveOrdersFromRelay() {
         const topic = state.orderConfig && state.orderConfig.inboxTopic;
         if (!topic || !unlockedPrivateKey) return;
         await syncOrdersVaultFromGithub();
+        await loadAccountingVaultFromGithub();
+        for(const oldOrder of adminOrders){try{await hydrateOrderAccountingData(oldOrder);}catch(_){}}
         try {
           const r = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}/json?poll=1&since=all`, { cache: 'no-store' });
           if (r.ok) {
@@ -1778,14 +2031,17 @@
                     : evt.message;
                   if (rawEnv) {
                     const ord = await decryptEnvelope(rawEnv);
+                    await hydrateOrderAccountingData(ord);
                     if (mergeOrderIntoList(ord)) addedAny = true;
                   }
                 }
               } catch (_) {}
             }
             if (addedAny) await saveOrdersVaultToGithub();
+            if(accountingVaultDirty&&accountingPasswordIsStrong()) await saveAccountingVaultToGithub().catch(()=>{});
           }
         } catch (_) {}
+        if(accountingVaultDirty&&accountingPasswordIsStrong())await saveAccountingVaultToGithub().catch(()=>{});
 
         // Also subscribe via real-time SSE stream while Admin Panel session is open!
         if (!liveOrderEventSource && window.EventSource) {
@@ -1799,8 +2055,10 @@
                   : (data && data.message);
                 if (rawEnv) {
                   const ord = await decryptEnvelope(rawEnv);
+                  await hydrateOrderAccountingData(ord);
                   if (mergeOrderIntoList(ord)) {
                     saveOrdersVaultToGithub();
+                    if(accountingVaultDirty&&accountingPasswordIsStrong())saveAccountingVaultToGithub().catch(()=>{});
                     if ((currentAdminTab === 'orders' || currentAdminTab === 'registrations') && !document.getElementById('adminModal').classList.contains('hidden')) {
                       renderAdminTab();
                     }
@@ -1861,15 +2119,18 @@
         document.getElementById('btnOpenAdmin').classList.remove('hidden');
       }
 
-      let tapCount = 0, tapTimer = null;
-      document.getElementById('elBrandName').addEventListener('click', () => {
-        tapCount++;
-        clearTimeout(tapTimer);
-        tapTimer = setTimeout(() => { tapCount = 0; }, 1400);
-        if (tapCount >= 5) {
-          tapCount = 0;
-          requestOpenAdmin();
-        }
+      let logoTapCount=0,logoTapTimer=null;
+      function countAdminLogoTap(){
+        logoTapCount++;clearTimeout(logoTapTimer);logoTapTimer=setTimeout(()=>{logoTapCount=0;},2300);
+        if(logoTapCount>=5){logoTapCount=0;clearTimeout(logoTapTimer);requestOpenAdmin();}
+      }
+      ['mobileLogoWrap','headerLogoTopCenter','headerLogoSideL','headerLogoSideR','elMonogram'].forEach(id=>{
+        const el=document.getElementById(id);if(el)el.addEventListener('click',e=>{if(id==='mobileLogoWrap'||e.target.closest('img')||id==='elMonogram')countAdminLogoTap();});
+      });
+      // In desktop "header background" logo mode the logo is a CSS background, so use blank header space as its tap target.
+      document.getElementById('mainHeaderBar').addEventListener('click',e=>{
+        if(e.target.closest('button,a,input,select,textarea,#elBrandName,#mobileLogoWrap,#headerLogoTopCenter,#headerLogoSideL,#headerLogoSideR,#elMonogram'))return;
+        const bg=document.getElementById('headerLogoBg');if(bg&&!bg.classList.contains('hidden'))countAdminLogoTap();
       });
 
       async function syncLatestFromNetwork() {
@@ -2588,29 +2849,6 @@
       }
 
       document.getElementById('btnRegisterCustomer').addEventListener('click', () => openRegisterModal());
-      (function bindMobileSiteMenu(){
-        const toggle=document.getElementById('btnMobileHeaderMenu');
-        const menu=document.getElementById('mobileHeaderMenu');
-        if(!toggle || !menu) return;
-        const backdrop=document.getElementById('mobileHeaderMenuBackdrop');
-        const header=document.getElementById('mainHeaderBar');
-        const close=()=>{ menu.classList.remove('open'); if(backdrop) backdrop.classList.remove('open'); if(header) header.classList.remove('mobile-menu-active'); toggle.setAttribute('aria-expanded','false'); };
-        toggle.addEventListener('click',()=>{
-          const open=!menu.classList.contains('open');
-          if(open){ const rect=header?header.getBoundingClientRect():{bottom:0}; menu.style.top=Math.max(8,Math.min(rect.bottom+6,window.innerHeight-180))+'px'; menu.classList.add('open'); if(backdrop) backdrop.classList.add('open'); if(header) header.classList.add('mobile-menu-active'); }
-          else close();
-          toggle.setAttribute('aria-expanded',open?'true':'false');
-        });
-        if(backdrop) backdrop.addEventListener('click',close);
-        menu.querySelectorAll('[data-mobile-action]').forEach(btn=>btn.addEventListener('click',()=>{
-          const action=btn.dataset.mobileAction; close();
-          if(action==='register') document.getElementById('btnRegisterCustomer').click();
-          if(action==='products'){ const target=document.querySelector('.items-grid, .items-list') || document.querySelector('.items-section'); if(target) target.scrollIntoView({behavior:'smooth',block:'start'}); }
-          if(action==='social') { const box=document.getElementById('socialLuxuryBox'); if(box && !box.classList.contains('hidden')) box.scrollIntoView({behavior:'smooth',block:'center'}); }
-        }));
-        document.addEventListener('click',e=>{ if(!menu.contains(e.target) && e.target!==toggle) close(); });
-        document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
-      })();
       document.getElementById('registerModal').addEventListener('click', e => {
         if (e.target.id === 'registerModal') e.target.classList.add('hidden');
       });
@@ -2679,6 +2917,54 @@
       document.getElementById('cartModal').addEventListener('click', e => {
         if (e.target.id === 'cartModal') e.target.classList.add('hidden');
       });
+
+      function isAllowedReceiptUrl(raw){try{const u=new URL(raw);return u.protocol==='https:'&&(u.hostname==='ntfy.sh'||u.hostname.endsWith('.ntfy.sh'));}catch(_){return false;}}
+      async function uploadEncryptedPaymentReceipt(file,orderId){
+        if(!file || !['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('رسید را به‌صورت تصویر JPG، PNG یا WebP انتخاب کنید.');
+        if(file.size>8*1024*1024)throw new Error('حجم رسید باید کمتر از ۸ مگابایت باشد.');
+        const raw=new Uint8Array(await file.arrayBuffer());
+        const aes=await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt']);
+        const rawKey=new Uint8Array(await crypto.subtle.exportKey('raw',aes));
+        const iv=crypto.getRandomValues(new Uint8Array(12));
+        const cipher=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},aes,raw));
+        const topic='lotus_rcpt_'+Array.from(crypto.getRandomValues(new Uint8Array(15))).map(x=>x.toString(16).padStart(2,'0')).join('');
+        const safeName=('receipt_'+String(orderId).replace(/[^a-z0-9_-]/gi,'')+'.enc');
+        const res=await fetch('https://ntfy.sh/'+encodeURIComponent(topic),{method:'PUT',headers:{'Filename':safeName,'X-Title':'Encrypted payment receipt','X-Message':'Encrypted receipt for order '+orderId,'Content-Type':'application/octet-stream'},body:cipher});
+        if(!res.ok)throw new Error('بارگذاری رمزگذاری‌شدهٔ رسید انجام نشد. دوباره تلاش کنید.');
+        let evt=null;try{evt=await res.json();}catch(_){ }
+        let attachmentUrl=evt&&evt.attachment&&evt.attachment.url;
+        if(!attachmentUrl){
+          const poll=await fetch('https://ntfy.sh/'+encodeURIComponent(topic)+'/json?poll=1&since=all',{cache:'no-store'});
+          if(poll.ok){const lines=(await poll.text()).split('\n').filter(Boolean);for(const line of lines){try{const x=JSON.parse(line);if(x.attachment&&x.attachment.url)attachmentUrl=x.attachment.url;}catch(_){}}}
+        }
+        if(!attachmentUrl)throw new Error('رسید ارسال شد اما پیوند امن آن دریافت نشد؛ دوباره تلاش کنید.');
+        return {url:attachmentUrl,topic,key:arrayBufferToBase64(rawKey.buffer),iv:arrayBufferToBase64(iv.buffer),mime:file.type,cipherMime:'application/octet-stream',name:file.name||safeName,uploadedAt:Date.now()};
+      }
+      async function decryptReceiptForOrder(ord){
+        if(!ord||!ord.receiptInfo)throw new Error('این سفارش رسید تصویری ندارد.');
+        if(!isAllowedReceiptUrl(ord.receiptInfo.url))throw new Error('پیوند رسید از سرویس امن مورد انتظار نیست.');
+        let cipherB64=accountingVault.receiptBlobs&&accountingVault.receiptBlobs[ord.id]&&accountingVault.receiptBlobs[ord.id].ciphertext;
+        let mime=(accountingVault.receiptBlobs&&accountingVault.receiptBlobs[ord.id]&&accountingVault.receiptBlobs[ord.id].mime)||ord.receiptInfo.mime||'image/jpeg';
+        if(!cipherB64){
+          const res=await fetch(ord.receiptInfo.url);if(!res.ok)throw new Error('مهلت پیوست رسید روی سرویس انتقال تمام شده است؛ برای بایگانی، پنل را بلافاصله پس از دریافت سفارش باز کنید.');
+          const bytes=new Uint8Array(await res.arrayBuffer());cipherB64=arrayBufferToBase64(bytes.buffer);
+          accountingVault.receiptBlobs=accountingVault.receiptBlobs||{};accountingVault.receiptBlobs[ord.id]={ciphertext:cipherB64,mime,archivedAt:Date.now()};accountingVaultDirty=true;
+          await saveAccountingVaultToGithub();
+        }
+        const key=await crypto.subtle.importKey('raw',base64ToUint8(ord.receiptInfo.key),{name:'AES-GCM'},false,['decrypt']);
+        const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:base64ToUint8(ord.receiptInfo.iv)},key,base64ToUint8(cipherB64));
+        return {blob:new Blob([plain],{type:mime}),mime};
+      }
+      async function openOrderReceipt(orderId){
+        const ord=adminOrders.find(x=>x.id===orderId);if(!ord)return;
+        try{
+          const {blob}=await decryptReceiptForOrder(ord);const url=URL.createObjectURL(blob);
+          let modal=document.getElementById('accountingReceiptModal');
+          if(!modal){modal=document.createElement('div');modal.id='accountingReceiptModal';modal.className='modal-backdrop';modal.style.zIndex='240';document.body.appendChild(modal);}
+          modal.innerHTML=`<div class="modal-card" style="max-width:620px;max-height:90vh;overflow:auto"><div class="modal-content"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><strong>رسید پرداخت — ${escapeHtml(orderId)}</strong><button type="button" class="icon-btn" id="btnCloseReceiptView">بستن ×</button></div><img src="${url}" alt="رسید رمزگشایی‌شده" style="display:block;max-width:100%;max-height:68vh;margin:auto;object-fit:contain;border-radius:10px"></div></div>`;
+          modal.classList.remove('hidden');document.getElementById('btnCloseReceiptView').onclick=()=>{modal.classList.add('hidden');URL.revokeObjectURL(url);};
+        }catch(err){const toast=document.getElementById('adminToast');if(toast)toast.textContent=err.message;}
+      }
 
       function renderCartModalContent(mode, submittedOrder) {
         const wrap = document.getElementById('cartModalBody');
@@ -2799,6 +3085,9 @@
             const dates = getNextDeliveryDates();
             const slots = (state.design && state.design.deliverySlots) || [];
             const cuts = (state.design && state.design.cutOptions) || [];
+            const payTotal=Math.max(0,Math.round(sum.total||0));
+            const payHalf=Math.ceil(payTotal/2);
+            const cardReady=String(state.brand.paymentCardHolder||'').trim().length>0 && toEnDigits(state.brand.paymentCardNumber||'').replace(/\D/g,'').length===16;
             if (!selectedDeliveryDate && dates.length) selectedDeliveryDate = dates[1] ? dates[1].iso : dates[0].iso;
             if (!selectedDeliverySlot && slots.length) selectedDeliverySlot = slots[0];
             if (!selectedCutOption && cuts.length) selectedCutOption = cuts[0];
@@ -2836,6 +3125,15 @@
                   ${cuts.map(c=>`<button type="button" class="slot-pill ${selectedCutOption===c?'active':''}" data-cut="${escapeHtml(c)}" style="flex:1">${escapeHtml(c)}</button>`).join('')}
                 </div>
               </div>
+              <section class="field" style="margin-bottom:14px;padding:12px;border:1px solid var(--border);border-radius:13px;background:var(--surface-soft)">
+                <label style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:8px">💳 روش تسویهٔ فاکتور <span style="color:#DC2626">*</span></label>
+                <div id="checkoutPaymentOptions" style="display:grid;gap:7px">
+                  <button type="button" class="payment-choice ${selectedPaymentOption==='full'?'active':''}" data-pay-choice="full"><span>پرداخت کامل پیش از تحویل</span><strong>${formatPriceFa(payTotal)} تومان</strong></button>
+                  <button type="button" class="payment-choice ${selectedPaymentOption==='half'?'active':''}" data-pay-choice="half"><span>نصف اکنون، نصف هنگام تحویل</span><strong>${formatPriceFa(payHalf)} + ${formatPriceFa(payTotal-payHalf)} تومان</strong></button>
+                  <button type="button" class="payment-choice ${selectedPaymentOption==='delivery'?'active':''}" data-pay-choice="delivery"><span>پرداخت کامل هنگام تحویل</span><strong>${formatPriceFa(payTotal)} تومان</strong></button>
+                </div>
+                <div id="checkoutPaymentDetails" style="margin-top:9px"></div>
+              </section>
               <div class="form-grid" style="margin-bottom:14px">
                 <div class="field">
                   <label>نام و نام خانوادگی <span style="color:#DC2626">*</span></label>
@@ -2864,10 +3162,12 @@
               </button>`;
 
             wrap.querySelectorAll('[data-cinc]').forEach(b => b.addEventListener('click', () => {
+              selectedReceiptFile=null;
               changeCartQty(b.dataset.cinc, 1);
               renderCartModalContent('checkout');
             }));
             wrap.querySelectorAll('[data-cdec]').forEach(b => b.addEventListener('click', () => {
+              selectedReceiptFile=null;
               changeCartQty(b.dataset.cdec, -1);
               renderCartModalContent('checkout');
             }));
@@ -2875,6 +3175,25 @@
             datePills.forEach(p=>p.addEventListener('click',()=>{ selectedDeliveryDate=p.dataset.date; wrap.querySelectorAll('[data-date]').forEach(x=>x.classList.toggle('active', x.dataset.date===selectedDeliveryDate)); }));
             wrap.querySelectorAll('[data-slot]').forEach(p=>p.addEventListener('click',()=>{ selectedDeliverySlot=p.dataset.slot; wrap.querySelectorAll('[data-slot]').forEach(x=>x.classList.toggle('active', x.dataset.slot===selectedDeliverySlot)); }));
             wrap.querySelectorAll('[data-cut]').forEach(p=>p.addEventListener('click',()=>{ selectedCutOption=p.dataset.cut; wrap.querySelectorAll('[data-cut]').forEach(x=>x.classList.toggle('active', x.dataset.cut===selectedCutOption)); }));
+            function renderPaymentDetails(){
+              const panel=document.getElementById('checkoutPaymentDetails');if(!panel)return;
+              const method=selectedPaymentOption;const total=Math.max(0,Math.round(sum.total||0));const half=Math.ceil(total/2);
+              if(!method){panel.innerHTML='<div class="payment-hint">یکی از روش‌های تسویه را انتخاب کنید.</div>';return;}
+              if(method==='delivery'){selectedReceiptFile=null;panel.innerHTML='<div class="payment-hint">کل مبلغ در زمان تحویل سفارش تسویه می‌شود؛ اکنون پیش‌پرداختی لازم نیست.</div>';return;}
+              const cardNum=toEnDigits(state.brand.paymentCardNumber||'').replace(/[^0-9]/g,'');
+              const ready=String(state.brand.paymentCardHolder||'').trim() && cardNum.length===16;
+              const payNow=method==='full'?total:half;const due=total-payNow;
+              panel.innerHTML=`<div class="payment-card-info"><div><small>مبلغ قابل واریز اکنون</small><b>${formatPriceFa(payNow)} تومان</b></div>${method==='half'?`<div><small>باقی‌مانده هنگام تحویل</small><b>${formatPriceFa(due)} تومان</b></div>`:''}${ready?`<div class="card-number-row"><div><small>واریز به کارت</small><b dir="ltr">${cardNum.replace(/(\d{4})(?=\d)/g,'$1 ')}</b><small>به نام ${escapeHtml(state.brand.paymentCardHolder)}</small></div><button type="button" id="btnCopyPaymentCard">کپی شماره</button></div>`:'<div class="payment-warning">اطلاعات کارت هنوز در پنل مدیریت تنظیم نشده است؛ مدیر باید نام صاحب کارت و شمارهٔ ۱۶ رقمی را ثبت کند.</div>'}</div><label class="receipt-upload-label">🧾 بارگذاری تصویر رسید انتقال <span>*</span><input type="file" id="co_paymentReceipt" accept="image/jpeg,image/png,image/webp"></label><div class="payment-hint">رسید رمزگذاری می‌شود و فقط در پنل مدیریت قابل مشاهده است.${selectedReceiptFile?` فایل انتخاب‌شده: ${escapeHtml(selectedReceiptFile.name)}`:''}</div>`;
+              const inp=document.getElementById('co_paymentReceipt');if(inp)inp.addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(f){selectedReceiptFile=f;renderPaymentDetails();}});
+              const copy=document.getElementById('btnCopyPaymentCard');if(copy)copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(cardNum);copy.textContent='کپی شد ✓';}catch(_){copy.textContent=cardNum;}});
+            }
+            wrap.querySelectorAll('[data-pay-choice]').forEach(btn=>btn.addEventListener('click',()=>{
+              if(selectedPaymentOption&&selectedPaymentOption!==btn.dataset.payChoice)selectedReceiptFile=null;
+              selectedPaymentOption=btn.dataset.payChoice;
+              wrap.querySelectorAll('[data-pay-choice]').forEach(x=>x.classList.toggle('active',x.dataset.payChoice===selectedPaymentOption));
+              renderPaymentDetails();
+            }));
+            renderPaymentDetails();
 
             document.getElementById('btnSubmitCustomerOrder').addEventListener('click', async () => {
               const elName = document.getElementById('co_name');
@@ -2892,6 +3211,8 @@
               const deliveryDate = selectedDeliveryDate;
               const deliverySlot = selectedDeliverySlot;
               const cutOption = selectedCutOption;
+              const paymentOption=selectedPaymentOption;
+              const cardDigits=toEnDigits(state.brand.paymentCardNumber||'').replace(/[^0-9]/g,'');
 
               [elName, elCafe, elPhone, elAddr].forEach(el => { el.style.borderColor = ''; });
               const missing = [];
@@ -2899,6 +3220,11 @@
               if (!cafeName) { elCafe.style.borderColor = '#DC2626'; missing.push('نام کافه'); }
               if (phoneDigits.length < 10) { elPhone.style.borderColor = '#DC2626'; missing.push('شماره تلفن معتبر'); }
               if (!address) { elAddr.style.borderColor = '#DC2626'; missing.push('آدرس'); }
+              if (!paymentOption) missing.push('روش تسویهٔ فاکتور');
+              if (paymentOption && paymentOption!=='delivery'){
+                if(!String(state.brand.paymentCardHolder||'').trim()||cardDigits.length!==16) missing.push('تنظیم شماره کارت و نام صاحب کارت توسط مدیریت');
+                if(!selectedReceiptFile) missing.push('تصویر رسید پرداخت');
+              }
 
               if (missing.length > 0) {
                 errEl.textContent = 'تکمیل موارد الزامی ناقص است: لطفاً ' + missing.join('، ') + ' را وارد کنید تا سفارش ثبت شود.';
@@ -2931,11 +3257,23 @@
                 note: address,
                 items: sum.lines,
                 total: sum.total,
-                status: 'new'
+                status: 'new',
+                paymentMethod:paymentOption,
+                paymentMethodLabel:paymentOption==='full'?'تسویه کامل پیش از تحویل':paymentOption==='half'?'نصف اکنون، نصف هنگام تحویل':'تسویه کامل هنگام تحویل',
+                paymentDueNow:paymentOption==='full'?Math.round(sum.total):paymentOption==='half'?Math.ceil(sum.total/2):0,
+                paymentDueAtDelivery:paymentOption==='full'?0:paymentOption==='half'?Math.floor(sum.total/2):Math.round(sum.total),
+                paymentReceived:0,
+                paymentStatus:paymentOption==='delivery'?'awaiting_delivery':'awaiting_confirmation',
+                paymentEvents:[],
+                costSnapshotEnvelope:state.accountingCostSnapshotEnvelope||''
               };
 
               try {
                 ensureOrderConfig(state);
+                if(paymentOption!=='delivery'){
+                  submitBtn.textContent='در حال رمزگذاری رسید پرداخت...';
+                  orderObj.receiptInfo=await uploadEncryptedPaymentReceipt(selectedReceiptFile,orderObj.id);
+                }
                 const topic = state.orderConfig.inboxTopic;
                 const encryptedPayload = await encryptOrderPayload(orderObj);
                 const resp = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
@@ -2958,13 +3296,17 @@
                       آدرس: orderObj.address,
                       زمان_تحویل: orderObj.deliveryWhen || '-',
                       اقلام_سفارش: orderObj.items.map(i => `${i.name} × ${i.qty}`).join(' | '),
-                      مبلغ_کل_تومان: orderObj.total.toLocaleString()
+                      مبلغ_کل_تومان: orderObj.total.toLocaleString(),
+                      روش_تسویه: orderObj.paymentMethodLabel,
+                      مبلغ_پیش_پرداخت_تومان: orderObj.paymentDueNow.toLocaleString(),
+                      مانده_هنگام_تحویل_تومان: orderObj.paymentDueAtDelivery.toLocaleString()
                     })
                   }).catch(() => {});
                 }
 
                 myOrderHistory.unshift(orderObj);
                 localStorage.setItem('lotus_my_orders_v1', JSON.stringify(myOrderHistory.slice(0, 30)));
+                selectedPaymentOption=''; selectedReceiptFile=null;
                 cart = {};
                 saveCart();
                 renderAll();
@@ -3034,8 +3376,11 @@
 
       async function openAdminModalNow() {
         document.getElementById('adminModal').classList.remove('hidden');
+        await loadAccountingVaultFromGithub(true);
         renderAdminTab();
         await fetchLiveOrdersFromRelay();
+        reconcileOrdersWithAccounting();
+        if(accountingVaultDirty) saveAccountingVaultToGithub().catch(()=>{});
         if (currentAdminTab === 'orders') renderAdminTab();
       }
 
@@ -3046,33 +3391,16 @@
       });
 
       function syncAdminMobileNavigation(){
-        const names={orders:'🔔 ۱. سفارشات',registrations:'👥 ۲. ثبت‌نام مشتریان',prices:'📦 ۳. محصولات',customers:'⭐ ۴. صفحات اختصاصی',brand:'🏪 ۵. مشخصات برند و رمز',qr:'🔳 ۶. ساخت QR Code',design:'🎨 ۷. طراحی و ظاهر',sync:'☁️ ۸. آپلود گیت‌هاب'};
         document.querySelectorAll('.admin-tab,.admin-mobile-tab').forEach(b=>b.classList.toggle('active',b.dataset.atab===currentAdminTab));
-        const label=document.getElementById('adminMobileCurrentLabel');
-        if(label) label.textContent=names[currentAdminTab] || 'انتخاب بخش';
       }
       function activateAdminTab(tab){
         collectAdminInputs();
         currentAdminTab=tab;
         syncAdminMobileNavigation();
-        const menu=document.getElementById('adminMobileNavMenu');
-        const toggle=document.getElementById('adminMobileNavToggle');
-        if(menu) menu.classList.remove('open');
-        if(toggle) toggle.setAttribute('aria-expanded','false');
         renderAdminTab();
       }
       document.querySelectorAll('.admin-tab,.admin-mobile-tab').forEach(btn=>btn.addEventListener('click',()=>activateAdminTab(btn.dataset.atab)));
-      (function bindMobileAdminNavigation(){
-        const toggle=document.getElementById('adminMobileNavToggle');
-        const menu=document.getElementById('adminMobileNavMenu');
-        if(!toggle || !menu) return;
-        toggle.addEventListener('click',()=>{
-          const open=menu.classList.toggle('open');
-          toggle.setAttribute('aria-expanded',open?'true':'false');
-        });
-        document.addEventListener('click',e=>{ if(!menu.contains(e.target) && e.target!==toggle && !toggle.contains(e.target)){ menu.classList.remove('open'); toggle.setAttribute('aria-expanded','false'); } });
-        syncAdminMobileNavigation();
-      })();
+
 
       function makeQrSvgString(url, sizePx) {
         const qr = qrcode(0, 'M');
@@ -3280,6 +3608,7 @@
               <label>سایز / تعداد اسلایس *</label>
               <input id="np_serv" value="۸ اسلایس" placeholder="مثلاً ۸ اسلایس یا تک‌نفره">
             </div>
+            <div class="field" style="grid-column:1/-1"><label>🔒 هزینهٔ تمام‌شدهٔ یک قالب کامل (فقط مدیر، تومان)</label><input id="np_cost" inputmode="numeric" placeholder="اختیاری — در دفتر رمزگذاری‌شده ذخیره می‌شود"></div>
             <div class="field" style="grid-column:1/-1">
               <label>توضیحات و ترکیبات محصول</label>
               <input id="np_desc" placeholder="مثلاً تهیه شده با زعفران سرگل و کرم پنیری تازه...">
@@ -3357,6 +3686,8 @@
           if (pickedDataUrl) newItem._previewDataUrl = pickedDataUrl;
 
           state.items.unshift(newItem);
+          const newCostRaw=toEnDigits((document.getElementById('np_cost')||{}).value||'').replace(/[^0-9]/g,'').trim();
+          if(newCostRaw)pendingProductCosts[newId]=parseInt(newCostRaw,10);
           modal.classList.add('hidden');
           renderAdminTab();
           const adminBody = document.getElementById('adminBody');
@@ -3365,6 +3696,60 @@
           document.getElementById('adminToast').textContent = `محصول جدید «${name}» به ابتدای لیست اضافه شد ✓ برای انتشار روی همه گوشی‌ها دکمه سبز ذخیره را بزنید!`;
           showLuxuryToast(`محصول «${name}» با موفقیت به منو اضافه شد ✨`);
         });
+      }
+
+      function paymentAdminButtonLabel(ord){
+        const method=ord.paymentMethod||'';const paid=Number(ord.paymentReceived)||0;const total=Number(ord.total)||0;
+        if(method==='full'&&paid<total)return 'بررسی رسید و تأیید دریافت کامل';
+        if(method==='half'&&paid===0)return 'بررسی رسید و تأیید پیش‌پرداخت ۵۰٪';
+        if(method==='half'&&paid<total&&ord.status==='done')return 'ثبت دریافت ماندهٔ تحویل';
+        if(method==='delivery'&&paid<total&&ord.status==='done')return 'ثبت دریافت هنگام تحویل';
+        return '';
+      }
+      function reconcileOrdersWithAccounting(){
+        let changed=false;
+        for(const ord of adminOrders){
+          if(!ord||ord.kind==='registration')continue;
+          const sales=(accountingVault.entries||[]).filter(e=>e.orderId===ord.id&&e.kind==='order-payment');
+          const paid=Math.min(Number(ord.total)||0,sales.reduce((n,e)=>n+(Number(e.amount)||0),0));
+          if(paid>(Number(ord.paymentReceived)||0)){ord.paymentReceived=paid;ord.paymentStatus=paid>=(Number(ord.total)||0)?'paid':'partially_paid';ord.paymentUpdatedAt=Math.max(...sales.map(x=>Number(x.date)||0));changed=true;}
+          const cogs=(accountingVault.entries||[]).filter(e=>e.orderId===ord.id&&e.kind==='order-cogs').reduce((n,e)=>n+(Number(e.amount)||0),0);
+          if(cogs>(Number(ord.cogsRecognized)||0)){ord.cogsRecognized=cogs;changed=true;}
+        }
+        if(changed){localStorage.setItem('lotus_admin_orders_cache_v1',JSON.stringify(adminOrders));saveOrdersVaultToGithub();}
+        return changed;
+      }
+      async function confirmOrderPayment(orderId){
+        const ord=adminOrders.find(x=>x.id===orderId);if(!ord||paymentConfirmInFlight.has(orderId))return;
+        paymentConfirmInFlight.add(orderId);
+        if(passwordChangePendingDeploy){paymentConfirmInFlight.delete(orderId);accountingToast('ابتدا رمز جدید را از تب همگام‌سازی همراه با دفترها منتشر کنید.');return;}
+        if(!accountingPasswordIsStrong()){paymentConfirmInFlight.delete(orderId);accountingToast('ابتدا در تب مشخصات رمز مدیریت را به ۱۰ نویسه شامل حرف لاتین و عدد ارتقا دهید.');return;}
+        try{
+          await loadAccountingVaultFromGithub();
+          if(ord.costSnapshotEnvelope&&!ord.costSnapshot)await hydrateOrderAccountingData(ord);
+          const total=Math.max(0,Math.round(Number(ord.total)||0));
+          const ledgerPaid=(accountingVault.entries||[]).filter(e=>e.orderId===ord.id&&e.kind==='order-payment').reduce((n,e)=>n+(Number(e.amount)||0),0);
+          const already=Math.max(0,Math.round(Number(ord.paymentReceived)||0),Math.round(ledgerPaid));
+          let amount=0;
+          if(ord.paymentMethod==='full')amount=total-already;
+          else if(ord.paymentMethod==='half'){
+            if(already===0)amount=Math.ceil(total/2);
+            else if(ord.status==='done')amount=total-already;
+          }else if(ord.paymentMethod==='delivery'&&ord.status==='done')amount=total-already;
+          if(amount<=0){accountingToast('این سفارش در وضعیت فعلی مبلغ قابل تأییدی ندارد.');return;}
+          if(ord.paymentMethod!=='delivery'&&already===0&&!ord.receiptInfo){accountingToast('برای پیش‌پرداخت، رسید مشتری موجود نیست. دریافت را بدون رسید تأیید نکنید.');return;}
+          const now=Date.now(),nextPaid=Math.min(total,already+amount);
+          const income={id:'pay_'+ord.id+'_'+now,type:'income',kind:'order-payment',amount,date:now,category:'فروش سفارش',orderId:ord.id,note:(ord.paymentMethod==='half'&&already>0)?'تسویه مانده هنگام تحویل':'تأیید دریافت توسط مدیر',createdAt:now};
+          const added=[income];
+          const cost=orderCostTotal(ord);
+          if(cost!=null&&total>0){const target=Math.round(cost*nextPaid/total),ledgerCogs=(accountingVault.entries||[]).filter(e=>e.orderId===ord.id&&e.kind==='order-cogs').reduce((n,e)=>n+(Number(e.amount)||0),0),recognized=Math.max(0,Number(ord.cogsRecognized)||0,Math.round(ledgerCogs)),delta=Math.max(0,target-recognized);if(delta>0)added.push({id:'cogs_'+ord.id+'_'+now,type:'cogs',kind:'order-cogs',amount:delta,date:now,category:'بهای تمام‌شده',orderId:ord.id,note:'تخصیص متناسب با وجه وصول‌شده',createdAt:now});}
+          accountingVault.entries.push(...added);accountingVaultDirty=true;
+          try{await saveAccountingVaultToGithub();}catch(err){accountingVault.entries=accountingVault.entries.filter(x=>!added.some(a=>a.id===x.id));throw err;}
+          ord.paymentReceived=nextPaid;ord.paymentStatus=nextPaid>=total?'paid':nextPaid>0?'partially_paid':'awaiting_confirmation';ord.paymentUpdatedAt=now;ord.updatedStatusAt=Math.max(Number(ord.updatedStatusAt)||0,now);ord.paymentEvents=ord.paymentEvents||[];ord.paymentEvents.push({amount,date:now,method:ord.paymentMethod,confirmedByAdmin:true});if(ord.paymentMethod!=='delivery'&&already===0)ord.receiptReviewedAt=now;if(cost!=null&&total>0)ord.cogsRecognized=Math.round(cost*nextPaid/total);else if(cost==null)ord.costMissing=true;
+          localStorage.setItem('lotus_admin_orders_cache_v1',JSON.stringify(adminOrders));
+          await saveOrdersVaultToGithub();updateOrderBadges();accountingToast('دریافت وجه ثبت شد و درآمد فقط اکنون به دفتر اضافه شد ✓');
+          renderAdminTab();
+        }catch(err){accountingToast(err.message||'تأیید پرداخت انجام نشد.');}finally{paymentConfirmInFlight.delete(orderId);}
       }
 
       function renderAdminTab() {
@@ -3395,6 +3780,10 @@
                 </div>`
               : filtered.map(ord => {
                   const st = ord.status || 'new';
+                  const paymentLabel=ord.paymentMethodLabel||'روش تسویه ثبت نشده (سفارش قدیمی)';
+                  const paymentReceived=Number(ord.paymentReceived)||0;
+                  const paymentDue=Math.max(0,(Number(ord.total)||0)-paymentReceived);
+                  const paymentBtn=paymentAdminButtonLabel(ord);
                   const smsBody = encodeURIComponent(`سلام ${ord.customerName} عزیز (${ord.cafeName || ''})، سفارش شما (${ord.id}) در ${state.brand.name} دریافت شد.`);
                   return `
                   <div class="order-card-admin status-${st}">
@@ -3413,6 +3802,7 @@
                         جمع کل سفارش: ${formatPriceFa(ord.total)} تومان
                       </div>
                     </div>
+                    <div class="order-payment-admin"><div><b>روش تسویه:</b> ${escapeHtml(paymentLabel)}</div><div><b>وصول‌شده:</b> ${formatPriceFa(paymentReceived)} تومان · <b>باقی‌مانده:</b> ${formatPriceFa(paymentDue)} تومان</div><div><b>وضعیت:</b> ${ord.paymentStatus==='paid'?'تسویه کامل':ord.paymentStatus==='partially_paid'?'بخشی دریافت شده':ord.paymentMethod==='delivery'?'پرداخت هنگام تحویل':'در انتظار تأیید رسید'}</div><div class="order-payment-actions">${ord.receiptInfo?`<button type="button" class="icon-btn" data-open-receipt="${escapeHtml(ord.id)}">🧾 مشاهدهٔ رسید</button>${!(accountingVault.receiptBlobs&&accountingVault.receiptBlobs[ord.id])?'<small class="receipt-archive-hint">پیوست موقت است؛ رسید را برای آرشیو رمزگذاری‌شده باز کنید.</small>':''}`:''}${paymentBtn?`<button type="button" class="icon-btn btn-green" data-confirm-payment="${escapeHtml(ord.id)}">${paymentBtn}</button>`:''}</div></div>
                     <div style="font-size:12.5px;color:var(--text);line-height:1.8;margin-bottom:10px;padding:8px 10px;border-radius:9px;background:var(--surface)">
                       <div>📍 <strong>آدرس دقیق تحویل:</strong> ${escapeHtml(ord.address || ord.note || '-')}</div>
                       ${ord.deliveryWhen ? `<div>🕒 <strong>زمان تحویل / توضیحات:</strong> ${escapeHtml(ord.deliveryWhen)}</div>` : ''}
@@ -3441,8 +3831,11 @@
             const btn = document.getElementById('btnRefreshOrders');
             btn.textContent = 'در حال دریافت...';
             await fetchLiveOrdersFromRelay();
+            reconcileOrdersWithAccounting();
             renderAdminTab();
           });
+          body.querySelectorAll('[data-confirm-payment]').forEach(btn=>btn.addEventListener('click',()=>confirmOrderPayment(btn.dataset.confirmPayment)));
+          body.querySelectorAll('[data-open-receipt]').forEach(btn=>btn.addEventListener('click',()=>openOrderReceipt(btn.dataset.openReceipt)));
           body.querySelectorAll('[data-ostatus]').forEach(sel => {
             sel.addEventListener('change', () => {
               const ord = adminOrders.find(x => x.id === sel.dataset.ostatus);
@@ -3658,6 +4051,10 @@
                   <div class="field" style="grid-column:3/-1">
                     <label>ماندگاری / نکته نگهداری</label>
                     <input class="ei-shelf" data-sidx="${idx}" value="${escapeHtml(it.shelfLife||'')}" placeholder="ماندگاری در یخچال: ۴ روز">
+                  </div>
+                  <div class="field" style="grid-column:1/-1;padding:8px 10px;border:1px dashed var(--border-strong);border-radius:10px;background:var(--surface-soft)">
+                    <label>🔒 هزینهٔ تمام‌شدهٔ یک قالب کامل — فقط مدیر (تومان)</label>
+                    <input class="ei-cost" data-product-cost="${escapeHtml(it.id)}" inputmode="numeric" value="${currentProductCost(it.id)==null?'':formatPriceFa(currentProductCost(it.id))}" placeholder="ذخیره در دفتر رمزگذاری‌شده">
                   </div>
                 </div>
               `).join('')}
@@ -3907,9 +4304,17 @@
                 <input dir="ltr" type="email" id="f_notifyEmail" value="${escapeHtml((state.orderConfig && state.orderConfig.notifyEmail) || '')}" placeholder="example@gmail.com">
               </div>
               <div class="field" style="grid-column:1/-1"><label>توضیح شرایط ثبت سفارش در پایین صفحه</label><input id="f_note" value="${escapeHtml(b.orderNote)}"></div>
+              <div class="field" style="grid-column:1/-1;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-soft)">
+                <label style="font-weight:800">💳 اطلاعات کارت برای پیش‌پرداخت سفارش</label>
+                <div class="form-grid">
+                  <div class="field"><label>نام صاحب کارت (نمایش به مشتری)</label><input id="f_paymentCardHolder" value="${escapeHtml(b.paymentCardHolder||'')}" placeholder="مثلاً نام صاحب حساب"></div>
+                  <div class="field"><label>شماره کارت ۱۶ رقمی (نمایش به مشتری)</label><input dir="ltr" inputmode="numeric" maxlength="23" id="f_paymentCardNumber" value="${escapeHtml(b.paymentCardNumber||'')}" placeholder="0000 0000 0000 0000"></div>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted)">این دو مورد عمداً در اطلاعات عمومی منو نگهداری می‌شوند تا مشتری بتواند پرداخت کند. هزینه‌ها و سود حسابداری در دفتر رمزگذاری‌شده و فقط برای مدیریت ذخیره می‌شوند.</div>
+              </div>
               <div style="grid-column:1/-1; font-size:11px; color:var(--text-muted); padding:8px 10px; background:var(--surface-soft); border:1px dashed var(--border); border-radius:8px">💡 دسته‌بندی‌ها اکنون در تب <strong>📦 محصولات</strong> مدیریت می‌شوند</div>
               <div class="field" style="grid-column:1/-1;padding-top:10px;border-top:1px solid var(--border)">
-                <label>تغییر رمز ورود به پنل مدیریت (مهم: حتماً رمز اختصاصی خودتان را جایگزین 1234 کنید)</label>
+                <label>تغییر رمز ورود به پنل مدیریت (برای حسابداری: حداقل ۱۰ نویسه، شامل حرف لاتین و عدد؛ رمز پیش‌فرض 1234 را فوراً عوض کنید)</label>
                 <div style="display:flex;gap:8px;max-width:420px">
                   <input dir="ltr" type="password" id="f_newAdminPass" placeholder="رمز جدید دلخواه...">
                   <button type="button" class="icon-btn admin-trigger" id="btnSetNewPass">ثبت رمز جدید</button>
@@ -3933,13 +4338,21 @@
 
           document.getElementById('btnSetNewPass').addEventListener('click', async () => {
             const np = toEnDigits(document.getElementById('f_newAdminPass').value.trim());
-            if (np.length < 4) {
-              document.getElementById('adminToast').textContent = 'رمز جدید باید حداقل ۴ رقم یا کاراکتر باشد.';
+            if (np.length < 10 || !/[A-Za-z]/.test(np) || !/\d/.test(np)) {
+              document.getElementById('adminToast').textContent = 'رمز جدید باید دست‌کم ۱۰ نویسه و شامل حداقل یک حرف لاتین و یک عدد باشد.';
               return;
             }
-            await rewrapPrivateKeyWithNewPassword(np);
-            document.getElementById('f_newAdminPass').value = '';
-            document.getElementById('adminToast').textContent = 'رمز مدیریت و کلید رمزنگاری سفارشات تغییر کرد ✓ حالا دکمه سبز ذخیره را بزنید!';
+            try {
+              await loadAccountingVaultFromGithub(true);
+              if(accountingVaultLoadError)throw new Error(accountingVaultLoadError);
+              await rewrapPrivateKeyWithNewPassword(np);
+              accountingPasswordChangedThisSession=true;
+              passwordChangePendingDeploy=true;
+              document.getElementById('f_newAdminPass').value = '';
+              document.getElementById('adminToast').textContent = 'رمز جدید آماده شد. برای جلوگیری از ناسازگاری، از تب همگام‌سازی دکمه سبز را بزنید؛ تنظیم سایت و دفترهای رمزگذاری‌شده با هم منتشر می‌شوند.';
+            } catch(err) {
+              document.getElementById('adminToast').textContent = 'تغییر رمز انجام نشد تا دفترها از دست نروند: '+err.message;
+            }
           });
 
         } else if (currentAdminTab === 'qr') {
@@ -4191,6 +4604,9 @@
             });
           }
           document.getElementById('btnAutoDeployGithub').addEventListener('click', autoDeployWholeSiteToGithub);
+        } else if(currentAdminTab==='accounting') {
+          renderAccountingTab(body);
+          loadAccountingVaultFromGithub().then(()=>{if(currentAdminTab==='accounting')renderAccountingTab(body);}).catch(()=>{});
         }
       }
 
@@ -4209,6 +4625,10 @@
           state.brand.telegram = document.getElementById('f_tg').value;
           state.brand.defaultTheme = document.getElementById('f_theme').value;
           state.brand.orderNote = document.getElementById('f_note').value;
+          const cardHolderEl=document.getElementById('f_paymentCardHolder');
+          const cardNumEl=document.getElementById('f_paymentCardNumber');
+          if(cardHolderEl) state.brand.paymentCardHolder=cardHolderEl.value.trim();
+          if(cardNumEl) state.brand.paymentCardNumber=toEnDigits(cardNumEl.value).replace(/[^0-9]/g,'').slice(0,16);
           const em = document.getElementById('f_notifyEmail');
           if (em && state.orderConfig) state.orderConfig.notifyEmail = em.value.trim();
           // Categories editing if present
@@ -4282,6 +4702,8 @@
           if (badgeIn) state.items[idx].badge = badgeIn.value.trim();
           const shelfIn = row.querySelector('.ei-shelf');
           if (shelfIn) state.items[idx].shelfLife = shelfIn.value.trim();
+          const costIn=row.querySelector('.ei-cost');
+          if(costIn){const value=toEnDigits(costIn.value).replace(/[^0-9]/g,'').trim();const next=value?parseInt(value,10):null;const current=currentProductCost(state.items[idx].id);if(next!==current)pendingProductCosts[state.items[idx].id]=next;}
         });
         document.querySelectorAll('.vip-row').forEach(row => {
           const vi = +row.dataset.vidx;
@@ -4320,7 +4742,11 @@
       async function autoDeployWholeSiteToGithub() {
         collectAdminInputs();
         const prog = document.getElementById('deployProgressTxt');
+        if(Object.keys(pendingProductCosts).length){
+          try{await applyPendingProductCosts();}catch(err){if(prog)prog.textContent='هزینهٔ خصوصی ذخیره نشد؛ انتشار متوقف شد: '+err.message;return;}
+        }
         const box = document.getElementById('deployedUrlBox');
+        let rekeyedAccountingEnvelope=null;
         const cfg = detectCloudRepo();
         const token = cfg.token;
         if (!token) {
@@ -4394,14 +4820,29 @@
           const parentCommitData = await parentCommitRes.json();
           const parentTreeSha = parentCommitData.tree && parentCommitData.tree.sha;
 
-          const indexHtmlText = await (await fetch('index.html?v=' + Date.now())).text();
+          let indexHtmlText = await (await fetch('index.html?v=' + Date.now())).text();
           const cleanState = getCleanMenuStateForSave();
+          const fallbackB64=utf8ToBase64(JSON.stringify(cleanState));
+          const fallbackStartMarker='/*MENU_DATA_FALLBACK_START*/',fallbackEndMarker='/*MENU_DATA_FALLBACK_END*/';
+          const fallbackStartAt=indexHtmlText.indexOf(fallbackStartMarker),fallbackEndAt=indexHtmlText.indexOf(fallbackEndMarker,fallbackStartAt);
+          if(fallbackStartAt>=0&&fallbackEndAt>=0)indexHtmlText=indexHtmlText.slice(0,fallbackStartAt)+fallbackStartMarker+'window.__MENU_DATA_FALLBACK_B64__='+JSON.stringify(fallbackB64)+';'+indexHtmlText.slice(fallbackEndAt);
+          const mdSrcAt=indexHtmlText.indexOf('menu-data.js?v=');if(mdSrcAt>=0){const mdSrcEnd=indexHtmlText.indexOf('"',mdSrcAt);if(mdSrcEnd>mdSrcAt)indexHtmlText=indexHtmlText.slice(0,mdSrcAt)+'menu-data.js?v='+Date.now()+indexHtmlText.slice(mdSrcEnd);}
           const menuDataText = 'window.MENU_DATA = ' + JSON.stringify(cleanState, null, 2) + ';\n';
           const fileEntries = [
             { path: 'index.html', b64: utf8ToBase64(indexHtmlText) },
             { path: 'menu-data.js', b64: utf8ToBase64(menuDataText) },
             { path: '.nojekyll', b64: '' }
           ];
+          if(passwordChangePendingDeploy){
+            const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+            const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(unlockedAdminPassword),'PBKDF2',false,['deriveKey']);
+            const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt']);
+            const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(adminOrders)));
+            const orderEnvelope={salt:arrayBufferToBase64(salt.buffer),iv:arrayBufferToBase64(iv.buffer),ct:arrayBufferToBase64(ct)};
+            rekeyedAccountingEnvelope=await encryptAccountingVault(accountingVault);
+            fileEntries.push({path:'orders-vault.enc.json',b64:utf8ToBase64(JSON.stringify(orderEnvelope))});
+            fileEntries.push({path:'accounting-vault.enc.json',b64:utf8ToBase64(JSON.stringify(rekeyedAccountingEnvelope))});
+          }
 
           const uniqueAssetPaths = Array.from(new Set([
             'assets/qrcode.min.js',
@@ -4447,6 +4888,7 @@
             body: JSON.stringify({ base_tree: parentTreeSha, tree: treeItems })
           });
           const tJson = await tRes.json();
+          if(!tRes.ok||!tJson.sha)throw new Error('ساخت درخت انتشار در GitHub ناموفق بود.');
 
           const cRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/commits`, {
             method: 'POST',
@@ -4454,12 +4896,14 @@
             body: JSON.stringify({ message: 'Deploy v3 menu with ordering, photo upload & VIP portals', tree: tJson.sha, parents: [parentSha] })
           });
           const cJson = await cRes.json();
+          if(!cRes.ok||!cJson.sha)throw new Error('ساخت commit انتشار در GitHub ناموفق بود.');
 
-          await fetch(`https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${branch}`, {
+          const refUpdate = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${branch}`, {
             method: 'PATCH',
             headers,
             body: JSON.stringify({ sha: cJson.sha, force: true })
           });
+          if(!refUpdate.ok)throw new Error('به‌روزرسانی شاخه GitHub ناموفق بود؛ رمز و دفترها هنوز در انتشار عمومی فعال نشده‌اند.');
 
           await fetch(`https://api.github.com/repos/${owner}/${repo}/pages`, {
             method: 'POST',
@@ -4468,6 +4912,10 @@
           }).catch(() => {});
 
           pendingImageUploads = {};
+          if(passwordChangePendingDeploy&&rekeyedAccountingEnvelope){
+            try{localStorage.setItem('lotus_accounting_vault_enc_v1',JSON.stringify(rekeyedAccountingEnvelope));}catch(_){}
+            accountingVaultDirty=false;accountingPasswordChangedThisSession=false;passwordChangePendingDeploy=false;
+          }
           prog.textContent = 'تبریک! نسخه کامل جدید با موفقیت روی سایت شما فعال شد ✓';
           if (box) {
             box.classList.remove('hidden');
@@ -4612,31 +5060,15 @@
         }
       });
 
-      renderAll();
+      try{renderAll();}catch(err){
+        console.error('Initial menu render failed; using safe fallback UI.',err);
+        const app=document.querySelector('.items-section')||document.querySelector('main');
+        if(app)app.insertAdjacentHTML('afterbegin','<div class="empty-state" role="status">در حال آماده‌سازی منو… لطفاً لحظه‌ای صبر کنید.</div>');
+      }
       updateOrderBadges();
       syncLatestFromNetwork();
-      // Splash logic
-      (function initSplash(){
-        const s = state.design || {};
-        if(s.showSplash === false || !s.logoImage) return;
-        const overlay=document.getElementById('splashScreen');
-        const img=document.getElementById('splashLogoImg');
-        if(!overlay || !img) return;
-        img.src = s.logoImage;
-        overlay.classList.remove('hidden');
-        document.body.style.overflow='hidden';
-        const dur = Math.max(800, Math.min(5000, Number(s.splashDuration)||1800));
-        setTimeout(()=>{
-          overlay.classList.add('hide');
-          document.body.style.overflow='';
-          setTimeout(()=> overlay.classList.add('hidden'), 950);
-        }, dur);
-        // Allow click to skip
-        overlay.addEventListener('click', ()=>{
-          overlay.classList.add('hide');
-          document.body.style.overflow='';
-        });
-      })();
+      requestAnimationFrame(()=>requestAnimationFrame(signalSplashAppReady));
+      setTimeout(signalSplashAppReady,4500);
     })();
   </script>
 </body>

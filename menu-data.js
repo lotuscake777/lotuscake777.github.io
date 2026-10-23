@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1792789835772,
+  "updatedAt": 1792794356137,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
@@ -16,7 +16,9 @@ window.MENU_DATA = {
     "telegram": "lotuscaker",
     "publicUrl": "https://lotuscaker.github.io",
     "defaultTheme": "light",
-    "orderingEnabled": true
+    "orderingEnabled": true,
+    "paymentCardNumber": "",
+    "paymentCardHolder": ""
   },
   "categories": [
     {
@@ -375,7 +377,13 @@ window.MENU_DATA = {
     "logoBlur": 0,
     "logoSize": 28,
     "showSplash": true,
-    "splashDuration": 1800
+    "splashDuration": 1800,
+    "showLotusWatermark": true,
+    "lotusWatermarkImage": "assets/images/lotus-petal-watermark.png",
+    "lotusWatermarkSize": 38,
+    "lotusWatermarkOpacity": 84,
+    "lotusWatermarkPosition": "bottom-left"
   },
-  "encryptedAccounts": {}
+  "encryptedAccounts": {},
+  "accountingCostSnapshotEnvelope": ""
 };
