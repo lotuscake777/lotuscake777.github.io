@@ -2261,7 +2261,7 @@
             const mobileLogoWrap = document.getElementById('mobileLogoWrap');
             if(mobileLogoWrap){
               if(imgSrc && pos!=='hidden'){
-                const mobileLogoHeight=Math.max(52,Math.min(72,size));
+                const mobileLogoHeight=Math.max(68,Math.min(76,size+16));
                 mobileLogoWrap.innerHTML = `<img src="${imgSrc}" alt="لوگوی لوتوس کیکر" style="height:${mobileLogoHeight}px;opacity:${op};filter:${blur?'blur('+blur+'px)':''}">`;
                 mobileLogoWrap.classList.remove('hidden');
               } else {
@@ -5118,5 +5118,5 @@
       setTimeout(signalSplashAppReady,4500);
     })();
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4fb5d5d4c35d296',t:'MTc5Mjg2OTg5Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
