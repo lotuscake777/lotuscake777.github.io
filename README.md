@@ -1,0 +1,1 @@
+Improve mobile startup compatibility
