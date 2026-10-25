@@ -1,8 +1,8 @@
 {
-  "name": "لوتوس کیکر",
-  "short_name": "لوتوس",
-  "lang": "fa",
-  "dir": "rtl",
+  "name": "Lotus Caker",
+  "short_name": "Lotus Caker",
+  "lang": "en",
+  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
