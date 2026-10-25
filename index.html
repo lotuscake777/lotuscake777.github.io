@@ -8,6 +8,12 @@
   <meta http-equiv="Expires" content="0">
   <title>منوی آنلاین کیک و چیزکیک</title>
   <meta name="description" content="منوی آنلاین، ثبت سفارش مستقیم و لیست قیمت روز کیک‌ها و چیزکیک‌های دست‌ساز">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Lotus Caker">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
   <style>
     @font-face { font-family: 'Vazirmatn'; src: url('assets/fonts/Vazirmatn-Light.woff2') format('woff2'); font-weight: 300; font-display: swap; }
     @font-face { font-family: 'Vazirmatn'; src: url('assets/fonts/Vazirmatn-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
@@ -887,20 +893,22 @@
 
     /* Responsive mobile layout: same app state/data as desktop, adjusted presentation only. */
     .mobile-logo-wrap, .admin-mobile-nav-menu { display:none; }
+    .register-mobile-icon { display:none; }
+    .register-desktop-emoji { display:inline; }
     @media (max-width: 640px) {
       .top-bar { padding: 9px 0 11px; }
       #headerLogoBg, #headerLogoTopCenter, #headerLogoSideL, #headerLogoSideR { display:none !important; }
-      .mobile-logo-wrap:not(.hidden) { display:block; text-align:center; height:110px; margin:0 auto 1px; cursor:pointer; touch-action:manipulation; }
-      .mobile-logo-wrap img { display:block; width:auto; max-width:60vw; max-height:106px; object-fit:contain; margin:0 auto; }
-      .top-row { flex-direction:column; align-items:center; justify-content:center; gap:7px; }
-      .brand-wrap { min-width:0; width:100%; justify-content:center !important; text-align:center; }
-      .brand-wrap > div:last-child { width:100%; }
-      .eyebrow-badge { display:none; }
-      .brand-title { font-size:17px; line-height:1.35; }
-      .brand-tagline { margin-top:3px; font-size:11px; }
-      .top-actions { position:static; width:100%; justify-content:center; gap:7px; order:1; }
-      .brand-wrap { order:2; }
-      .top-actions .icon-btn { min-height:38px; height:38px; padding:0 10px; font-size:11.5px; }
+      .mobile-logo-wrap:not(.hidden) { display:flex; align-items:center; justify-content:center; position:relative; z-index:1; width:100%; height:82px; margin:0 auto; cursor:pointer; touch-action:manipulation; }
+      .mobile-logo-wrap img { display:block; width:auto !important; height:62px !important; max-width:52vw !important; max-height:62px !important; object-fit:contain; margin:0 auto; }
+      .top-row { position:absolute; top:0; left:0; right:0; z-index:5; display:block; height:0; overflow:visible; }
+      .brand-wrap { display:none !important; }
+      .top-actions { position:static; display:block; width:100%; height:0; margin:0; padding:0; }
+      .top-actions .icon-btn { min-height:30px; height:30px; padding:0 7px; font-size:9.5px; }
+      #btnRegisterCustomer { position:absolute; top:7px; right:6px; z-index:1002; min-height:30px; height:30px; padding:0 7px; gap:4px; border-radius:9px; font-size:9px; white-space:nowrap; }
+      #btnRegisterCustomer .register-desktop-emoji { display:none; }
+      #btnRegisterCustomer .register-mobile-icon { display:block; width:13px; height:13px; flex:0 0 13px; }
+      #btnLogoutHeader { position:absolute; top:46px; right:0; min-height:26px !important; height:26px !important; padding:0 7px !important; font-size:9px !important; }
+      #btnOpenAdmin { position:absolute; top:46px; left:0; min-height:26px !important; height:26px !important; padding:0 7px !important; font-size:9px !important; }
       #themeLabel { display:none; }
       #btnThemeToggle { position:absolute; top:9px; left:12px; z-index:1002; width:40px; padding:0; }
       #mainHeaderBar { overflow:visible !important; }
@@ -1028,7 +1036,9 @@
         <div id="headerLogoSideR" class="hidden"></div>
         <div class="top-actions">
           <button class="icon-btn admin-trigger" id="btnRegisterCustomer" type="button" style="background:var(--surface);color:var(--accent);border:1.5px solid var(--accent);font-weight:800">
-            <span id="lblRegisterBtn">👤 ورود / ثبت نام</span>
+            <span class="register-desktop-emoji" aria-hidden="true">👤</span>
+            <svg class="register-mobile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.3"></circle><path d="M5.2 20c.8-3.4 3.1-5.2 6.8-5.2s6 1.8 6.8 5.2"></path></svg>
+            <span id="lblRegisterBtn">ورود / ثبت نام</span>
           </button>
           <button class="icon-btn btn-danger hidden" id="btnLogoutHeader" type="button" title="خروج از حساب کاربری">
             <span>🚪 خروج</span>
@@ -2220,10 +2230,10 @@
         const logoutBtn = document.getElementById('btnLogoutHeader');
         if (regLbl) {
           if (customerProfile && customerProfile.loggedIn && (customerProfile.cafeName || customerProfile.name || customerProfile.username)) {
-            regLbl.textContent = `👤 ${customerProfile.cafeName || customerProfile.name || customerProfile.username}`;
+            regLbl.textContent = `${customerProfile.cafeName || customerProfile.name || customerProfile.username}`;
             if (logoutBtn) logoutBtn.classList.remove('hidden');
           } else {
-            regLbl.textContent = '👤 ورود / ثبت نام';
+            regLbl.textContent = 'ورود / ثبت نام';
             if (logoutBtn) logoutBtn.classList.add('hidden');
           }
         }
@@ -5132,5 +5142,5 @@
   })();
   </script>
   <!--End of Tawk.to Script-->
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5030368cc3dd24a',t:'MTc5Mjk1MDA5OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
