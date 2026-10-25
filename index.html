@@ -8,12 +8,6 @@
   <meta http-equiv="Expires" content="0">
   <title>منوی آنلاین کیک و چیزکیک</title>
   <meta name="description" content="منوی آنلاین، ثبت سفارش مستقیم و لیست قیمت روز کیک‌ها و چیزکیک‌های دست‌ساز">
-  <meta name="theme-color" content="#FFFFFF">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Lotus Caker">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
   <style>
     @font-face { font-family: 'Vazirmatn'; src: url('assets/fonts/Vazirmatn-Light.woff2') format('woff2'); font-weight: 300; font-display: swap; }
     @font-face { font-family: 'Vazirmatn'; src: url('assets/fonts/Vazirmatn-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
@@ -44,6 +38,31 @@
       --shadow-md: 0 12px 32px rgba(30, 27, 24, 0.08);
       --shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.24);
       --soldout-bg: rgba(255, 255, 255, 0.72);
+    }
+
+    html[data-theme="dark"] {
+      --bg: #141210;
+      --surface: #1E1A17;
+      --surface-soft: #27221E;
+      --border: #312A24;
+      --border-strong: #463C34;
+      --text: #F4EEE6;
+      --text-muted: #B8ACA0;
+      --text-subtle: #8A7E72;
+      --accent: #D7B277;
+      --accent-soft: rgba(215, 178, 119, 0.15);
+      --accent-contrast: #1A1511;
+      --ok: #5AC896;
+      --ok-soft: rgba(90, 200, 150, 0.14);
+      --warn: #FBBF24;
+      --warn-soft: rgba(251, 191, 36, 0.15);
+      --badge-bg: #29231E;
+      --badge-text: #E2C391;
+      --nav-bg: rgba(20, 18, 16, 0.90);
+      --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.28);
+      --shadow-md: 0 14px 34px rgba(0, 0, 0, 0.45);
+      --shadow-modal: 0 26px 65px rgba(0, 0, 0, 0.65);
+      --soldout-bg: rgba(20, 18, 16, 0.75);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -233,6 +252,26 @@
       display: flex;
     }
 
+    .view-toggle {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .view-toggle button {
+      border: none;
+      background: transparent;
+      color: var(--text-subtle);
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+    .view-toggle button.active { background: var(--surface-soft); color: var(--text); }
+
     .menu-section { padding: 28px 0 8px; }
     .sec-header {
       display: flex;
@@ -245,6 +284,10 @@
     }
     .sec-header h2 { font-size: 18px; font-weight: 800; color: var(--text); }
     .sec-header p { font-size: 12px; color: var(--text-muted); }
+
+    .items-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    @media (max-width: 820px) { .items-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+    @media (max-width: 420px) { .items-grid { gap: 10px; } }
 
     .card {
       background: var(--surface);
@@ -391,11 +434,10 @@
       padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 11.5px; color: var(--text-muted); font-weight: 600;
     }
     .trust-bar span { display: inline-flex; align-items: center; gap: 6px; }
-    .card-badge-row { display:flex; margin-top:5px; }
     .card-badge {
-      position:static; display:inline-flex; align-items:center; width:max-content;
-      background:var(--badge-bg); color:var(--badge-text); border:1px solid var(--border);
-      padding:2px 7px; border-radius:7px; font-size:10px; line-height:1.5; font-weight:700;
+      position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.94); color: var(--accent);
+      border: 1px solid var(--border-strong); padding: 3px 8px; border-radius: 999px;
+      font-size: 10.5px; font-weight: 800; box-shadow: var(--shadow-sm);
     }
     .per-slice-price { font-size: 10.5px; color: var(--text-subtle); margin-top: 2px; }
     .social-luxury {
@@ -484,7 +526,8 @@
       font-weight: 800;
     }
 
-    .items-list { display: flex; flex-direction: column; gap: 10px; }
+    .items-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 24px; }
+    @media (max-width: 760px) { .items-list { grid-template-columns: 1fr; gap: 10px; } }
     .items-list .card { flex-direction: row; align-items: center; padding: 10px; gap: 12px; }
     .items-list .card-img-wrap { width: 96px; height: 96px; aspect-ratio: 1 / 1; border-radius: 10px; flex-shrink: 0; }
     .items-list .card-body { padding: 2px 0; gap: 5px; min-width: 0; }
@@ -844,22 +887,22 @@
 
     /* Responsive mobile layout: same app state/data as desktop, adjusted presentation only. */
     .mobile-logo-wrap, .admin-mobile-nav-menu { display:none; }
-    .register-mobile-icon { display:none; }
-    .register-desktop-emoji { display:inline; }
     @media (max-width: 640px) {
       .top-bar { padding: 9px 0 11px; }
       #headerLogoBg, #headerLogoTopCenter, #headerLogoSideL, #headerLogoSideR { display:none !important; }
-      .mobile-logo-wrap:not(.hidden) { display:flex; align-items:center; justify-content:center; position:relative; z-index:1; width:100%; height:82px; margin:0 auto; cursor:pointer; touch-action:manipulation; }
-      .mobile-logo-wrap img { display:block; width:auto !important; height:62px !important; max-width:52vw !important; max-height:62px !important; object-fit:contain; margin:0 auto; }
-      .top-row { position:absolute; top:0; left:0; right:0; z-index:5; display:block; height:0; overflow:visible; }
-      .brand-wrap { display:none !important; }
-      .top-actions { position:static; display:block; width:100%; height:0; margin:0; padding:0; }
-      .top-actions .icon-btn { min-height:30px; height:30px; padding:0 7px; font-size:9.5px; }
-      #btnRegisterCustomer { position:absolute; top:7px; right:6px; z-index:1002; min-height:30px; height:30px; padding:0 7px; gap:4px; border-radius:9px; font-size:9px; white-space:nowrap; }
-      #btnRegisterCustomer .register-desktop-emoji { display:none; }
-      #btnRegisterCustomer .register-mobile-icon { display:block; width:13px; height:13px; flex:0 0 13px; }
-      #btnLogoutHeader { position:absolute; top:46px; right:0; min-height:26px !important; height:26px !important; padding:0 7px !important; font-size:9px !important; }
-      #btnOpenAdmin { position:absolute; top:46px; left:0; min-height:26px !important; height:26px !important; padding:0 7px !important; font-size:9px !important; }
+      .mobile-logo-wrap:not(.hidden) { display:block; text-align:center; height:110px; margin:0 auto 1px; cursor:pointer; touch-action:manipulation; }
+      .mobile-logo-wrap img { display:block; width:auto; max-width:60vw; max-height:106px; object-fit:contain; margin:0 auto; }
+      .top-row { flex-direction:column; align-items:center; justify-content:center; gap:7px; }
+      .brand-wrap { min-width:0; width:100%; justify-content:center !important; text-align:center; }
+      .brand-wrap > div:last-child { width:100%; }
+      .eyebrow-badge { display:none; }
+      .brand-title { font-size:17px; line-height:1.35; }
+      .brand-tagline { margin-top:3px; font-size:11px; }
+      .top-actions { position:static; width:100%; justify-content:center; gap:7px; order:1; }
+      .brand-wrap { order:2; }
+      .top-actions .icon-btn { min-height:38px; height:38px; padding:0 10px; font-size:11.5px; }
+      #themeLabel { display:none; }
+      #btnThemeToggle { position:absolute; top:9px; left:12px; z-index:1002; width:40px; padding:0; }
       #mainHeaderBar { overflow:visible !important; }
 
       .admin-modal { padding:7px; align-items:stretch; }
@@ -985,9 +1028,7 @@
         <div id="headerLogoSideR" class="hidden"></div>
         <div class="top-actions">
           <button class="icon-btn admin-trigger" id="btnRegisterCustomer" type="button" style="background:var(--surface);color:var(--accent);border:1.5px solid var(--accent);font-weight:800">
-            <span class="register-desktop-emoji" aria-hidden="true">👤</span>
-            <svg class="register-mobile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.3"></circle><path d="M5.2 20c.8-3.4 3.1-5.2 6.8-5.2s6 1.8 6.8 5.2"></path></svg>
-            <span id="lblRegisterBtn">ورود / ثبت نام</span>
+            <span id="lblRegisterBtn">👤 ورود / ثبت نام</span>
           </button>
           <button class="icon-btn btn-danger hidden" id="btnLogoutHeader" type="button" title="خروج از حساب کاربری">
             <span>🚪 خروج</span>
@@ -995,6 +1036,10 @@
           <button class="icon-btn admin-trigger hidden" id="btnOpenAdmin" type="button">
             <span>پنل مدیریت</span>
             <span class="badge-dot hidden" id="adminNewBadge">۰</span>
+          </button>
+          <button class="icon-btn" id="btnThemeToggle" type="button" aria-label="تغییر حالت رنگ">
+            <span id="themeIcon">🌙</span>
+            <span id="themeLabel">تیره</span>
           </button>
         </div>
       </div>
@@ -1012,6 +1057,14 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           </span>
           <input type="search" id="searchInput" placeholder="جستجوی نام کیک یا ترکیبات (مثلاً پسته، کارامل، نوتلا، انار)...">
+        </div>
+        <div class="view-toggle" role="group" aria-label="حالت نمایش">
+          <button type="button" id="btnGridView" class="active" title="نمایش شبکه‌ای">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </button>
+          <button type="button" id="btnListView" title="نمایش لیستی">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>
+          </button>
         </div>
       </div>
     </div>
@@ -1384,6 +1437,7 @@
         dd.palette = dd.palette || 'espresso';
         dd.accentColor = dd.accentColor || '#7A5435';
         dd.bgColor = dd.bgColor || '#FAF8F5';
+        dd.gridColumns = dd.gridColumns || 3;
         dd.fontScale = dd.fontScale || 'normal';
         dd.showMonogram = dd.showMonogram !== false;
         dd.monogramText = dd.monogramText || 'LC';
@@ -2086,16 +2140,23 @@
 
       let activeCat = 'all';
       let searchQuery = '';
-      try { localStorage.setItem('bakery_view_mode','list'); localStorage.removeItem('bakery_theme'); } catch (_) {}
+      let viewMode = safeStorageRead('localStorage','bakery_view_mode','grid') || 'grid';
       let currentAdminTab = 'orders';
       let adminOrderFilter = 'all';
       let detailItemId = null;
 
-      function applyTheme() {
-        document.documentElement.setAttribute('data-theme', 'light');
-        try { localStorage.removeItem('bakery_theme'); } catch (_) {}
+      function applyTheme(t) {
+        document.documentElement.setAttribute('data-theme', t);
+        document.getElementById('themeIcon').textContent = t === 'dark' ? '☀️' : '🌙';
+        document.getElementById('themeLabel').textContent = t === 'dark' ? 'روشن' : 'تیره';
       }
-      applyTheme();
+      applyTheme(safeStorageRead('localStorage','bakery_theme',state.brand.defaultTheme || 'light') || 'light');
+
+      document.getElementById('btnThemeToggle').addEventListener('click', () => {
+        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('bakery_theme', next);
+        applyTheme(next);
+      });
 
       const isLocalPreview = location.hostname === 'localhost' ||
         location.hostname === '127.0.0.1' ||
@@ -2142,6 +2203,9 @@
                 const parsedRemote = parseMenuJs(base64ToUtf8(meta.content));
                 if (parsedRemote && (parsedRemote.updatedAt || 0) >= (state.updatedAt || 0)) {
                   state = ensureOrderConfig(parsedRemote);
+                  if (!localStorage.getItem('bakery_theme') && state.brand.defaultTheme) {
+                    applyTheme(state.brand.defaultTheme);
+                  }
                   renderAll();
                 }
               }
@@ -2156,10 +2220,10 @@
         const logoutBtn = document.getElementById('btnLogoutHeader');
         if (regLbl) {
           if (customerProfile && customerProfile.loggedIn && (customerProfile.cafeName || customerProfile.name || customerProfile.username)) {
-            regLbl.textContent = `${customerProfile.cafeName || customerProfile.name || customerProfile.username}`;
+            regLbl.textContent = `👤 ${customerProfile.cafeName || customerProfile.name || customerProfile.username}`;
             if (logoutBtn) logoutBtn.classList.remove('hidden');
           } else {
-            regLbl.textContent = 'ورود / ثبت نام';
+            regLbl.textContent = '👤 ورود / ثبت نام';
             if (logoutBtn) logoutBtn.classList.add('hidden');
           }
         }
@@ -2197,7 +2261,7 @@
             const mobileLogoWrap = document.getElementById('mobileLogoWrap');
             if(mobileLogoWrap){
               if(imgSrc && pos!=='hidden'){
-                const mobileLogoHeight=Math.max(136,Math.min(152,size*2));
+                const mobileLogoHeight=Math.max(68,Math.min(76,size+16));
                 mobileLogoWrap.innerHTML = `<img src="${imgSrc}" alt="لوگوی لوتوس کیکر" style="height:${mobileLogoHeight}px;opacity:${op};filter:${blur?'blur('+blur+'px)':''}">`;
                 mobileLogoWrap.classList.remove('hidden');
               } else {
@@ -2258,6 +2322,13 @@
               trustBar.innerHTML = state.design.trustItems.map(t=>`<span>✦ ${escapeHtml(t)}</span>`).join('<span style="opacity:0.35">•</span>');
             } else trustBar.classList.add('hidden');
           }
+          // Grid columns
+          const gridStyle = document.getElementById('dynamicGridStyle');
+          if (!gridStyle) {
+            const s=document.createElement('style'); s.id='dynamicGridStyle'; document.head.appendChild(s);
+          }
+          const cols = Math.max(1, Math.min(4, Number(state.design.gridColumns)||3));
+          document.getElementById('dynamicGridStyle').textContent = `.items-grid{grid-template-columns:repeat(${cols},1fr)} @media(max-width:820px){.items-grid{grid-template-columns:repeat(${Math.min(cols,2)},1fr)}}`;
           // Font scale
           document.body.style.fontSize = state.design.fontScale==='large'?'15px':state.design.fontScale==='small'?'13px':'';
         }
@@ -2316,6 +2387,9 @@
           });
         });
 
+        document.getElementById('btnGridView').classList.toggle('active', viewMode === 'grid');
+        document.getElementById('btnListView').classList.toggle('active', viewMode === 'list');
+
         const q = searchQuery.trim().toLowerCase();
         const catsToShow = activeCat === 'all'
           ? state.categories
@@ -2337,7 +2411,7 @@
                 <h2>${cat.title}</h2>
                 <p>${cat.subtitle}</p>
               </div>
-              <div class="items-list">
+              <div class="${viewMode === 'grid' ? 'items-grid' : 'items-list'}">
                 ${list.map(item => {
                   const baseNum = parsePriceNumber(item.price);
                   const effNum = getEffectivePriceNum(item);
@@ -2364,6 +2438,7 @@
                   <article class="card" data-id="${item.id}">
                     <div class="card-img-wrap">
                       <img src="${item.image}" alt="${escapeHtml(item.name)}" loading="lazy">
+                      ${badgeHtml}
                       ${item.available === false ? '<div class="soldout-overlay"><span>اتمام موجودی روز</span></div>' : ''}
                       ${watermarkHtml}
                     </div>
@@ -2373,7 +2448,6 @@
                           <h3 class="card-title">${escapeHtml(item.name)}</h3>
                           <span class="serving-tag">${toFa(item.serving)}</span>
                         </div>
-                        ${badgeHtml ? `<div class="card-badge-row">${badgeHtml}</div>` : ''}
                         <p class="card-desc">${escapeHtml(item.desc)}</p>
                       </div>
                       <div class="card-footer">
@@ -2423,6 +2497,18 @@
 
       document.getElementById('searchInput').addEventListener('input', e => {
         searchQuery = e.target.value;
+        renderAll();
+      });
+
+      document.getElementById('btnGridView').addEventListener('click', () => {
+        viewMode = 'grid';
+        localStorage.setItem('bakery_view_mode', 'grid');
+        renderAll();
+      });
+
+      document.getElementById('btnListView').addEventListener('click', () => {
+        viewMode = 'list';
+        localStorage.setItem('bakery_view_mode', 'list');
         renderAll();
       });
 
@@ -4254,6 +4340,12 @@
               <div class="field"><label>شماره واتساپ با پیش‌شماره ۹۸ (بدون +)</label><input dir="ltr" id="f_wa" value="${escapeHtml(b.whatsapp)}"></div>
               <div class="field"><label>آیدی پیج اینستاگرام</label><input dir="ltr" id="f_ig" value="${escapeHtml(b.instagram)}"></div>
               <div class="field"><label>آیدی تلگرام</label><input dir="ltr" id="f_tg" value="${escapeHtml(b.telegram)}"></div>
+              <div class="field"><label>حالت رنگ پیش‌فرض سایت</label>
+                <select id="f_theme">
+                  <option value="light" ${b.defaultTheme !== 'dark' ? 'selected' : ''}>روشن مینیمال (پیشنهادی)</option>
+                  <option value="dark" ${b.defaultTheme === 'dark' ? 'selected' : ''}>تیره لوکس</option>
+                </select>
+              </div>
               <div class="field">
                 <label>ایمیل دریافت آنی سفارشات (اختیاری — جیمیل خودتان)</label>
                 <input dir="ltr" type="email" id="f_notifyEmail" value="${escapeHtml((state.orderConfig && state.orderConfig.notifyEmail) || '')}" placeholder="example@gmail.com">
@@ -4370,12 +4462,13 @@
             <div style="padding:12px;border-radius:12px;background:var(--surface-soft);border:1px solid var(--border);margin-bottom:14px">
               <div style="font-weight:800;margin-bottom:8px">قابل ویرایش همین الان (بدون کدنویسی):</div>
               <div style="font-size:12.5px;line-height:1.9;color:var(--text-muted)">
-                • نام برند، شعار، نشان بالای عنوان، توضیح همکاری (تب ۵) • قیمت، نام، اسلایس، توضیح، دسته‌بندی، موجود/ناموجود، عکس محصول + نشان لوکس روی عکس + ماندگاری هر محصول (تب ۳) • افزودن/حذف محصول جدید با عکس دلخواه (تب ۳) • صفحات اختصاصی مشتری + درصد تخفیف همکاری (تب ۴) • رنگ اصلی برند، رنگ پس‌زمینه، مونوگرام لوگو، نوار وضعیت پخت، نوار اعتماد، نمایش قیمت هر اسلایس، شبکه‌های اجتماعی، بازه‌های تحویل، گزینه‌های برش (همین تب ۷) • رمز مدیریت، ایمیل اطلاع‌رسانی، دسته‌بندی‌ها (تب ۵) • QR و لینک بدون فیلتر (تب ۶)
+                • نام برند، شعار، نشان بالای عنوان، توضیح همکاری (تب ۵) • قیمت، نام، اسلایس، توضیح، دسته‌بندی، موجود/ناموجود، عکس محصول + نشان لوکس روی عکس + ماندگاری هر محصول (تب ۳) • افزودن/حذف محصول جدید با عکس دلخواه (تب ۳) • صفحات اختصاصی مشتری + درصد تخفیف همکاری (تب ۴) • رنگ اصلی برند، رنگ پس‌زمینه، تعداد ستون نمایش منو (۲ یا ۳ یا ۴)، مونوگرام لوگو، نوار وضعیت پخت، نوار اعتماد، نمایش قیمت هر اسلایس، شبکه‌های اجتماعی، بازه‌های تحویل، گزینه‌های برش (همین تب ۷) • رمز مدیریت، ایمیل اطلاع‌رسانی، دسته‌بندی‌ها (تب ۵) • QR و لینک بدون فیلتر (تب ۶)
               </div>
             </div>
             <div class="form-grid">
               <div class="field"><label>رنگ اصلی برند (Accent)</label><input type="color" id="f_accentColor" value="${d.accentColor||'#7A5435'}" style="height:42px;padding:4px"></div>
               <div class="field"><label>رنگ پس‌زمینه سایت</label><input type="color" id="f_bgColor" value="${d.bgColor||'#FAF8F5'}" style="height:42px;padding:4px"></div>
+              <div class="field"><label>تعداد ستون نمایش منو</label><select id="f_gridCols"><option value="2" ${d.gridColumns==2?'selected':''}>۲ ستون</option><option value="3" ${d.gridColumns==3?'selected':''}>۳ ستون (پیشنهادی)</option><option value="4" ${d.gridColumns==4?'selected':''}>۴ ستون</option></select></div>
               <div class="field"><label>اندازه فونت</label><select id="f_fontScale"><option value="small" ${d.fontScale==='small'?'selected':''}>کوچک</option><option value="normal" ${d.fontScale==='normal'?'selected':''}>معمولی</option><option value="large" ${d.fontScale==='large'?'selected':''}>بزرگ</option></select></div>
               <div class="field" style="grid-column:1/-1; padding:10px; background:var(--bg); border-radius:10px; border:1px solid var(--border)">
                 <label style="font-weight:700; display:block; margin-bottom:8px">لوگوی هدر — آپلود و جایگاه</label>
@@ -4577,6 +4670,7 @@
           if (waEl) state.brand.whatsapp = waEl.value;
           state.brand.instagram = document.getElementById('f_ig').value;
           state.brand.telegram = document.getElementById('f_tg').value;
+          state.brand.defaultTheme = document.getElementById('f_theme').value;
           state.brand.orderNote = document.getElementById('f_note').value;
           const cardHolderEl=document.getElementById('f_paymentCardHolder');
           const cardNumEl=document.getElementById('f_paymentCardNumber');
@@ -4603,6 +4697,7 @@
           const d = state.design = state.design || {};
           d.accentColor = accEl.value;
           d.bgColor = document.getElementById('f_bgColor').value;
+          d.gridColumns = parseInt(document.getElementById('f_gridCols').value,10)||3;
           d.fontScale = document.getElementById('f_fontScale').value;
           const lgPosEl=document.getElementById('f_logoPosition');
           if(lgPosEl){
@@ -4894,7 +4989,7 @@
         const toast = document.getElementById('adminToast');
         collectAdminInputs();
         state.updatedAt = Date.now();
-        applyTheme();
+        applyTheme(state.brand.defaultTheme || 'light');
         renderAll();
 
         const cleanState = getCleanMenuStateForSave();
@@ -5023,5 +5118,19 @@
       setTimeout(signalSplashAppReady,4500);
     })();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4fb5d5d4c35d296',t:'MTc5Mjg2OTg5Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4fc0478b9ef4d56',t:'MTc5Mjg3Njc0Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4fff85edf835010',t:'MTc5MjkxODE4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+
+  <!--Start of Tawk.to Script-->
+  <script type="text/javascript">
+  var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+  (function(){
+  var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+  s1.async=true;
+  s1.src='https://embed.tawk.to/6ade3a6c1a24ce347004897b/1k5q18ere';
+  s1.charset='UTF-8';
+  s1.setAttribute('crossorigin','*');
+  s0.parentNode.insertBefore(s1,s0);
+  })();
+  </script>
+  <!--End of Tawk.to Script-->
+</body>
 </html>
