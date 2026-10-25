@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1792794356137,
+  "updatedAt": 1792927180286,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
@@ -380,7 +380,7 @@ window.MENU_DATA = {
     "splashDuration": 1800,
     "showLotusWatermark": true,
     "lotusWatermarkImage": "assets/images/lotus-petal-watermark.png",
-    "lotusWatermarkSize": 38,
+    "lotusWatermarkSize": 24,
     "lotusWatermarkOpacity": 84,
     "lotusWatermarkPosition": "bottom-left"
   },
