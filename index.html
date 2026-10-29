@@ -1331,10 +1331,17 @@
           .replace(/"/g, '&quot;');
       }
 
+      // Refresh only the built-in watermark URL; custom uploaded images keep their original paths.
+      function lotusWatermarkDisplaySrc(src){
+        const defaultSrc='assets/images/lotus-petal-watermark.png';
+        const chosen=src||defaultSrc;
+        return chosen===defaultSrc ? chosen+'?v=lotus-soft-20261030a' : chosen;
+      }
+
       function getLotusWatermarkHtml(extraClass=''){
         const d=state.design||{};
         if(d.showLotusWatermark===false) return '';
-        const src=d.lotusWatermarkImage||'assets/images/lotus-petal-watermark.png';
+        const src=lotusWatermarkDisplaySrc(d.lotusWatermarkImage);
         if(!src) return '';
         const size=Math.max(24,Math.min(64,Number(d.lotusWatermarkSize)||38));
         const opacity=Math.max(25,Math.min(100,Number(d.lotusWatermarkOpacity)||84))/100;
@@ -4455,7 +4462,7 @@
                 <label style="font-weight:800;display:block;margin-bottom:8px">🌸 نشان گل لوتوس روی عکس محصولات</label>
                 <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><input type="checkbox" id="f_showLotusWatermark" ${d.showLotusWatermark!==false?'checked':''}> نمایش نشان گل لوتوس روی عکس کیک‌ها</label>
                 <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-                  <img id="lotusWatermarkPreview" src="${escapeHtml(d.lotusWatermarkImage||'assets/images/lotus-petal-watermark.png')}" alt="پیش‌نمایش گل لوتوس" style="width:48px;height:48px;object-fit:contain;background:#fff;border:1px solid var(--border);border-radius:8px;padding:3px">
+                  <img id="lotusWatermarkPreview" src="${escapeHtml(lotusWatermarkDisplaySrc(d.lotusWatermarkImage))}" alt="پیش‌نمایش گل لوتوس" style="width:48px;height:48px;object-fit:contain;background:${!d.lotusWatermarkImage||d.lotusWatermarkImage==='assets/images/lotus-petal-watermark.png'?'#56514d':'#fff'};border:1px solid var(--border);border-radius:8px;padding:3px">
                   <label style="font-size:11px">اندازه <input type="range" id="f_lotusWatermarkSize" min="24" max="64" value="${d.lotusWatermarkSize||38}" style="width:95px;vertical-align:middle"> <span id="lotusWmSizeVal">${d.lotusWatermarkSize||38}px</span></label>
                   <label style="font-size:11px">شفافیت <input type="range" id="f_lotusWatermarkOpacity" min="25" max="100" value="${d.lotusWatermarkOpacity!=null?d.lotusWatermarkOpacity:84}" style="width:95px;vertical-align:middle"> <span id="lotusWmOpacityVal">${d.lotusWatermarkOpacity!=null?d.lotusWatermarkOpacity:84}%</span></label>
                   <label style="font-size:11px">جایگاه <select id="f_lotusWatermarkPosition"><option value="bottom-left" ${(d.lotusWatermarkPosition||'bottom-left')==='bottom-left'?'selected':''}>پایین چپ</option><option value="bottom-right" ${d.lotusWatermarkPosition==='bottom-right'?'selected':''}>پایین راست</option><option value="top-left" ${d.lotusWatermarkPosition==='top-left'?'selected':''}>بالا چپ</option><option value="top-right" ${d.lotusWatermarkPosition==='top-right'?'selected':''}>بالا راست</option></select></label>
@@ -4537,7 +4544,7 @@
                   pendingImageUploads[path]=base64;
                   document.getElementById('f_lotusWatermarkImage').value=path;
                   state.design.lotusWatermarkImage=path;
-                  const prev=document.getElementById('lotusWatermarkPreview'); if(prev)prev.src=dataUrl;
+                  const prev=document.getElementById('lotusWatermarkPreview'); if(prev){prev.src=dataUrl;prev.style.background='#fff';}
                   fetch('api/upload-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path,base64})}).catch(()=>{});
                   collectAdminInputs(); renderAll(); document.getElementById('adminToast').textContent='نشان گل لوتوس بارگذاری شد؛ برای همه گوشی‌ها ذخیره و انتشار را بزنید ✓';
                 }catch(err){document.getElementById('adminToast').textContent='خطا در بارگذاری نشان: '+err.message;}
