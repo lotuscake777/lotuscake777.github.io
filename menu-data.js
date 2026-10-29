@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1793290419440,
+  "updatedAt": 1793290694874,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
@@ -376,7 +376,7 @@ window.MENU_DATA = {
     "logoPosition": "top-center",
     "logoOpacity": 100,
     "logoBlur": 0,
-    "logoSize": 56,
+    "logoSize": 140,
     "showSplash": true,
     "splashDuration": 1800,
     "showLotusWatermark": true,
