@@ -12,9 +12,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Lotus Cake">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png?v=original-20261029">
-  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png?v=original-20261029">
+  <link rel="manifest" href="manifest.webmanifest?v=desktop-icon-20261029b">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-lotus-slice-20261029b.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-lotus-slice-192-20261029b.png">
   <style>
     @font-face { font-family: 'Vazirmatn'; src: url('assets/fonts/Vazirmatn-Light.woff2') format('woff2'); font-weight: 300; font-display: swap; }
     @font-face { font-family: 'Vazirmatn'; src: url('assets/fonts/Vazirmatn-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
@@ -846,6 +846,46 @@
       color: var(--text-muted);
     }
 
+
+    /* Desktop only: the original wide logo is centered in a short header;
+       account controls stay clear of it at all desktop widths. */
+    @media (min-width: 641px) {
+      #mainHeaderBar.desktop-logo-centered { height:97px; padding:0; }
+      #mainHeaderBar.desktop-logo-centered > .container { max-width:none; width:100%; height:100%; padding:0; }
+      #mainHeaderBar.desktop-logo-centered #headerLogoTopCenter {
+        position:absolute; top:calc(50% - 5px); left:calc(50% - 4px); z-index:1;
+        width:min(620px, calc(100% - 320px)); padding:0 !important;
+        transform:translate(-50%, -50%);
+      }
+      #mainHeaderBar.desktop-logo-centered.desktop-two-left-actions #headerLogoTopCenter {
+        width:min(620px, calc(100% - 440px));
+      }
+      #mainHeaderBar.desktop-logo-centered #headerLogoTopCenter .header-logo {
+        display:block; width:auto; max-width:100% !important;
+        max-height:74px; margin:0 auto !important;
+      }
+      #mainHeaderBar.desktop-logo-centered .top-row { display:block; height:100%; }
+      #mainHeaderBar.desktop-logo-centered .brand-wrap {
+        position:absolute; width:1px; height:1px; min-width:0; margin:-1px; padding:0;
+        overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+      }
+      #mainHeaderBar.desktop-logo-centered .top-actions {
+        position:absolute; left:clamp(16px, 2vw, 32px); right:clamp(16px, 2vw, 32px);
+        top:50%; z-index:2; transform:translateY(-50%); display:flex; flex-wrap:nowrap;
+        gap:8px; direction:ltr; pointer-events:none;
+      }
+      #mainHeaderBar.desktop-logo-centered .top-actions .icon-btn {
+        direction:rtl; pointer-events:auto; white-space:nowrap;
+      }
+      #mainHeaderBar.desktop-logo-centered #btnRegisterCustomer {
+        order:2; margin-left:auto; max-width:140px; min-width:0; overflow:hidden;
+      }
+      #mainHeaderBar.desktop-logo-centered #lblRegisterBtn {
+        min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      }
+      #mainHeaderBar.desktop-logo-centered #btnLogoutHeader { order:1; max-width:70px; min-width:0; }
+      #mainHeaderBar.desktop-logo-centered #btnOpenAdmin { order:0; max-width:120px; min-width:0; }
+    }
 
     /* Responsive mobile layout: same app state/data as desktop, adjusted presentation only. */
     .mobile-logo-wrap, .admin-mobile-nav-menu { display:none; }
@@ -2167,6 +2207,10 @@
             if (logoutBtn) logoutBtn.classList.add('hidden');
           }
         }
+        // Two left-side actions need additional logo clearance on narrow desktop widths.
+        const adminHeaderBtn = document.getElementById('btnOpenAdmin');
+        document.getElementById('mainHeaderBar').classList.toggle('desktop-two-left-actions',
+          Boolean(logoutBtn && !logoutBtn.classList.contains('hidden') && adminHeaderBtn && !adminHeaderBtn.classList.contains('hidden')));
         const vip = getActiveVip();
         const vipBanner = document.getElementById('vipBanner');
         if (vip) {
@@ -2187,6 +2231,7 @@
             const d = state.design;
             const imgSrc = d.logoImage || '';
             const pos = d.logoPosition || 'hidden';
+            document.getElementById('mainHeaderBar').classList.toggle('desktop-logo-centered', Boolean(imgSrc && pos === 'top-center'));
             const op = Math.max(0,Math.min(100, Number(d.logoOpacity)||100))/100;
             const blur = Math.max(0,Math.min(20, Number(d.logoBlur)||0));
             const size = Math.max(24,Math.min(160, Number(d.logoSize)||56));

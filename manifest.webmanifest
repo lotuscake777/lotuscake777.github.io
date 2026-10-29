@@ -10,19 +10,19 @@
   "theme_color": "#FAF7F2",
   "icons": [
     {
-      "src": "assets/icons/icon-192.png?v=original-20261029",
+      "src": "assets/icons/icon-lotus-slice-192-20261029b.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "assets/icons/icon-512.png?v=original-20261029",
+      "src": "assets/icons/icon-lotus-slice-512-20261029b.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "assets/icons/icon-512.png?v=original-20261029",
+      "src": "assets/icons/icon-lotus-slice-512-20261029b.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
