@@ -1,24 +1,25 @@
 window.MENU_DATA = {
-  "updatedAt": 1792927180286,
+  "updatedAt": 1793286152057,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
     "ghBranch": "main"
   },
   "brand": {
-    "name": "",
+    "name": "LOTUS CAKE",
     "tagline": "",
     "standardBadge": "",
     "orderNote": "تمامی سفارش‌ها به‌صورت پخت روز آماده می‌شوند • لطفاً حداقل ۲۴ ساعت قبل هماهنگ فرمایید",
-    "phone": "09366919696",
-    "whatsapp": "989120000000",
-    "instagram": "lotuscaker",
-    "telegram": "lotuscaker",
+    "phone": "09024897704",
+    "instagram": "lotuscake777",
+    "telegram": "lotuscake777",
     "publicUrl": "https://lotuscaker.github.io",
     "defaultTheme": "light",
     "orderingEnabled": true,
     "paymentCardNumber": "",
-    "paymentCardHolder": ""
+    "paymentCardHolder": "",
+    "eitaa": "lotuscake777",
+    "bale": "lotuscake777"
   },
   "categories": [
     {
@@ -345,7 +346,7 @@ window.MENU_DATA = {
     "fontScale": "normal",
     "showMonogram": false,
     "monogramText": "LC",
-    "logoImage": "assets/images/logo-lotus-caker-transparent.png",
+    "logoImage": "assets/images/logo-lotus-cake-original.png",
     "showBakeStatus": false,
     "bakeStatusText": "پذیرش سفارش پخت روزانه فعال است",
     "bakeStatusDot": "#1f6f4a",
@@ -361,9 +362,9 @@ window.MENU_DATA = {
     "infoBoxTitle": "همکاری ویژه با کافه‌ها و مجموعه‌ها",
     "showSocialSection": true,
     "socialCtaText": "ما را در شبکه‌های اجتماعی دنبال کنید",
-    "socialDisplayHandle": "@lotuscaker",
-    "instagramUrl": "https://instagram.com/lotuscaker",
-    "telegramUrl": "https://t.me/lotuscaker",
+    "socialDisplayHandle": "@lotuscake777",
+    "instagramUrl": "https://instagram.com/lotuscake777",
+    "telegramUrl": "https://t.me/lotuscake777",
     "deliverySlots": [
       "بازه صبح (۹ الی ۱۲)",
       "بازه عصر (۱۶ الی ۲۰)"
@@ -372,17 +373,19 @@ window.MENU_DATA = {
       "برش‌خورده استاندارد کافه",
       "قالب کامل (بدون برش)"
     ],
-    "logoPosition": "header-bg",
-    "logoOpacity": 70,
+    "logoPosition": "top-center",
+    "logoOpacity": 100,
     "logoBlur": 0,
-    "logoSize": 28,
+    "logoSize": 56,
     "showSplash": true,
     "splashDuration": 1800,
     "showLotusWatermark": true,
     "lotusWatermarkImage": "assets/images/lotus-petal-watermark.png",
     "lotusWatermarkSize": 24,
     "lotusWatermarkOpacity": 84,
-    "lotusWatermarkPosition": "bottom-left"
+    "lotusWatermarkPosition": "bottom-left",
+    "eitaaUrl": "https://eitaa.com/lotuscake777",
+    "baleUrl": "https://ble.ir/lotuscake777"
   },
   "encryptedAccounts": {},
   "accountingCostSnapshotEnvelope": ""
