@@ -1,12 +1,12 @@
 window.MENU_DATA = {
-  "updatedAt": 1793286152057,
+  "updatedAt": 1793290419440,
   "cloud": {
     "ghOwner": "lotuscaker",
     "ghRepo": "lotuscaker.github.io",
     "ghBranch": "main"
   },
   "brand": {
-    "name": "LOTUS CAKE",
+    "name": "",
     "tagline": "",
     "standardBadge": "",
     "orderNote": "تمامی سفارش‌ها به‌صورت پخت روز آماده می‌شوند • لطفاً حداقل ۲۴ ساعت قبل هماهنگ فرمایید",
