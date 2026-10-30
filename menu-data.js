@@ -18,7 +18,6 @@ window.MENU_DATA = {
     "orderingEnabled": true,
     "paymentCardNumber": "",
     "paymentCardHolder": "",
-    "eitaa": "lotuscake777",
     "bale": "lotuscake777"
   },
   "categories": [
@@ -384,7 +383,6 @@ window.MENU_DATA = {
     "lotusWatermarkSize": 24,
     "lotusWatermarkOpacity": 84,
     "lotusWatermarkPosition": "bottom-left",
-    "eitaaUrl": "https://eitaa.com/lotuscake777",
     "baleUrl": "https://ble.ir/lotuscake777"
   },
   "encryptedAccounts": {},
