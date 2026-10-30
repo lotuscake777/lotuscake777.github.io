@@ -380,7 +380,7 @@ window.MENU_DATA = {
     "splashDuration": 1800,
     "showLotusWatermark": true,
     "lotusWatermarkImage": "assets/images/lotus-petal-watermark.png",
-    "lotusWatermarkSize": 22,
+    "lotusWatermarkSize": 16,
     "lotusWatermarkOpacity": 84,
     "lotusWatermarkPosition": "bottom-left",
     "baleUrl": "https://ble.ir/lotuscake777"
