@@ -1,8 +1,8 @@
 window.MENU_DATA = {
   "updatedAt": 1793297085650,
   "cloud": {
-    "ghOwner": "lotuscaker",
-    "ghRepo": "lotuscaker.github.io",
+    "ghOwner": "lotuscake777",
+    "ghRepo": "lotuscake777.github.io",
     "ghBranch": "main"
   },
   "brand": {
@@ -13,7 +13,7 @@ window.MENU_DATA = {
     "phone": "09024897704",
     "instagram": "lotuscake777",
     "telegram": "lotuscake777",
-    "publicUrl": "https://lotuscaker.github.io",
+    "publicUrl": "https://lotuscake777.github.io",
     "defaultTheme": "light",
     "orderingEnabled": true,
     "paymentCardNumber": "",
