@@ -3273,8 +3273,7 @@
               const cardNum=toEnDigits(state.brand.paymentCardNumber||'').replace(/[^0-9]/g,'');
               const ready=String(state.brand.paymentCardHolder||'').trim() && cardNum.length===16;
               const payNow=method==='full'?total:half;const due=total-payNow;
-              panel.innerHTML=`<div class="payment-card-info"><div><small>مبلغ قابل واریز اکنون</small><b>${formatPriceFa(payNow)} تومان</b></div>${method==='half'?`<div><small>باقی‌مانده هنگام تحویل</small><b>${formatPriceFa(due)} تومان</b></div>`:''}${ready?`<div class="card-number-row"><div><small>واریز به کارت</small><b dir="ltr">${cardNum.replace(/(\d{4})(?=\d)/g,'$1 ')}</b><small>به نام ${escapeHtml(state.brand.paymentCardHolder)}</small></div><button type="button" id="btnCopyPaymentCard">کپی شماره</button></div>`:'<div class="payment-warning">اطلاعات کارت هنوز در پنل مدیریت تنظیم نشده است؛ مدیر باید نام صاحب کارت و شمارهٔ ۱۶ رقمی را ثبت کند.</div>'}</div><label class="receipt-upload-label">🧾 بارگذاری تصویر رسید انتقال <span>*</span><input type="file" id="co_paymentReceipt" accept="image/jpeg,image/png,image/webp"></label><div class="payment-hint">رسید رمزگذاری می‌شود و فقط در پنل مدیریت قابل مشاهده است.${selectedReceiptFile?` فایل انتخاب‌شده: ${escapeHtml(selectedReceiptFile.name)}`:''}</div>`;
-              const inp=document.getElementById('co_paymentReceipt');if(inp)inp.addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(f){selectedReceiptFile=f;renderPaymentDetails();}});
+              panel.innerHTML=`<div class="payment-card-info"><div><small>مبلغ قابل واریز اکنون</small><b>${formatPriceFa(payNow)} تومان</b></div>${method==='half'?`<div><small>باقی‌مانده هنگام تحویل</small><b>${formatPriceFa(due)} تومان</b></div>`:''}${ready?`<div class="card-number-row"><div><small>واریز به کارت</small><b dir="ltr">${cardNum.replace(/(\d{4})(?=\d)/g,'$1 ')}</b><small>به نام ${escapeHtml(state.brand.paymentCardHolder)}</small></div><button type="button" id="btnCopyPaymentCard">کپی شماره</button></div>`:'<div class="payment-warning">اطلاعات کارت هنوز در پنل مدیریت تنظیم نشده است؛ مدیر باید نام صاحب کارت و شمارهٔ ۱۶ رقمی را ثبت کند.</div>'}</div><section class="payment-hint" aria-label="ارسال فیش به پشتیبانی"><p><strong>پس از واریز، لطفاً تصویر فیش پرداخت را همراه با نام کافه و نام خانوادگی خود، از طریق بله یا تلگرام برای پشتیبانی ارسال کنید.</strong></p><div style="display:flex;flex-wrap:wrap;gap:10px;margin:12px 0"><a class="icon-btn" href="https://ble.ir/lotuscakesupport" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">ارسال به پشتیبانی در بله</a><a class="icon-btn" href="https://t.me/lotuscakesupport" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">ارسال به پشتیبانی در تلگرام</a></div><p>شناسهٔ پشتیبانی در هر دو پیام‌رسان: <bdi dir="ltr" style="user-select:all">@lotuscakesupport</bdi></p><small>پس از بازشدن گفت‌وگو، عکس را خودتان پیوست و ارسال کنید. اگر برنامه باز نشد، شناسهٔ بالا را در پیام‌رسان جست‌وجو کنید. بازکردن لینک یا ثبت سفارش به‌معنی ارسال فیش یا تأیید پرداخت نیست.</small></section>`;
               const copy=document.getElementById('btnCopyPaymentCard');if(copy)copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(cardNum);copy.textContent='کپی شد ✓';}catch(_){copy.textContent=cardNum;}});
             }
             wrap.querySelectorAll('[data-pay-choice]').forEach(btn=>btn.addEventListener('click',()=>{
@@ -3313,7 +3312,6 @@
               if (!paymentOption) missing.push('روش تسویهٔ فاکتور');
               if (paymentOption && paymentOption!=='delivery'){
                 if(!String(state.brand.paymentCardHolder||'').trim()||cardDigits.length!==16) missing.push('تنظیم شماره کارت و نام صاحب کارت توسط مدیریت');
-                if(!selectedReceiptFile) missing.push('تصویر رسید پرداخت');
               }
 
               if (missing.length > 0) {
@@ -3352,6 +3350,7 @@
                 paymentMethodLabel:paymentOption==='full'?'تسویه کامل پیش از تحویل':paymentOption==='half'?'نصف اکنون، نصف هنگام تحویل':'تسویه کامل هنگام تحویل',
                 paymentDueNow:paymentOption==='full'?Math.round(sum.total):paymentOption==='half'?Math.ceil(sum.total/2):0,
                 paymentDueAtDelivery:paymentOption==='full'?0:paymentOption==='half'?Math.floor(sum.total/2):Math.round(sum.total),
+                receiptDeliveryMode:paymentOption==='delivery'?'not_required':'manual_support',
                 paymentReceived:0,
                 paymentStatus:paymentOption==='delivery'?'awaiting_delivery':'awaiting_confirmation',
                 paymentEvents:[],
@@ -3360,10 +3359,6 @@
 
               try {
                 ensureOrderConfig(state);
-                if(paymentOption!=='delivery'){
-                  submitBtn.textContent='در حال رمزگذاری رسید پرداخت...';
-                  orderObj.receiptInfo=await uploadEncryptedPaymentReceipt(selectedReceiptFile,orderObj.id);
-                }
                 const topic = state.orderConfig.inboxTopic;
                 const encryptedPayload = await encryptOrderPayload(orderObj);
                 const resp = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
@@ -3827,7 +3822,7 @@
             else if(ord.status==='done')amount=total-already;
           }else if(ord.paymentMethod==='delivery'&&ord.status==='done')amount=total-already;
           if(amount<=0){accountingToast('این سفارش در وضعیت فعلی مبلغ قابل تأییدی ندارد.');return;}
-          if(ord.paymentMethod!=='delivery'&&already===0&&!ord.receiptInfo){accountingToast('برای پیش‌پرداخت، رسید مشتری موجود نیست. دریافت را بدون رسید تأیید نکنید.');return;}
+          if(ord.paymentMethod!=='delivery'&&already===0&&!ord.receiptInfo){if(ord.receiptDeliveryMode!=='manual_support'){accountingToast('برای پیش‌پرداخت، رسید مشتری موجود نیست. دریافت را بدون رسید تأیید نکنید.');return;}if(!window.confirm('آیا فیش این سفارش را در بله یا تلگرام دریافت کرده‌اید و واریز واقعی مبلغ '+formatPriceFa(amount)+' تومان را برای همین مشتری و سفارش بررسی کرده‌اید؟ صرف عکس یا بازکردن لینک تأیید پرداخت نیست.'))return;}
           const now=Date.now(),nextPaid=Math.min(total,already+amount);
           const income={id:'pay_'+ord.id+'_'+now,type:'income',kind:'order-payment',amount,date:now,category:'فروش سفارش',orderId:ord.id,note:(ord.paymentMethod==='half'&&already>0)?'تسویه مانده هنگام تحویل':'تأیید دریافت توسط مدیر',createdAt:now};
           const added=[income];
@@ -3892,7 +3887,7 @@
                         جمع کل سفارش: ${formatPriceFa(ord.total)} تومان
                       </div>
                     </div>
-                    <div class="order-payment-admin"><div><b>روش تسویه:</b> ${escapeHtml(paymentLabel)}</div><div><b>وصول‌شده:</b> ${formatPriceFa(paymentReceived)} تومان · <b>باقی‌مانده:</b> ${formatPriceFa(paymentDue)} تومان</div><div><b>وضعیت:</b> ${ord.paymentStatus==='paid'?'تسویه کامل':ord.paymentStatus==='partially_paid'?'بخشی دریافت شده':ord.paymentMethod==='delivery'?'پرداخت هنگام تحویل':'در انتظار تأیید رسید'}</div><div class="order-payment-actions">${ord.receiptInfo?`<button type="button" class="icon-btn" data-open-receipt="${escapeHtml(ord.id)}">🧾 مشاهدهٔ رسید</button>${!(accountingVault.receiptBlobs&&accountingVault.receiptBlobs[ord.id])?'<small class="receipt-archive-hint">پیوست موقت است؛ رسید را برای آرشیو رمزگذاری‌شده باز کنید.</small>':''}`:''}${paymentBtn?`<button type="button" class="icon-btn btn-green" data-confirm-payment="${escapeHtml(ord.id)}">${paymentBtn}</button>`:''}</div></div>
+                    <div class="order-payment-admin"><div><b>روش تسویه:</b> ${escapeHtml(paymentLabel)}</div><div><b>وصول‌شده:</b> ${formatPriceFa(paymentReceived)} تومان · <b>باقی‌مانده:</b> ${formatPriceFa(paymentDue)} تومان</div><div><b>وضعیت:</b> ${ord.paymentStatus==='paid'?'تسویه کامل':ord.paymentStatus==='partially_paid'?'بخشی دریافت شده':ord.paymentMethod==='delivery'?'پرداخت هنگام تحویل':'در انتظار تأیید رسید'}</div><div class="order-payment-actions">${ord.receiptDeliveryMode==='manual_support'?'<small class="receipt-archive-hint">فیش را در گفت‌وگوی پشتیبانی بله یا تلگرام بررسی کنید؛ تصویری در سایت آپلود نشده است.</small>':''}${ord.receiptInfo?`<button type="button" class="icon-btn" data-open-receipt="${escapeHtml(ord.id)}">🧾 مشاهدهٔ رسید</button>${!(accountingVault.receiptBlobs&&accountingVault.receiptBlobs[ord.id])?'<small class="receipt-archive-hint">پیوست موقت است؛ رسید را برای آرشیو رمزگذاری‌شده باز کنید.</small>':''}`:''}${paymentBtn?`<button type="button" class="icon-btn btn-green" data-confirm-payment="${escapeHtml(ord.id)}">${paymentBtn}</button>`:''}</div></div>
                     <div style="font-size:12.5px;color:var(--text);line-height:1.8;margin-bottom:10px;padding:8px 10px;border-radius:9px;background:var(--surface)">
                       <div>📍 <strong>آدرس دقیق تحویل:</strong> ${escapeHtml(ord.address || ord.note || '-')}</div>
                       ${ord.deliveryWhen ? `<div>🕒 <strong>زمان تحویل / توضیحات:</strong> ${escapeHtml(ord.deliveryWhen)}</div>` : ''}
