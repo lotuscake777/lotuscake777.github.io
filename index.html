@@ -2887,11 +2887,11 @@
             const profileData = { username: cleanUser, name, cafeName, phone, address, discount: 0, createdAt: Date.now() };
             const { keyId, relayTopic, vaultObj } = await encryptCustomerAccountVault(cleanUser, cleanPass, profileData);
             await publishAccountVaultCrossDevice(relayTopic, vaultObj);
-            setLoggedInCustomer(profileData);
+            // Log in only after the registration notification is accepted.
 
             const regPayload = {
               kind: 'registration',
-              id: 'REG-' + Math.floor(1000 + Math.random() * 9000),
+              id: 'REG-' + crypto.randomUUID(),
               createdAt: Date.now(),
               username: cleanUser,
               accountKeyId: keyId,
@@ -2906,11 +2906,13 @@
             ensureOrderConfig(state);
             const topic = state.orderConfig.inboxTopic;
             const encryptedPayload = await encryptOrderPayload(regPayload);
-            await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
+            const registrationResponse = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
               method: 'POST',
               headers: { 'Content-Type': 'text/plain; charset=utf-8' },
               body: encryptedPayload
             });
+            if (!registrationResponse.ok) throw new Error('registration_notice_not_accepted');
+            setLoggedInCustomer(profileData);
 
             if (state.orderConfig.notifyEmail) {
               fetch(`https://formsubmit.co/ajax/${encodeURIComponent(state.orderConfig.notifyEmail)}`, {
@@ -2932,7 +2934,7 @@
           } catch (err) {
             btn.disabled = false;
             btn.textContent = 'تکمیل ثبت نام و ورود به حساب ✅';
-            errEl.textContent = 'خطا در اتصال (' + err.message + '). لطفاً دوباره تلاش کنید.';
+            errEl.textContent = 'تکمیل ارسال مشخصات به پنل تأیید نشد. ممکن است حساب شما ساخته شده باشد؛ دوباره ثبت‌نام نکنید. ابتدا از تب ورود امتحان کنید و برای بررسی ثبت مشخصات با پشتیبانی تماس بگیرید.';
             errEl.classList.remove('hidden');
           }
         });
@@ -3936,7 +3938,9 @@
           });
 
         } else if (currentAdminTab === 'registrations') {
-          const regs = adminOrders.filter(o => o.kind === 'registration');
+          const regs = adminOrders.filter(o => o.kind === 'registration').slice().sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
+          const normalizeRegSearch = value => toEnDigits(String(value||'')).toLowerCase().replace(/ي/g,'ی').replace(/ك/g,'ک').trim();
+          const regSearchTexts = regs.map(r=>normalizeRegSearch([r.username,r.customerName,r.cafeName,r.phone,r.address].join(' ')));
           body.innerHTML = `
             <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px">
               <div style="font-size:13px;font-weight:700">
@@ -3944,16 +3948,19 @@
               </div>
               <button type="button" class="icon-btn" id="btnRefreshRegs">🔄 بررسی ثبت‌نام جدید</button>
             </div>
+            <label style="display:block;margin-bottom:12px;font-size:13px">جست‌وجوی مشتری، کافه، نام کاربری، تلفن یا نشانی<input id="customerRegistrationSearch" type="search" autocomplete="off" placeholder="نام یا شماره را وارد کنید" style="display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:10px;border:1px solid var(--border);border-radius:9px"></label>
+            <div id="registrationSearchCount" role="status" aria-live="polite" style="font-size:12px;margin-bottom:10px"></div>
+            <div class="payment-hint">این فهرست از اطلاعات دریافت‌شدهٔ پنل است. رمز اصلی مشتری قابل نمایش نیست؛ بازنشانی رمز فقط پس از احراز هویت انجام شود.</div>
             ${regs.length === 0
               ? `<div class="empty-state">
                   <div style="font-size:32px;margin-bottom:8px">👥</div>
                   هنوز ثبت‌نام جدیدی ارسال نشده است.<br>
                   <span style="font-size:12px">هر مشتری یا مدیر کافه‌ای روی دکمه «📝 ثبت نام» در بالای صفحه اول کلیک کند و فرم را پر کند، مشخصاتش همین‌جا ثبت می‌شود!</span>
                 </div>`
-              : regs.map(r => {
+              : regs.map((r,regIndex) => {
                   const st = r.status || 'new';
                   return `
-                  <div class="order-card-admin status-${st === 'done' ? 'done' : 'new'}">
+                  <div data-registration-index="${regIndex}" class="order-card-admin status-${st === 'done' ? 'done' : 'new'}">
                     <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px">
                       <div>
                         <strong style="font-size:15px">☕ ${escapeHtml(r.cafeName || '-')}</strong>
@@ -3969,7 +3976,7 @@
                     ${r.username ? `
                     <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 10px;border-radius:9px;background:var(--surface);margin-bottom:10px;font-size:12px">
                       <span>🔑 <strong>مدیریت اکانت مشتری:</strong></span>
-                      <input dir="ltr" placeholder="رمز جدید (در صورت فراموشی)" class="adm-reset-pass" data-rid="${r.id}" style="width:170px;padding:6px 9px;border-radius:8px;border:1px solid var(--border)">
+                      <input dir="ltr" type="password" autocomplete="new-password" placeholder="رمز جدید (پس از احراز هویت)" class="adm-reset-pass" data-rid="${r.id}" style="width:170px;padding:6px 9px;border-radius:8px;border:1px solid var(--border)">
                       <input dir="ltr" type="number" min="0" max="70" value="${r.discount || 0}" title="درصد تخفیف همکاری اکانت" class="adm-acct-disc" data-rid="${r.id}" style="width:74px;padding:6px 9px;border-radius:8px;border:1px solid var(--border)">
                       <span>٪ تخفیف</span>
                       <button type="button" class="icon-btn admin-trigger btn-apply-acct" data-rid="${r.id}" style="height:32px;font-size:11.5px">اعمال روی اکانت مشتری ✓</button>
@@ -3987,6 +3994,9 @@
                   </div>`;
                 }).join('')}`;
 
+          const regSearchInput=document.getElementById('customerRegistrationSearch');
+          const applyRegSearch=()=>{const q=normalizeRegSearch(regSearchInput.value),compact=q.replace(/[\s()+-]/g,'');let shown=0;body.querySelectorAll('[data-registration-index]').forEach(card=>{const text=regSearchTexts[Number(card.dataset.registrationIndex)]||'',match=!q||text.includes(q)||(compact.length>0&&text.replace(/[\s()+-]/g,'').includes(compact));card.hidden=!match;if(match)shown++;});document.getElementById('registrationSearchCount').textContent=toFa(shown)+' مشتری از '+toFa(regs.length)+' مورد دریافت‌شده';};
+          regSearchInput.addEventListener('input',applyRegSearch);applyRegSearch();
           document.getElementById('btnRefreshRegs').addEventListener('click', async () => {
             document.getElementById('btnRefreshRegs').textContent = 'در حال دریافت...';
             await fetchLiveOrdersFromRelay();
@@ -4006,6 +4016,7 @@
                 passInput.style.borderColor = '#DC2626';
                 return;
               }
+              if(!window.confirm('هویت این مشتری را بررسی کرده‌اید و مجاز به تعیین رمز جدید هستید؟ رمز را در گفت‌وگوی عمومی ارسال نکنید.'))return;
               passInput.style.borderColor = '';
               r.discount = newDisc;
               const profileData = {
