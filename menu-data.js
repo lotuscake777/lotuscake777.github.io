@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1793297085650,
+  "updatedAt": 1793751670042,
   "cloud": {
     "ghOwner": "lotuscake777",
     "ghRepo": "lotuscake777.github.io",
@@ -57,7 +57,7 @@ window.MENU_DATA = {
       "desc": "خامه کره‌پسته خالص، خلال پسته تازه و تزئین گل محمدی",
       "serving": "۸ اسلایس",
       "price": "۸۹۰,۰۰۰",
-      "image": "assets/images/k02-pistachio.jpg",
+      "image": "assets/images/custom_k02_1793751432451.jpg",
       "available": true,
       "badge": "",
       "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
@@ -93,7 +93,7 @@ window.MENU_DATA = {
       "desc": "لایه‌های اسفنج مخملی قرمز با کرم پنیری لطیف سفید",
       "serving": "۸ اسلایس",
       "price": "۷۶۰,۰۰۰",
-      "image": "assets/images/k05-red-velvet.jpg",
+      "image": "assets/images/custom_k05_1793751469330.jpg",
       "available": true,
       "badge": "",
       "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
@@ -117,7 +117,7 @@ window.MENU_DATA = {
       "desc": "اسفنج شکلاتی آغشته به سس شکلاتی گرم با روکش گاناش براق",
       "serving": "۸ اسلایس",
       "price": "۷۲۰,۰۰۰",
-      "image": "assets/images/k07-moist-choc.jpg",
+      "image": "assets/images/custom_k07_1793751491062.jpg",
       "available": true,
       "badge": "",
       "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
@@ -141,7 +141,7 @@ window.MENU_DATA = {
       "desc": "بافت خانگی معطر به دارچین با گردوی تازه خردشده روی سطح",
       "serving": "۸ اسلایس",
       "price": "۶۸۰,۰۰۰",
-      "image": "assets/images/k09-carrot-walnut.jpg",
+      "image": "assets/images/custom_k09_1793751511235.jpg",
       "available": true,
       "badge": "",
       "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
@@ -165,7 +165,7 @@ window.MENU_DATA = {
       "desc": "لایه‌های اسفنج آغشته به اسپرسو، کرم ماسکارپونه و پودر کاکائو",
       "serving": "۸ اسلایس",
       "price": "۸۳۰,۰۰۰",
-      "image": "assets/images/k11-tiramisu-round.jpg",
+      "image": "assets/images/custom_k11_1793751544427.jpg",
       "available": true,
       "badge": "",
       "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
