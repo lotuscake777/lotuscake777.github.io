@@ -1160,7 +1160,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         <div class="vip-title" id="vipTitle"></div>
         <div class="vip-sub" id="vipSub"></div>
       </div>
-      <button type="button" class="icon-btn" id="btnVipHistory" style="height:34px;font-size:12px">سفارش‌های قبلی من ↻</button>
+      <button type="button" class="icon-btn" id="btnVipHistory" style="height:34px;font-size:12px">حساب کاربری من</button>
     </div>
   </div>
 
@@ -1230,7 +1230,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     <div class="social-luxury hidden" id="socialLuxuryBox">
       <h3 id="socialCtaTitle">ما را در شبکه‌های اجتماعی دنبال کنید</h3>
       <div class="social-icons-row" id="socialIconsRow"></div>
-      <div class="social-handle" id="socialHandleDisplay"></div>
+      <div class="social-handle" id="socialHandleDisplay" aria-label="شماره تماس"></div>
     </div>
   </section>
 
@@ -1328,6 +1328,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         <div class="admin-mobile-nav-menu" id="adminMobileNavMenu" aria-label="انتخاب بخش پنل مدیریت">
           <button type="button" class="admin-mobile-tab" data-atab="orders">🔔 ۱. سفارشات</button>
           <button type="button" class="admin-mobile-tab" data-atab="registrations">👥 ۲. ثبت‌نام مشتریان</button>
+          <button type="button" class="admin-mobile-tab" data-atab="database">👤 مشتریان دیتابیس</button>
           <button type="button" class="admin-mobile-tab" data-atab="prices">📦 ۳. محصولات</button>
           <button type="button" class="admin-mobile-tab" data-atab="customers">⭐ ۴. صفحات اختصاصی</button>
           <button type="button" class="admin-mobile-tab" data-atab="brand">🏪 ۵. مشخصات برند و رمز</button>
@@ -1342,6 +1343,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         <button class="admin-tab" data-atab="registrations" type="button">
           👥 ۲. ثبت‌نام مشتریان <span class="badge-dot hidden" id="tabRegsBadge" style="background:#1F6F4A">۰</span>
         </button>
+        <button class="admin-tab" data-atab="database" type="button">👤 مشتریان دیتابیس</button>
         <button class="admin-tab" data-atab="prices" type="button">📦 ۳. محصولات</button>
         <button class="admin-tab" data-atab="customers" type="button">⭐ ۴. صفحات اختصاصی</button>
         <button class="admin-tab" data-atab="brand" type="button">🏪 ۵. مشخصات برند و رمز</button>
@@ -1847,7 +1849,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           totalEl.textContent = `${formatPriceFa(sum.total)} تومان ←`;
         } else {
           labelEl.textContent = `🛍️ سبد خرید شما خالی است`;
-          totalEl.textContent = customerProfile && customerProfile.loggedIn ? 'انتخاب از منو' : 'ورود / ثبت نام برای سفارش';
+          totalEl.textContent = customerProfile && customerProfile.loggedIn ? 'انتخاب از منو' : 'ورود / ثبت نام';
         }
       }
 
@@ -1887,6 +1889,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       let accountingPeriodOffset = 0;
       let selectedPaymentOption = '';
       let selectedReceiptFile = null;
+      let pendingAccountOrderSignature='',pendingAccountOrderId='';
       let liveOrderEventSource = null;
       let pendingImageUploads = {}; // relPath -> base64 string (no prefix)
 
@@ -2406,9 +2409,10 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         const vipBanner = document.getElementById('vipBanner');
         if (vip) {
           vipBanner.classList.remove('hidden');
-          document.getElementById('vipTitle').textContent = `✨ خوش آمدید، ${vip.name} — صفحه اختصاصی سفارش شما`;
+          document.getElementById('vipTitle').textContent = `✨ خوش آمدید، ${vip.name} — صفحه اختصاصی شما`;
           const discTxt = Number(vip.discount) > 0 ? `قیمت‌های زیر با ${toFa(vip.discount)}٪ تخفیف همکاری اختصاصی شما محاسبه شده‌اند.` : 'سفارش شما مستقیماً با اولویت ویژه ثبت می‌شود.';
-          document.getElementById('vipSub').textContent = vip.note ? `${discTxt} (${vip.note})` : discTxt;
+          const vipNote=String(vip.note||'').replace(/برای\s+سفارش/gi,'').replace(/\s{2,}/g,' ').trim();
+          document.getElementById('vipSub').textContent = vipNote ? `${discTxt} (${vipNote})` : discTxt;
         } else {
           vipBanner.classList.add('hidden');
         }
@@ -2514,7 +2518,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
             infoBox.classList.remove('hidden');
             const titleEl = infoBox.querySelector('h3');
             if (titleEl && state.design) titleEl.textContent = state.design.infoBoxTitle || 'نحوه ثبت سفارش و همکاری با کافه‌ها';
-            document.getElementById('elOrderNote').textContent = state.brand.orderNote;
+            document.getElementById('elOrderNote').textContent = String(state.brand.orderNote||'').replace(/برای\s+سفارش/gi,'').replace(/\s{2,}/g,' ').trim();
           }
         }
         // Luxury Social Section with official icons
@@ -2525,7 +2529,8 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           else {
             socialBox.classList.remove('hidden');
             document.getElementById('socialCtaTitle').textContent = dsg.socialCtaText || 'ما را در شبکه‌های اجتماعی دنبال کنید';
-            document.getElementById('socialHandleDisplay').textContent = dsg.socialDisplayHandle || ('@'+(state.brand.instagram||'lotuscake777').replace(/^@/,'')) ;
+            const contactHandle=document.getElementById('socialHandleDisplay'),businessPhone=String(state.brand.phone||'').trim(),telPhone=toEnDigits(businessPhone).replace(/[^0-9+]/g,'').replace(/(?!^)\+/g,'');
+            contactHandle.replaceChildren();if(businessPhone&&telPhone){const a=document.createElement('a');a.href='tel:'+telPhone;a.textContent=toFa(businessPhone);a.setAttribute('aria-label','تماس تلفنی با قنادی');contactHandle.appendChild(a);}
             const igUrl = dsg.instagramUrl || ('https://instagram.com/'+(state.brand.instagram||'lotuscake777').replace(/^@/,'')); 
             const tgUrl = dsg.telegramUrl || ('https://t.me/'+(state.brand.telegram||'lotuscake777').replace(/^@/,'')); 
             document.getElementById('socialIconsRow').innerHTML = `
@@ -2744,31 +2749,41 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
 
 
 const customerDbFormsEnabled=true; // Explicitly authorized public-release candidate; backend activation follows site verification.
-// Browser-only in-memory session. No storage, refresh token, legacy vault or retry.
-function createCustomerBrowserSession({enabled=false,projectUrl,publicKey,fetchImpl=globalThis.fetch,clock=()=>Date.now(),onProfile=()=>{},timeoutMs=12000}={}){
+// Browser customer session: access token only, sessionStorage only, max one hour. Never store passwords or refresh tokens.
+function createCustomerBrowserSession({enabled=false,projectUrl,publicKey,fetchImpl=globalThis.fetch,clock=()=>Date.now(),onProfile=()=>{},timeoutMs=12000,sessionStorageImpl}={}){
  if(enabled!==true)return null;
  if(!/^https:\/\/[a-z0-9]{20}\.supabase\.co$/.test(projectUrl||'')||!/^sb_publishable_[A-Za-z0-9_-]+$/.test(publicKey||'')||typeof fetchImpl!=='function'||typeof clock!=='function'||typeof onProfile!=='function'||!Number.isInteger(timeoutMs)||timeoutMs<20||timeoutMs>15000)return null;
- let current=null,pending=null,generation=0,timer=null;
+ const storage=sessionStorageImpl===undefined?(()=>{try{return globalThis.sessionStorage}catch{return null}})():sessionStorageImpl;
+ const STORAGE_KEY='lotus_customer_session_v1',MAX_TTL_MS=3600000;
+ let current=null,pending=null,generation=0,timer=null,restorePromise=null;
+ const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
  const validProfile=p=>{
-  if(!p||typeof p.id!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(p.id)||typeof p.username!=='string'||!/^[a-z0-9_.-]{3,40}$/.test(p.username))throw Error('invalid');
+  if(!p||typeof p!=='object'||Array.isArray(p)||typeof p.id!=='string'||!uuid.test(p.id)||typeof p.username!=='string'||!/^[a-z0-9_.-]{3,40}$/.test(p.username))throw Error('invalid');
   const value={id:p.id,username:p.username};for(const[k,max]of[['name',120],['cafeName',120],['phone',25],['address',500]]){if(typeof p[k]!=='string'||p[k].length>max)throw Error('invalid');value[k]=p[k]}return Object.freeze(value);
  };
- function forget(){if(timer!==null)clearTimeout(timer);timer=null;current=null;onProfile(null)}
+ const profileFromRow=r=>validProfile({id:r.id,username:r.username,name:r.full_name,cafeName:r.cafe_name,phone:r.phone,address:r.address});
+ function clearStored(){try{storage?.removeItem(STORAGE_KEY)}catch{}}
+ function persist(){if(!current)return;try{const raw=JSON.stringify({version:1,token:current.token,expiresAt:current.expiresAt,profile:current.profile});if(raw.length<=24000)storage?.setItem(STORAGE_KEY,raw)}catch{}}
+ function forget(){if(timer!==null)clearTimeout(timer);timer=null;current=null;clearStored();onProfile(null)}
  function expire(){if(current&&clock()>=current.expiresAt)forget()}
- async function api(path,body,signal,token){
-  const r=await fetchImpl(projectUrl+path,{method:'POST',headers:{apikey:publicKey,'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},...(body===undefined?{}:{body:JSON.stringify(body)}),signal,credentials:'omit',cache:'no-store',redirect:'error',referrerPolicy:'no-referrer'});
-  if(signal.aborted)throw Error('cancelled');if(r.status===204)return {ok:true};
+ async function readResponse(r,signal){
+  if(signal?.aborted)throw Error('cancelled');if(r.status===204)return {ok:r.ok,data:null};
   const reader=r.body?.getReader();if(!reader)throw Error('invalid');let chunks=[],size=0;
-  const cancel=()=>{try{reader.cancel().catch(()=>{})}catch(_){}};signal.addEventListener('abort',cancel,{once:true});
-  try{while(true){const x=await reader.read();if(signal.aborted)throw Error('cancelled');if(x.done)break;size+=x.value.length;if(size>65536)throw Error('invalid');chunks.push(x.value)}const b=new Uint8Array(size);let at=0;for(const c of chunks){b.set(c,at);at+=c.length}return {ok:r.ok,data:JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(b))}}
-  finally{signal.removeEventListener('abort',cancel);cancel();try{reader.releaseLock()}catch(_){}}
+  const cancel=()=>{try{reader.cancel().catch(()=>{})}catch{}};signal?.addEventListener('abort',cancel,{once:true});
+  try{while(true){const x=await reader.read();if(signal?.aborted)throw Error('cancelled');if(x.done)break;size+=x.value.length;if(size>65536)throw Error('invalid');chunks.push(x.value)}const b=new Uint8Array(size);let at=0;for(const c of chunks){b.set(c,at);at+=c.length}return {ok:r.ok,data:JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(b))}}
+  finally{signal?.removeEventListener('abort',cancel);cancel();try{reader.releaseLock()}catch{}}
+ }
+ async function api(path,{method='POST',body,signal,token}={}){
+  const headers={apikey:publicKey,...(body===undefined?{}:{'Content-Type':'application/json'}),...(token?{Authorization:'Bearer '+token}:{})};
+  const r=await fetchImpl(projectUrl+path,{method,headers,...(body===undefined?{}:{body:JSON.stringify(body)}),signal,credentials:'omit',cache:'no-store',redirect:'error',referrerPolicy:'no-referrer'});
+  return readResponse(r,signal);
  }
  function cancelPending(){generation++;pending?.abort();pending=null}
  async function perform(action,input){
   if(pending)return {outcome:'busy'};
   const controller=new AbortController(),ticket=++generation;pending=controller;let deadline;
   try{
-   const r=await Promise.race([api('/functions/v1/lotus-customer-'+action,input,controller.signal),new Promise((_,reject)=>{deadline=setTimeout(()=>{controller.abort();reject(Error('timeout'))},timeoutMs)})]);
+   const r=await Promise.race([api('/functions/v1/lotus-customer-'+action,{method:'POST',body:input,signal:controller.signal}),new Promise((_,reject)=>{deadline=setTimeout(()=>{controller.abort();reject(Error('timeout'))},timeoutMs)})]);
    if(ticket!==generation||controller.signal.aborted)return {outcome:'cancelled'};
    const d=r.data;
    if(action==='signup'&&r.ok&&d?.outcome==='registered'&&d.username===input.username.trim().toLowerCase())return {outcome:'registered',username:d.username};
@@ -2776,8 +2791,9 @@ function createCustomerBrowserSession({enabled=false,projectUrl,publicKey,fetchI
     const profile=validProfile(d.profile);
     if(profile.username!==input.username.trim().toLowerCase()||typeof d.accessToken!=='string'||!d.accessToken||d.accessToken.length>16384||!Number.isInteger(d.expiresIn)||d.expiresIn<1||d.expiresIn>86400)throw Error('invalid');
     if(timer!==null)clearTimeout(timer);
-    current={token:d.accessToken,profile,expiresAt:clock()+d.expiresIn*1000};
-    timer=setTimeout(()=>{expire()},d.expiresIn*1000);timer?.unref?.();onProfile(profile);
+    const expiresAt=clock()+Math.min(d.expiresIn*1000,MAX_TTL_MS);
+    current={token:d.accessToken,profile,expiresAt};persist();
+    timer=setTimeout(()=>expire(),Math.max(1,expiresAt-clock()));timer?.unref?.();onProfile(profile);
     return {outcome:'signed_in',profile};
    }
    const allowed=action==='login'?['invalid_input','invalid_credentials','temporarily_unavailable']:['invalid_input','temporarily_unavailable','unavailable_try_signin','unknown_try_signin'];
@@ -2785,11 +2801,34 @@ function createCustomerBrowserSession({enabled=false,projectUrl,publicKey,fetchI
   }catch(_){return {outcome:ticket!==generation?'cancelled':action==='signup'?'unknown_try_signin':'temporarily_unavailable'}}
   finally{clearTimeout(deadline);if(pending===controller)pending=null}
  }
+ async function restore(){
+  if(current){expire();if(current)return true}if(restorePromise)return restorePromise;
+  restorePromise=(async()=>{
+   let saved;try{const raw=storage?.getItem(STORAGE_KEY);if(!raw||raw.length>24000)return false;saved=JSON.parse(raw)}catch{clearStored();return false}
+   const now=clock();if(!saved||saved.version!==1||typeof saved.token!=='string'||!saved.token||saved.token.length>16384||!Number.isFinite(saved.expiresAt)||saved.expiresAt<=now||saved.expiresAt>now+MAX_TTL_MS+2000){clearStored();return false;}
+   const controller=new AbortController(),deadline=setTimeout(()=>controller.abort(),timeoutMs);
+   try{
+    const user=await api('/auth/v1/user',{method:'GET',signal:controller.signal,token:saved.token});if(!user.ok||!user.data||typeof user.data.id!=='string'||!uuid.test(user.data.id))throw Error('invalid');
+    const path='/rest/v1/lotus_customer_profiles?auth_user_id=eq.'+encodeURIComponent(user.data.id)+'&select=id,auth_user_id,username,full_name,cafe_name,phone,address';
+    const rows=await api(path,{method:'GET',signal:controller.signal,token:saved.token});if(!rows.ok||!Array.isArray(rows.data)||rows.data.length!==1||rows.data[0]?.auth_user_id!==user.data.id)throw Error('invalid');
+    const profile=profileFromRow(rows.data[0]);if(saved.profile?.username!==profile.username||!Number.isFinite(saved.expiresAt)||saved.expiresAt<=clock())throw Error('invalid');
+    current={token:saved.token,profile,expiresAt:Math.min(saved.expiresAt,clock()+MAX_TTL_MS)};timer=setTimeout(()=>expire(),Math.max(1,current.expiresAt-clock()));timer?.unref?.();persist();onProfile(profile);return true;
+   }catch{clearStored();return false}finally{clearTimeout(deadline)}
+  })();
+  try{return await restorePromise}finally{restorePromise=null}
+ }
+ const validOrder=o=>{
+  if(!o||typeof o!=='object'||Array.isArray(o)||typeof o.order_code!=='string'||!/^LC-[A-Z0-9-]{4,32}$/.test(o.order_code)||typeof o.created_at!=='string'||!Number.isFinite(Date.parse(o.created_at))||!(o.delivery_date===null||typeof o.delivery_date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(o.delivery_date))||typeof o.delivery_slot!=='string'||o.delivery_slot.length>100||!Number.isSafeInteger(o.total)||o.total<0||!['full','half','delivery'].includes(o.payment_method)||!Array.isArray(o.items)||o.items.length>40)throw Error('invalid');
+  const items=o.items.map(i=>{if(!i||typeof i!=='object'||typeof i.id!=='string'||i.id.length>80||typeof i.name!=='string'||i.name.length>120||typeof i.serving!=='string'||i.serving.length>80||!Number.isInteger(i.qty)||i.qty<1||i.qty>50||!Number.isSafeInteger(i.unitPrice)||i.unitPrice<0||!Number.isSafeInteger(i.lineTotal)||i.lineTotal<0||i.lineTotal!==i.unitPrice*i.qty)throw Error('invalid');return {id:i.id,name:i.name,serving:i.serving,qty:i.qty,unitPrice:i.unitPrice,lineTotal:i.lineTotal}});
+  return {orderCode:o.order_code,createdAt:o.created_at,deliveryDate:o.delivery_date,deliverySlot:o.delivery_slot,total:o.total,paymentMethod:o.payment_method,items};
+ };
  return Object.freeze({
-  login:input=>perform('login',input),signup:input=>perform('signup',input),cancelPending,
+  login:input=>perform('login',input),signup:input=>perform('signup',input),cancelPending,restore,
   profile(){expire();return current?.profile||null},
+  async createOrder(order){expire();if(!current)return {outcome:'signed_out'};try{const r=await api('/functions/v1/lotus-customer-orders',{method:'POST',body:order,signal:AbortSignal.timeout(timeoutMs),token:current.token});return r.ok&&['saved','already_saved'].includes(r.data?.outcome)?r.data:{outcome:'unavailable'}}catch{return {outcome:'unavailable'}}},
+  async listOrders(){expire();if(!current)return {outcome:'signed_out',orders:[]};try{const r=await api('/rest/v1/lotus_customer_orders?select=order_code,created_at,delivery_date,delivery_slot,total,payment_method,items&order=created_at.desc&limit=25',{method:'GET',signal:AbortSignal.timeout(timeoutMs),token:current.token});if(!r.ok||!Array.isArray(r.data)||r.data.length>25)throw Error('invalid');return {outcome:'ok',orders:r.data.map(validOrder)}}catch{return {outcome:'unavailable',orders:[]}}},
   async logout(){const token=current?.token;cancelPending();forget();if(!token)return {serverLogout:'not_needed'};
-   const c=new AbortController();let t;try{const r=await Promise.race([api('/auth/v1/logout?scope=local',undefined,c.signal,token),new Promise((_,reject)=>{t=setTimeout(()=>{c.abort();reject(Error('timeout'))},timeoutMs)})]);return {serverLogout:r.ok?'accepted':'unknown'}}catch(_){return {serverLogout:'unknown'}}finally{clearTimeout(t)}
+   try{const r=await api('/auth/v1/logout?scope=local',{method:'POST',signal:AbortSignal.timeout(timeoutMs),token});return {serverLogout:r.ok?'accepted':'unknown'}}catch{return {serverLogout:'unknown'}}
   }
  });
 }
@@ -2801,13 +2840,17 @@ function bindExistingCustomerForm(body,{mode,session,onLogin,onRegistered}={}){
  if(!button||!error)return;let busy=false;
  const show=text=>{error.textContent=text;error.classList.remove('hidden')};
  const active=()=>body.isConnected&&q(button.id)===button&&!body.closest('#registerModal')?.classList.contains('hidden');
- if(mode==='login')error.insertAdjacentHTML('beforebegin','<p style="font-size:12px;line-height:1.8;margin:10px 0">رمز را فراموش کرده‌اید؟ پس از بررسی هویت، لینک خصوصی دریافت کنید: <a href="https://ble.ir/lotuscakesupport" target="_blank" rel="noopener noreferrer">Bale</a> · <a href="https://t.me/lotuscakesupport" target="_blank" rel="noopener noreferrer">Telegram</a>. رمزتان را در پیام نفرستید.</p>');
- const isSignup=mode==='signup';if(isSignup){button.textContent='ثبت نام و سپس ورود';const pass=q('reg_pass');pass.placeholder='حداقل ۱۲ نویسه، حداکثر ۷۲ بایت';const label=pass.closest('.field')?.querySelector('label');if(label)label.textContent='رمز عبور دلخواه (حداقل ۱۲ نویسه) *'}
+ const user=q(mode==='login'?'lg_user':'reg_user');
+ const userLabel=user?.closest('.field')?.querySelector('label');
+ if(userLabel)userLabel.textContent=mode==='login'?'نام کاربری *':'نام کاربری دلخواه (فقط حروف لاتین، عدد، نقطه، خط تیره یا زیرخط) *';
+ if(user)user.placeholder='مثلاً cafe_lamiz';
+ if(mode==='login')error.insertAdjacentHTML('beforebegin','<p style="font-size:12px;line-height:1.9;margin:10px 0">رمز را فراموش کرده‌اید؟<br>پس از بررسی هویت توسط ادمین لینک بازیابی رمز را دریافت کنید ،پشتیبانی <a href="https://ble.ir/lotuscakesupport" target="_blank" rel="noopener noreferrer">بله</a> و <a href="https://t.me/lotuscakesupport" target="_blank" rel="noopener noreferrer">تلگرام</a></p>');
+ const isSignup=mode==='signup';if(isSignup){button.textContent='ثبت‌نام و سپس ورود';const pass=q('reg_pass');pass.placeholder='حداقل ۱۲ نویسه، حداکثر ۷۲ بایت';const label=pass.closest('.field')?.querySelector('label');if(label)label.textContent='رمز عبور دلخواه (حداقل ۱۲ نویسه) *'}
  async function submit(){
   if(busy||!active())return;
   const field=id=>q(id).value;const input=isSignup?{username:field('reg_user'),password:field('reg_pass'),fullName:field('reg_name'),cafeName:field('reg_cafe'),phone:field('reg_phone'),address:field('reg_address')}:{username:field('lg_user'),password:field('lg_pass')};
   input.username=input.username.trim().toLowerCase();
-  if(!/^[a-z0-9_.-]{3,40}$/.test(input.username)||!input.password||new TextEncoder().encode(input.password).length>72||(isSignup&&(Array.from(input.password).length<12||/[\u0000-\u001f\u007f]/.test(input.password)))){show('نام کاربری یا رمز معتبر نیست؛ رمز جدید حداقل ۱۲ نویسه و حداکثر ۷۲ بایت باشد.');return;}
+  if(!/^[a-z0-9_.-]{3,40}$/.test(input.username)||!input.password||new TextEncoder().encode(input.password).length>72||(isSignup&&(Array.from(input.password).length<12||/[\u0000-\u001f\u007f]/.test(input.password)))){show('نام کاربری معتبر نیست؛ فقط نام کاربری را وارد کنید. رمز باید دست‌کم ۱۲ نویسه و حداکثر ۷۲ بایت باشد.');return;}
   busy=true;button.disabled=true;error.classList.add('hidden');q(isSignup?'reg_pass':'lg_pass').value='';
   const outcome=await session[mode](input);input.password='';
   if(!active())return;
@@ -2821,16 +2864,31 @@ function bindExistingCustomerForm(body,{mode,session,onLogin,onRegistered}={}){
  q(isSignup?'reg_pass':'lg_pass').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();void submit()}});
 }
 
+if(customerDbFormsEnabled&&customerProfile?.source!=='customer_database'){
+ customerProfile={loggedIn:false,username:'',name:'',cafeName:'',phone:'',address:'',discount:0};
+ try{localStorage.removeItem('lotus_active_user_v2');localStorage.removeItem('lotus_customer_profile_v1')}catch{}
+}
 const customerBrowserSession=createCustomerBrowserSession({enabled:customerDbFormsEnabled,projectUrl:'https://pwmdixtmkqzutaaulozl.supabase.co',publicKey:'sb_publishable_CuJkFbCWZLqkiPUfL__fgA_3n67OUS7',onProfile(profile){
  if(profile){customerProfile={...profile,source:'customer_database',loggedIn:true,discount:0};try{localStorage.removeItem('lotus_active_user_v2');localStorage.removeItem('lotus_customer_profile_v1')}catch(_){}}
  else if(customerProfile?.source==='customer_database'){customerProfile={loggedIn:false,username:'',name:'',cafeName:'',phone:'',address:'',discount:0};document.getElementById('registerModal').classList.add('hidden');document.getElementById('registerModalBody').textContent='';}
  renderAll();
 }});
+void customerBrowserSession.restore();
+function formatPersianDate(value,{time=false,dateOnly=false}={}){
+ try{
+  let d;
+  if(dateOnly&&typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)){const [y,m,day]=value.split('-').map(Number);d=new Date(Date.UTC(y,m-1,day,12));}
+  else d=new Date(value);
+  if(!Number.isFinite(d.getTime()))return '—';
+  return new Intl.DateTimeFormat('fa-IR-u-ca-persian-nu-arabext',{year:'numeric',month:'long',day:'numeric',...(time?{hour:'2-digit',minute:'2-digit'}:{}),timeZone:dateOnly?'UTC':'Asia/Tehran'}).format(d);
+ }catch{return '—'}
+}
 function renderDatabaseAccount(body,modal){
  const p=customerBrowserSession.profile();if(!p){openRegisterModal('login');return;}
- body.innerHTML=`<h3>حساب کاربری من</h3><p dir="ltr">@${escapeHtml(p.username)}</p><p>${escapeHtml(p.name)}</p><p>${escapeHtml(p.cafeName)}</p><p dir="ltr">${escapeHtml(p.phone)}</p><p>${escapeHtml(p.address)}</p><small>این نشست موقت است؛ با بازخوانی صفحه دوباره وارد شوید. تغییر رمز فقط با لینک خصوصی پشتیبانی انجام می‌شود.</small><div style="display:flex;gap:10px;margin-top:18px"><button type="button" class="cta-secondary" id="btnCloseRegisterModal">بستن</button><button type="button" class="cta-primary" id="btnLogoutInsideModal">خروج از حساب</button></div>`;
+ body.innerHTML=`<h3>حساب کاربری من</h3><p dir="ltr">@${escapeHtml(p.username)}</p><p>${escapeHtml(p.name)}</p><p>${escapeHtml(p.cafeName)}</p><p dir="ltr">${escapeHtml(p.phone)}</p><p>${escapeHtml(p.address)}</p><small>نشست این دستگاه حداکثر یک ساعت فعال می‌ماند؛ رمز عبور در مرورگر ذخیره نمی‌شود.</small><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button type="button" class="cta-secondary" id="btnCloseRegisterModal">بستن</button><button type="button" class="cta-secondary" id="btnLoadAccountOrders">سفارش‌های من</button><button type="button" class="cta-primary" id="btnLogoutInsideModal">خروج از حساب</button></div><div id="accountOrdersResult" aria-live="polite" style="margin-top:14px"></div>`;
  body.querySelector('#btnCloseRegisterModal').addEventListener('click',()=>modal.classList.add('hidden'));
  body.querySelector('#btnLogoutInsideModal').addEventListener('click',()=>{modal.classList.add('hidden');logoutCustomerAccount()});
+ body.querySelector('#btnLoadAccountOrders').addEventListener('click',async e=>{const b=e.currentTarget,r=body.querySelector('#accountOrdersResult');b.disabled=true;r.textContent='در حال دریافت سفارش‌ها…';try{const result=await customerBrowserSession.listOrders();if(result.outcome!=='ok'){r.textContent='دریافت سفارش‌ها انجام نشد؛ پس از ورود دوباره تلاش کنید.';return;}if(!result.orders.length){r.textContent='هنوز سفارشی برای این حساب ثبت نشده است.';return;}r.innerHTML=result.orders.map(o=>`<article class="order-card-admin" style="margin-bottom:8px"><strong>سفارش ${escapeHtml(o.orderCode)}</strong><div>${formatPersianDate(o.createdAt,{time:true})}</div><div>تحویل: ${o.deliveryDate?formatPersianDate(o.deliveryDate,{dateOnly:true}):'—'} ${escapeHtml(o.deliverySlot)}</div><div>${o.items.map(i=>escapeHtml(i.name)+' × '+toFa(i.qty)).join('، ')}</div><b>${formatPriceFa(o.total)} تومان</b></article>`).join('')}catch{r.textContent='دریافت سفارش‌ها انجام نشد.'}finally{if(b.isConnected)b.disabled=false}});
 }
 
       // ZERO-BUG CROSS-DEVICE CUSTOMER AUTHENTICATION MODAL (ورود / ثبت نام با یوزرنیم و پسورد + خروج از اکانت)
@@ -2932,8 +2990,8 @@ function renderDatabaseAccount(body,modal){
             </p>
             <div class="form-grid" style="grid-template-columns:1fr;margin-bottom:14px">
               <div class="field">
-                <label>نام کاربری (یا شماره موبایل ثبت‌نامی) *</label>
-                <input dir="ltr" id="lg_user" autocomplete="username" placeholder="مثلاً lamiz یا 0912xxxxxxx">
+                <label>نام کاربری *</label>
+                <input dir="ltr" id="lg_user" autocomplete="username" placeholder="مثلاً cafe_lamiz">
               </div>
               <div class="field">
                 <label>رمز عبور *</label>
@@ -2948,7 +3006,7 @@ function renderDatabaseAccount(body,modal){
               ورود به حساب کاربری ←
             </button>
             <div style="text-align:center;margin-top:12px;font-size:12.2px;color:var(--text-muted)">
-              هنوز حساب ندارید؟ <button type="button" id="linkGoSignup" style="background:none;border:none;color:var(--accent);font-weight:800;cursor:pointer;text-decoration:underline">ثبت نام جدید در ۱۰ ثانیه</button>
+              <button type="button" id="linkGoSignup" style="background:none;border:none;color:var(--accent);font-weight:800;cursor:pointer;text-decoration:underline">ثبت‌نام</button>
             </div>
           ` : `
             <p style="font-size:12.3px;color:var(--text-muted);line-height:1.7;margin-bottom:12px">
@@ -2956,8 +3014,8 @@ function renderDatabaseAccount(body,modal){
             </p>
             <div class="form-grid" style="margin-bottom:14px">
               <div class="field">
-                <label>نام کاربری دلخواه (انگلیسی یا موبایل) <span style="color:#DC2626">*</span></label>
-                <input dir="ltr" id="reg_user" autocomplete="username" placeholder="مثلاً cafe_lamiz یا 0912...">
+                <label>نام کاربری دلخواه (فقط نام کاربری انگلیسی) <span style="color:#DC2626">*</span></label>
+                <input dir="ltr" id="reg_user" autocomplete="username" placeholder="مثلاً cafe_lamiz">
               </div>
               <div class="field">
                 <label>رمز عبور دلخواه (حداقل ۴ کاراکتر) <span style="color:#DC2626">*</span></label>
@@ -3088,7 +3146,7 @@ function renderDatabaseAccount(body,modal){
           const missing = [];
           if (!cleanUser || cleanUser.length < 3 || !/^[a-z0-9_.-]+$/.test(cleanUser)) {
             elUser.style.borderColor = '#DC2626';
-            missing.push('نام کاربری انگلیسی یا موبایل (حداقل ۳ حرف/عدد بدون فاصله)');
+            missing.push('نام کاربری انگلیسی (حداقل ۳ حرف یا عدد بدون فاصله)');
           }
           if (cleanPass.length < 4) { elPass.style.borderColor = '#DC2626'; missing.push('رمز عبور (حداقل ۴ کاراکتر)'); }
           if (!name) { elName.style.borderColor = '#DC2626'; missing.push('نام و نام خانوادگی'); }
@@ -3186,14 +3244,15 @@ function renderDatabaseAccount(body,modal){
       let selectedCutOption = '';
 
       function getNextDeliveryDates() {
-        const out=[]; const now=new Date();
-        for(let i=0;i<5;i++){ const d=new Date(now); d.setDate(now.getDate()+i); const label = i===0?'امروز':i===1?'فردا':d.toLocaleDateString('fa-IR',{weekday:'long'}); const dateStr=d.toLocaleDateString('fa-IR'); out.push({label, dateStr, iso:d.toISOString().slice(0,10)}); }
+        const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tehran',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+        const part=k=>Number(parts.find(x=>x.type===k)?.value||0);const y=part('year'),m=part('month'),day=part('day');const out=[];
+        for(let i=0;i<5;i++){const d=new Date(Date.UTC(y,m-1,day+i,12));const iso=d.toISOString().slice(0,10);const label=i===0?'امروز':i===1?'فردا':new Intl.DateTimeFormat('fa-IR-u-ca-persian-nu-arabext',{weekday:'long',timeZone:'UTC'}).format(d);const dateStr=formatPersianDate(iso,{dateOnly:true});out.push({label,dateStr,iso});}
         return out;
       }
 
       function generateReceiptHtml(order){
         const brandName = state.brand.name;
-        const dateStr = new Date(order.createdAt).toLocaleString('fa-IR');
+        const dateStr = formatPersianDate(order.createdAt,{time:true});
         return `<!DOCTYPE html><html dir="rtl" lang="fa"><head><meta charset="utf-8"><style>
           body{font-family:Tahoma,sans-serif;background:#FAF8F5;color:#1E1B18;padding:24px;max-width:600px;margin:0 auto}
           .receipt{background:#fff;border:1px solid #E8E2D9;border-radius:16px;padding:22px}
@@ -3208,7 +3267,7 @@ function renderDatabaseAccount(body,modal){
             <div>👤 ${order.customerName} — ☕ ${order.cafeName}</div>
             <div>📞 ${order.phone}</div>
             <div>📍 ${order.address}</div>
-            ${order.deliveryDate?'<div>📅 تحویل: '+order.deliveryDate+' — '+order.deliverySlot+'</div>':''}
+            ${order.deliveryDate?'<div>📅 تحویل: '+formatPersianDate(order.deliveryDate,{dateOnly:true})+' — '+order.deliverySlot+'</div>':''}
             ${order.cutOption?'<div>🔪 برش: '+order.cutOption+'</div>':''}
           </div>
           ${order.items.map(it=>{
@@ -3240,7 +3299,7 @@ function renderDatabaseAccount(body,modal){
       const btnMyOrdersEl = document.getElementById('btnMyOrders');
       if (btnMyOrdersEl) btnMyOrdersEl.addEventListener('click', () => openCartModal('checkout'));
       const vipHistBtn = document.getElementById('btnVipHistory');
-      if (vipHistBtn) vipHistBtn.addEventListener('click', () => openCartModal('history'));
+      if (vipHistBtn) vipHistBtn.addEventListener('click', () => openRegisterModal(customerProfile && customerProfile.loggedIn ? undefined : 'login'));
       document.getElementById('cartModal').addEventListener('click', e => {
         if (e.target.id === 'cartModal') e.target.classList.add('hidden');
       });
@@ -3356,6 +3415,7 @@ function renderDatabaseAccount(body,modal){
           </div>`;
 
         if (mode === 'history') {
+          if(customerProfile?.source==='customer_database'){openRegisterModal();return;}
           wrap.innerHTML = headerTabs + `
             <div style="padding:12px 14px;border-radius:12px;background:var(--surface-soft);border:1px solid var(--border);margin-bottom:14px">
               <div style="font-size:12.5px;font-weight:700;margin-bottom:8px">مشخصات ذخیره شده شما در این گوشی (جهت پر شدن خودکار در سفارش‌ها):</div>
@@ -3561,8 +3621,9 @@ function renderDatabaseAccount(body,modal){
               submitBtn.disabled = true;
               submitBtn.textContent = 'در حال ثبت آنی سفارش...';
 
-              customerProfile = { name, cafeName, phone, address };
-              localStorage.setItem('lotus_customer_profile_v1', JSON.stringify(customerProfile));
+              const isDatabaseCustomer=customerProfile?.source==='customer_database'&&customerProfile.loggedIn===true;
+              customerProfile = Object.assign({},customerProfile,{loggedIn:true,name,cafeName,phone,address});
+              if(!isDatabaseCustomer)localStorage.setItem('lotus_customer_profile_v1', JSON.stringify(customerProfile));
               renderAll();
 
               const orderObj = {
@@ -3594,7 +3655,15 @@ function renderDatabaseAccount(body,modal){
                 costSnapshotEnvelope:state.accountingCostSnapshotEnvelope||''
               };
 
+              let accountOrderSaved=false;
               try {
+                if(isDatabaseCustomer){
+                  const accountPayload={orderCode:orderObj.id,customerName:orderObj.customerName,cafeName:orderObj.cafeName,phone:orderObj.phone,address:orderObj.address,deliveryDate:orderObj.deliveryDate||null,deliverySlot:String(orderObj.deliverySlot||''),cutOption:String(orderObj.cutOption||''),items:orderObj.items.map(i=>({id:String(i.id),name:String(i.name),serving:String(i.serving||''),qty:Number(i.qty),unitPrice:Number(i.unitPrice),lineTotal:Number(i.lineTotal)})),total:Number(orderObj.total),paymentMethod:orderObj.paymentMethod};
+                  const signature=JSON.stringify(accountPayload);if(signature!==pendingAccountOrderSignature){pendingAccountOrderSignature=signature;pendingAccountOrderId=crypto.randomUUID();}
+                  const saved=await customerBrowserSession.createOrder({clientOrderId:pendingAccountOrderId,...accountPayload});
+                  if(!['saved','already_saved'].includes(saved.outcome))throw new Error('ثبت سفارش در حساب انجام نشد؛ سفارش به پنل ارسال نشده است. دوباره تلاش کنید.');
+                  accountOrderSaved=true;
+                }
                 ensureOrderConfig(state);
                 const topic = state.orderConfig.inboxTopic;
                 const encryptedPayload = await encryptOrderPayload(orderObj);
@@ -3626,8 +3695,8 @@ function renderDatabaseAccount(body,modal){
                   }).catch(() => {});
                 }
 
-                myOrderHistory.unshift(orderObj);
-                localStorage.setItem('lotus_my_orders_v1', JSON.stringify(myOrderHistory.slice(0, 30)));
+                if(!isDatabaseCustomer){myOrderHistory.unshift(orderObj);localStorage.setItem('lotus_my_orders_v1', JSON.stringify(myOrderHistory.slice(0, 30)));}
+                pendingAccountOrderSignature='';pendingAccountOrderId='';
                 selectedPaymentOption=''; selectedReceiptFile=null;
                 cart = {};
                 saveCart();
@@ -3636,7 +3705,7 @@ function renderDatabaseAccount(body,modal){
               } catch (err) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'ثبت نهایی سفارش ✅';
-                errEl.textContent = 'خطا در ارسال آنلاین (' + err.message + '). لطفاً دوباره تلاش کنید یا با دکمه تماس تلفنی تماس بگیرید.';
+                errEl.textContent = accountOrderSaved ? ('سفارش '+orderObj.id+' در حساب ذخیره شد، اما ارسال آن به پنل مدیر تأیید نشد؛ سفارش را دوباره ثبت نکنید و با پشتیبانی هماهنگ کنید.') : ('خطا در ارسال آنلاین (' + err.message + '). لطفاً دوباره تلاش کنید یا با دکمه تماس تلفنی تماس بگیرید.');
                 errEl.classList.remove('hidden');
               }
             });
@@ -4205,8 +4274,8 @@ const customerDirectoryBridge=directoryTools.createCustomerDirectoryBridge({enab
 function clearCustomerDirectory(){customerDirectoryBridge.invalidate();customerDirectorySession.signOut().catch(()=>{});}
 function mountCustomerDirectory(body){
  const root=document.createElement('section');root.id='customerDatabaseSection';root.style.cssText='padding:14px;border:1px solid var(--border);border-radius:12px;margin-bottom:20px;box-sizing:border-box;min-width:0;overflow-wrap:anywhere';
- root.innerHTML=`<h3 style="margin-top:0">مشتریان ثبت‌شده در دیتابیس</h3><p style="font-size:12px">ورود امن مدیر برای خواندن اطلاعات سروری در همین صفحه. این اتصال هنوز ثبت‌نام سایت را به دیتابیس منتقل نمی‌کند. فهرست قدیمی پنل پایین این بخش باقی است.</p><form id="directoryLoginForm"><label>ایمیل حساب مدیر<input id="directoryEmail" type="email" autocomplete="off" required style="display:block;width:100%;box-sizing:border-box;margin:6px 0" dir="ltr"></label><label>رمز حساب مدیر<input id="directoryPassword" type="password" autocomplete="off" required style="display:block;width:100%;box-sizing:border-box;margin:6px 0" dir="ltr"></label><button class="icon-btn" type="submit">ورود امن مدیر</button><small>این ایمیل فقط متعلق به حساب مدیر است؛ ثبت‌نام مشتری ایمیل اجباری ندارد.</small></form><form id="directoryMfaForm" hidden><label>کد شش‌رقمی رمزساز<input id="directoryOtp" inputmode="numeric" autocomplete="off" maxlength="6" dir="ltr"></label><button class="icon-btn" type="submit">تأیید و نمایش مشتریان</button></form><form id="directoryQueryForm" hidden><input id="directoryQuery" type="search" maxlength="120" placeholder="جست‌وجوی نام، کافه، نام کاربری یا تلفن"><button class="icon-btn" type="submit">جست‌وجو در دیتابیس</button><button id="directoryDisconnect" class="icon-btn" type="button">قطع اتصال در این صفحه</button></form><p id="directoryStatus" role="status" aria-live="polite"></p><div id="directoryRows"></div><div id="directoryPages" hidden><button id="directoryPrev" class="icon-btn" type="button">قبلی</button><button id="directoryNext" class="icon-btn" type="button">بعدی</button></div><p style="font-size:11px">رمز، کد و توکن این اتصال در حافظهٔ موقت صفحه‌اند و در ذخیره‌سازی مرورگر نوشته نمی‌شوند. قطع اتصال این صفحه جای لغو همهٔ نشست‌های حساب را نمی‌گیرد. اطلاعات را روی دستگاه مشترک باز نگذارید.</p>`;
- body.prepend(root);const $=id=>root.querySelector('#'+id),active=()=>root.isConnected&&currentAdminTab==='registrations'&&!document.getElementById('adminModal').classList.contains('hidden');
+ root.innerHTML=`<h3 style="margin-top:0">مشتریان ثبت‌شده در دیتابیس</h3><p style="font-size:12px">ورود امن مدیر برای خواندن اطلاعات سروری در همین صفحه. حساب‌هایی که در سایت ثبت‌نام می‌شوند در این فهرست دیتابیس قرار می‌گیرند. برای حفظ حریم خصوصی، نمایش فقط پس از ورود مدیر و رمزساز انجام می‌شود.</p><form id="directoryLoginForm"><label>ایمیل حساب مدیر<input id="directoryEmail" type="email" autocomplete="off" required style="display:block;width:100%;box-sizing:border-box;margin:6px 0" dir="ltr"></label><label>رمز حساب مدیر<input id="directoryPassword" type="password" autocomplete="off" required style="display:block;width:100%;box-sizing:border-box;margin:6px 0" dir="ltr"></label><button class="icon-btn" type="submit">ورود امن مدیر</button><small>این ایمیل فقط متعلق به حساب مدیر است؛ ثبت‌نام مشتری ایمیل اجباری ندارد.</small></form><form id="directoryMfaForm" hidden><label>کد شش‌رقمی رمزساز<input id="directoryOtp" inputmode="numeric" autocomplete="off" maxlength="6" dir="ltr"></label><button class="icon-btn" type="submit">تأیید و نمایش مشتریان</button></form><form id="directoryQueryForm" hidden><input id="directoryQuery" type="search" maxlength="120" placeholder="جست‌وجوی نام، کافه، نام کاربری یا تلفن"><button class="icon-btn" type="submit">جست‌وجو در دیتابیس</button><button id="directoryDisconnect" class="icon-btn" type="button">قطع اتصال در این صفحه</button></form><p id="directoryStatus" role="status" aria-live="polite"></p><div id="directoryRows"></div><div id="directoryPages" hidden><button id="directoryPrev" class="icon-btn" type="button">قبلی</button><button id="directoryNext" class="icon-btn" type="button">بعدی</button></div><p style="font-size:11px">رمز، کد و توکن این اتصال در حافظهٔ موقت صفحه‌اند و در ذخیره‌سازی مرورگر نوشته نمی‌شوند. قطع اتصال این صفحه جای لغو همهٔ نشست‌های حساب را نمی‌گیرد. اطلاعات را روی دستگاه مشترک باز نگذارید.</p>`;
+ body.prepend(root);const $=id=>root.querySelector('#'+id),active=()=>root.isConnected&&currentAdminTab==='database'&&!document.getElementById('adminModal').classList.contains('hidden');
  let offset=0,query='',busy=false;
  const status=text=>{$('directoryStatus').textContent=text};
  function sync(){const st=customerDirectorySession.status();$('directoryLoginForm').hidden=st!=='signed_out';$('directoryMfaForm').hidden=st!=='mfa_required';$('directoryQueryForm').hidden=st!=='ready';}
@@ -4233,7 +4302,7 @@ function mountCustomerDirectory(body){
 
 
       function renderAdminTab() {
-        if(currentAdminTab!=='registrations')clearCustomerDirectory();
+        if(currentAdminTab!=='database')clearCustomerDirectory();
         syncAdminMobileNavigation();
         const body = document.getElementById('adminBody');
 
@@ -4349,7 +4418,7 @@ function mountCustomerDirectory(body){
               ? `<div class="empty-state">
                   <div style="font-size:32px;margin-bottom:8px">👥</div>
                   هنوز ثبت‌نام جدیدی ارسال نشده است.<br>
-                  <span style="font-size:12px">هر مشتری یا مدیر کافه‌ای روی دکمه «📝 ثبت نام» در بالای صفحه اول کلیک کند و فرم را پر کند، مشخصاتش همین‌جا ثبت می‌شود!</span>
+                  <span style="font-size:12px">ثبت‌نام‌های قدیمی/دریافتی پنل در این فهرست هستند. حساب‌های تازهٔ دیتابیس را در تب «مشتریان دیتابیس» ببینید.</span>
                 </div>`
               : regs.map((r,regIndex) => {
                   const st = r.status || 'new';
@@ -4388,7 +4457,6 @@ function mountCustomerDirectory(body){
                   </div>`;
                 }).join('')}`;
 
-          mountCustomerDirectory(body);
           const regSearchInput=document.getElementById('customerRegistrationSearch');
           const applyRegSearch=()=>{const q=normalizeRegSearch(regSearchInput.value),compact=q.replace(/[\s()+-]/g,'');let shown=0;body.querySelectorAll('[data-registration-index]').forEach(card=>{const text=regSearchTexts[Number(card.dataset.registrationIndex)]||'',match=!q||text.includes(q)||(compact.length>0&&text.replace(/[\s()+-]/g,'').includes(compact));card.hidden=!match;if(match)shown++;});document.getElementById('registrationSearchCount').textContent=toFa(shown)+' مشتری از '+toFa(regs.length)+' مورد دریافت‌شده';};
           regSearchInput.addEventListener('input',applyRegSearch);applyRegSearch();
@@ -4463,6 +4531,10 @@ function mountCustomerDirectory(body){
               document.getElementById('adminToast').textContent = `صفحه اختصاصی برای «${title}» ساخته شد! درصد تخفیف را تنظیم و دکمه سبز ذخیره را بزنید ✓`;
             });
           });
+
+        } else if (currentAdminTab === 'database') {
+          body.innerHTML='<div class="info-callout"><strong>حساب‌های جدید مشتریان</strong><br>نام کاربری هر مشتری در کارت او دیده می‌شود. این فهرست فقط‌خواندنی است؛ برای امنیت، ورود مدیر با رمزساز لازم است. تب «ثبت‌نام مشتریان» فهرست قدیمی دریافتی‌ها را نگه می‌دارد.</div>';
+          mountCustomerDirectory(body);
 
         } else if (currentAdminTab === 'prices') {
           // Category filter state
@@ -4706,8 +4778,8 @@ function mountCustomerDirectory(body){
           const base = getBaseSiteUrl();
           body.innerHTML = `
             <div class="info-callout">
-              <strong>صفحه اختصاصی برای هر مشتری یا کافه (VIP Portal):</strong><br>
-              برای هر کافه طرف قرارداد یا مشتری ثابت، یک لینک اختصاصی بسازید (مثلاً <code>${base}/?c=lamiz</code>). وقتی مشتری وارد لینک خودش شود:
+              <strong>این تب برای لینک VIP مشتریان ثابت/همکار است؛ جای حساب کاربری یا فهرست دیتابیس نیست.</strong><br>
+              برای هر کافه طرف قرارداد یا مشتری ثابت، یک لینک اختصاصی بسازید (مثلاً <code>${base}/?c=lamiz</code>). با لینک اختصاصیِ هر کافه:
               <br>• با نام خودش به او خوش‌آمد گفته می‌شود و نامش خودکار در فرم سفارش پر است.
               <br>• اگر درصد تخفیف همکاری تعیین کنید، تمام قیمت‌های منو <strong>فقط در صفحه همان مشتری</strong> با قیمت همکاری نمایش داده و محاسبه می‌شوند!
               <br>• هر سفارشی ثبت کند، در تب سفارشات شما با برچسب ویژه همان کافه/مشتری مشخص می‌شود.
@@ -4795,7 +4867,7 @@ function mountCustomerDirectory(body){
                   <div class="field"><label>نام صاحب کارت (نمایش به مشتری)</label><input id="f_paymentCardHolder" value="${escapeHtml(b.paymentCardHolder||'')}" placeholder="مثلاً نام صاحب حساب"></div>
                   <div class="field"><label>شماره کارت ۱۶ رقمی (نمایش به مشتری)</label><input dir="ltr" inputmode="numeric" maxlength="23" id="f_paymentCardNumber" value="${escapeHtml(b.paymentCardNumber||'')}" placeholder="0000 0000 0000 0000"></div>
                 </div>
-                <div style="font-size:11px;color:var(--text-muted)">این دو مورد عمداً در اطلاعات عمومی منو نگهداری می‌شوند تا مشتری بتواند پرداخت کند. هزینه‌ها و سود حسابداری در دفتر رمزگذاری‌شده و فقط برای مدیریت ذخیره می‌شوند.</div>
+                <div style="font-size:11px;color:var(--text-muted)">شماره کارت و نام صاحب کارت در دادهٔ عمومی سایت نگهداری می‌شوند تا مشتری بتواند پرداخت کند؛ رمز و اطلاعات حسابداری در این بخش ذخیره نمی‌شوند. برای ذخیرهٔ دائمی، «ذخیره و انتشار» را بزنید.</div><button type="button" class="icon-btn" id="btnSavePaymentSettings">ذخیره اطلاعات کارت</button>
               </div>
               <div style="grid-column:1/-1; font-size:11px; color:var(--text-muted); padding:8px 10px; background:var(--surface-soft); border:1px dashed var(--border); border-radius:8px">💡 دسته‌بندی‌ها اکنون در تب <strong>📦 محصولات</strong> مدیریت می‌شوند</div>
               <div class="field" style="grid-column:1/-1;padding-top:10px;border-top:1px solid var(--border)">
@@ -4807,6 +4879,8 @@ function mountCustomerDirectory(body){
               </div>
             </div>`;
 
+          const saveCardSettings=document.getElementById('btnSavePaymentSettings');
+          if(saveCardSettings)saveCardSettings.addEventListener('click',()=>document.getElementById('btnPublishLive').click());
           const btnAddCat = document.getElementById('btnAddCat');
           if (btnAddCat) btnAddCat.addEventListener('click', ()=>{ collectAdminInputs(); state.categories.push({id:'cat_'+Date.now(), title:'دسته جدید', subtitle:'توضیح کوتاه'}); renderAdminTab(); });
           body.querySelectorAll('.cat-del').forEach(b=>{
@@ -5164,7 +5238,7 @@ function mountCustomerDirectory(body){
           d.infoBoxTitle = document.getElementById('f_infoBoxTitle').value.trim();
           d.showSocialSection = document.getElementById('f_showSocial').checked;
           d.socialCtaText = document.getElementById('f_socialCta').value.trim();
-          d.socialDisplayHandle = document.getElementById('f_socialHandle').value.trim();
+          if(document.getElementById('f_socialHandle'))d.socialDisplayHandle = document.getElementById('f_socialHandle').value.trim();
           d.instagramUrl = document.getElementById('f_socialIgUrl').value.trim();
           d.telegramUrl = document.getElementById('f_socialTgUrl').value.trim();
           d.baleUrl = document.getElementById('f_socialBaleUrl').value.trim();
@@ -5554,5 +5628,5 @@ function mountCustomerDirectory(body){
       setTimeout(signalSplashAppReady,4500);
     })();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5030d4849f7c5cf',t:'MTc5Mjk1MDUwMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5031732ead1c5cf',t:'MTc5Mjk1MDkwOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a50322cdcec31ac7',t:'MTc5Mjk1MTM4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5030d4849f7c5cf',t:'MTc5Mjk1MDUwMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5031732ead1c5cf',t:'MTc5Mjk1MDkwOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a50322cdcec31ac7',t:'MTc5Mjk1MTM4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a55f9ef74c9437cc',t:'MTc5MzkyMTE2MA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a55f9ef74c9437cc',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
