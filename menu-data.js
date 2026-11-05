@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1793751892626,
+  "updatedAt": 1793912223157,
   "cloud": {
     "ghOwner": "lotuscake777",
     "ghRepo": "lotuscake777.github.io",
@@ -16,8 +16,8 @@ window.MENU_DATA = {
     "publicUrl": "https://lotuscake777.github.io",
     "defaultTheme": "light",
     "orderingEnabled": true,
-    "paymentCardNumber": "",
-    "paymentCardHolder": "",
+    "paymentCardNumber": "6104337869483816",
+    "paymentCardHolder": "محمد مزرعه فراهانی",
     "bale": "lotuscake777"
   },
   "categories": [
