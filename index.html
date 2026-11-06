@@ -1210,12 +1210,12 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     <div class="container controls-inner">
       <div class="tabs-row" id="categoryTabs"></div>
       <div class="search-view-row">
-        <div class="search-box">
+        <form class="search-box" id="productSearchForm" role="search" autocomplete="off">
           <span class="search-icon">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           </span>
-          <input type="search" id="searchInput" placeholder="جستجوی نام کیک یا ترکیبات (مثلاً پسته، کارامل، نوتلا، انار)...">
-        </div>
+          <input type="search" id="searchInput" name="product_search" autocomplete="off" aria-label="جستجوی محصولات" placeholder="جستجوی نام کیک یا ترکیبات (مثلاً پسته، کارامل، نوتلا، انار)...">
+        </form>
         <div class="price-sort">
           <select id="priceSort" aria-label="مرتب‌سازی محصولات بر اساس قیمت">
             <option value="default">مرتب‌سازی قیمت</option>
@@ -1231,7 +1231,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
 
   <section class="container">
     <div class="order-info-box" id="elOrderInfoBox">
-      <h3 style="font-size:13px;font-weight:800;margin-bottom:4px">نحوه ثبت سفارش و همکاری با کافه‌ها</h3>
+      <h3 class="hidden" style="font-size:13px;font-weight:800;margin-bottom:4px"></h3>
       <p id="elOrderNote" style="font-size:12.2px;color:var(--text-muted)"></p>
     </div>
     <div class="social-luxury hidden" id="socialLuxuryBox">
@@ -2578,7 +2578,12 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           else {
             infoBox.classList.remove('hidden');
             const titleEl = infoBox.querySelector('h3');
-            if (titleEl && state.design) titleEl.textContent = state.design.infoBoxTitle || 'نحوه ثبت سفارش و همکاری با کافه‌ها';
+            if (titleEl) {
+              const title=String((state.design && state.design.infoBoxTitle)||'').trim();
+              const removedTitle=/^همکاری\s+ویژه\s+با\s+کافه[‌\s]*ها\s+و\s+مجموعه[‌\s]*ها$/.test(title);
+              titleEl.textContent=removedTitle?'':title;
+              titleEl.classList.toggle('hidden',!titleEl.textContent);
+            }
             document.getElementById('elOrderNote').textContent = String(state.brand.orderNote||'').replace(/برای\s+سفارش/gi,'').replace(/\s{2,}/g,' ').trim();
           }
         }
@@ -2744,7 +2749,12 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         updateBottomBar();
       }
 
-      document.getElementById('searchInput').addEventListener('input', e => {
+      const searchInput=document.getElementById('searchInput');
+      document.getElementById('productSearchForm').addEventListener('submit',e=>e.preventDefault());
+      // Do not restore a saved form value into the product search on a fresh page load.
+      searchInput.value='';
+      window.addEventListener('pageshow',()=>{if(searchInput.value){searchInput.value='';searchQuery='';renderAll();}});
+      searchInput.addEventListener('input', e => {
         searchQuery = e.target.value;
         renderAll();
       });
@@ -2918,10 +2928,10 @@ function bindExistingCustomerForm(body,{mode,session,onLogin,onRegistered}={}){
  const active=()=>body.isConnected&&q(button.id)===button&&!body.closest('#registerModal')?.classList.contains('hidden');
  const user=q(mode==='login'?'lg_user':'reg_user');
  const userLabel=user?.closest('.field')?.querySelector('label');
- if(userLabel)userLabel.textContent=mode==='login'?'نام کاربری *':'نام کاربری دلخواه (فقط حروف لاتین، عدد، نقطه، خط تیره یا زیرخط) *';
+ if(userLabel)userLabel.textContent=mode==='login'?'نام کاربری *':'نام کاربری دلخواه *';
  if(user)user.placeholder='مثلاً cafe_lamiz';
  if(mode==='login')error.insertAdjacentHTML('beforebegin','<p style="font-size:12px;line-height:1.9;margin:10px 0">رمز را فراموش کرده‌اید؟<br>پس از بررسی هویت توسط ادمین لینک بازیابی رمز را دریافت کنید ،پشتیبانی <a href="https://ble.ir/lotuscakesupport" target="_blank" rel="noopener noreferrer">بله</a> و <a href="https://t.me/lotuscakesupport" target="_blank" rel="noopener noreferrer">تلگرام</a></p>');
- const isSignup=mode==='signup';if(isSignup){button.textContent='ثبت‌نام و سپس ورود';const pass=q('reg_pass');pass.placeholder='حداقل ۶ نویسه، حداکثر ۷۲ بایت';const label=pass.closest('.field')?.querySelector('label');if(label)label.textContent='رمز عبور دلخواه (حداقل ۶ نویسه) *'}
+ const isSignup=mode==='signup';if(isSignup){button.textContent='ثبت‌نام و سپس ورود';const pass=q('reg_pass');pass.placeholder='حداقل ۶ نویسه';const label=pass.closest('.field')?.querySelector('label');if(label)label.textContent='رمز عبور *'}
  async function submit(){
   if(busy||!active())return;
   const field=id=>q(id).value;const input=isSignup?{username:field('reg_user'),password:field('reg_pass'),fullName:field('reg_name'),cafeName:field('reg_cafe'),phone:field('reg_phone'),address:field('reg_address')}:{username:field('lg_user'),password:field('lg_pass')};
@@ -3061,18 +3071,19 @@ function renderDatabaseAccount(body,modal){
             <button type="button" class="icon-btn" id="btnCloseRegisterModal" style="height:32px;padding:0 10px">&times;</button>
           </div>
           ${mode === 'login' ? `
+            <form id="customerLoginForm" autocomplete="on">
             <p style="font-size:12.4px;color:var(--text-muted);margin-bottom:14px">
               نام کاربری و رمز عبور خود را وارد کنید تا مشخصات کافه، شماره تماس و آدرس شما به صورت خودکار بارگذاری شود:
             </p>
             <div class="form-grid" style="grid-template-columns:1fr;margin-bottom:14px">
               <div class="field">
                 <label>نام کاربری *</label>
-                <input dir="ltr" id="lg_user" autocomplete="username" placeholder="مثلاً cafe_lamiz">
+                <input dir="ltr" id="lg_user" name="username" autocomplete="username" placeholder="مثلاً cafe_lamiz">
               </div>
               <div class="field">
                 <label>رمز عبور *</label>
                 <div class="pass-wrap">
-                  <input dir="ltr" type="password" id="lg_pass" autocomplete="current-password" placeholder="رمز عبور...">
+                  <input dir="ltr" type="password" id="lg_pass" name="password" autocomplete="current-password" placeholder="رمز عبور...">
                   <button type="button" class="eye-btn" data-target="lg_pass">👁️</button>
                 </div>
               </div>
@@ -3084,19 +3095,18 @@ function renderDatabaseAccount(body,modal){
             <div style="text-align:center;margin-top:12px;font-size:12.2px;color:var(--text-muted)">
               <button type="button" id="linkGoSignup" style="background:none;border:none;color:var(--accent);font-weight:800;cursor:pointer;text-decoration:underline">ثبت‌نام</button>
             </div>
+            </form>
           ` : `
-            <p style="font-size:12.3px;color:var(--text-muted);line-height:1.7;margin-bottom:12px">
-              یک نام کاربری و رمز عبور دلخواه انتخاب کنید؛ با این حساب از <strong>هر گوشی یا سیستمی</strong> وارد شوید اطلاعات شما آماده است:
-            </p>
+            <form id="customerSignupForm" autocomplete="on">
             <div class="form-grid" style="margin-bottom:14px">
               <div class="field">
-                <label>نام کاربری دلخواه (فقط نام کاربری انگلیسی) <span style="color:#DC2626">*</span></label>
-                <input dir="ltr" id="reg_user" autocomplete="username" placeholder="مثلاً cafe_lamiz">
+                <label>نام کاربری دلخواه <span style="color:#DC2626">*</span></label>
+                <input dir="ltr" id="reg_user" name="username" autocomplete="username" placeholder="مثلاً cafe_lamiz">
               </div>
               <div class="field">
-                <label>رمز عبور دلخواه (حداقل ۴ کاراکتر) <span style="color:#DC2626">*</span></label>
+                <label>رمز عبور <span style="color:#DC2626">*</span></label>
                 <div class="pass-wrap">
-                  <input dir="ltr" type="password" id="reg_pass" autocomplete="new-password" placeholder="حداقل ۴ عدد یا حرف">
+                  <input dir="ltr" type="password" id="reg_pass" name="new-password" autocomplete="new-password" placeholder="حداقل ۶ نویسه">
                   <button type="button" class="eye-btn" data-target="reg_pass">👁️</button>
                 </div>
               </div>
@@ -3121,8 +3131,11 @@ function renderDatabaseAccount(body,modal){
             <button type="button" class="cta-primary" id="btnSubmitRegister" style="width:100%;height:46px;background:#1F6F4A;color:#fff;font-size:13.8px">
               تکمیل ثبت نام و ورود به حساب ✅
             </button>
+            </form>
           `}`;
 
+        // Prevent implicit browser navigation; existing click/Enter handlers perform authentication.
+        body.querySelector('form').addEventListener('submit',e=>e.preventDefault());
         attachPasswordEyeToggles(body);
         document.getElementById('btnCloseRegisterModal').addEventListener('click', () => {if(customerDbFormsEnabled)customerBrowserSession.cancelPending();modal.classList.add('hidden')});
         document.getElementById('authTabLogin').addEventListener('click', () => openRegisterModal('login'));
