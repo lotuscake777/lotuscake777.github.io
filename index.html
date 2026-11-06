@@ -1319,7 +1319,13 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           <button type="button" class="cta-primary" id="btnConfirmLogin">ورود به مدیریت</button>
           <button type="button" class="cta-secondary" id="btnCancelLogin">انصراف</button>
         </div>
+        <button type="button" class="icon-btn" id="btnPublicRegistrations" style="margin-top:14px;width:100%">مشاهدهٔ ثبت‌نام مشتریان بدون رمز</button>
       </div>
+    </div>
+  </div>
+  <div class="modal-backdrop hidden" id="publicRegistrationsModal">
+    <div class="modal-card" style="max-width:680px;max-height:90vh;overflow:auto" role="dialog" aria-modal="true">
+      <div class="modal-content"><button type="button" class="icon-btn" id="btnClosePublicRegistrations">بستن ×</button><div id="publicRegistrationsModalBody"></div></div>
     </div>
   </div>
 
@@ -1822,7 +1828,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         customerProfile = { loggedIn: false, username: '', name: '', cafeName: '', phone: '', address: '', discount: 0 };
         localStorage.removeItem('lotus_active_user_v2');
         localStorage.removeItem('lotus_customer_profile_v1');
-        cart = {};
+        cart = {};containerChoices=Object.create(null);
         saveCart();
         renderAll();
         showLuxuryToast('با موفقیت از حساب کاربری خود خارج شدید ✓');
@@ -1842,6 +1848,21 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         renderAll();
       }
 
+      // Only whole cakes need a returnable carrier; single portions are excluded.
+      function needsCakeCarrier(line){
+        const item=state.items.find(x=>x.id===line.id);
+        if(!item)return false;
+        if(typeof item.carrierEligible==='boolean')return item.carrierEligible;
+        const txt=String(item.serving||'')+' '+String(item.name||'');
+        if(/تک[‌\s-]*نفره|ظرفی|سی[‌\s-]*سی|cc/i.test(txt))return false;
+        return parseSliceCount(item.serving)>=2 || /قالب/.test(txt);
+      }
+      function carrierState(lines){
+        const rows=lines.filter(needsCakeCarrier).map(line=>({line,count:containerChoices[line.id]}));
+        const valid=rows.every(({line,count})=>Number.isInteger(count)&&count>=0&&count<=line.qty);
+        const purchased=rows.reduce((n,{line,count})=>n+(Number.isInteger(count)&&count>=0&&count<=line.qty?count:0),0);
+        return {rows,valid,purchased,total:purchased*200000};
+      }
       function getCartSummary() {
         let count = 0, total = 0;
         const lines = [];
@@ -1906,6 +1927,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       let accountingPeriod = 'week';
       let accountingPeriodOffset = 0;
       let selectedPaymentOption = '';
+      let containerChoices = Object.create(null);
       let selectedReceiptFile = null;
       let pendingAccountOrderSignature='',pendingAccountOrderId='';
       let liveOrderEventSource = null;
@@ -3563,7 +3585,8 @@ function renderDatabaseAccount(body,modal){
             const dates = getNextDeliveryDates();
             const slots = (state.design && state.design.deliverySlots) || [];
             const cuts = (state.design && state.design.cutOptions) || [];
-            const payTotal=Math.max(0,Math.round(sum.total||0));
+            const getCheckoutTotal=()=>Math.max(0,Math.round(sum.total+carrierState(sum.lines).total));
+            const payTotal=getCheckoutTotal();
             const payHalf=Math.ceil(payTotal/2);
             const cardReady=String(state.brand.paymentCardHolder||'').trim().length>0 && toEnDigits(state.brand.paymentCardNumber||'').replace(/\D/g,'').length===16;
             if (!selectedDeliveryDate && dates.length) selectedDeliveryDate = dates[1] ? dates[1].iso : dates[0].iso;
@@ -3587,7 +3610,7 @@ function renderDatabaseAccount(body,modal){
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-radius:11px;background:var(--surface-soft);margin-bottom:14px">
                 <span style="font-weight:700;font-size:13px">مبلغ کل قابل هماهنگی:</span>
-                <span style="font-weight:800;font-size:16px;color:var(--accent)">${formatPriceFa(sum.total)} تومان</span>
+                <span id="checkoutTotal" style="font-weight:800;font-size:16px;color:var(--accent)">${formatPriceFa(payTotal)} تومان</span>
               </div>
               <div style="margin-bottom:12px">
                 <label style="font-size:11.8px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:6px">📅 روز تحویل مورد نظر:</label>
@@ -3603,12 +3626,16 @@ function renderDatabaseAccount(body,modal){
                   ${cuts.map(c=>`<button type="button" class="slot-pill ${selectedCutOption===c?'active':''}" data-cut="${escapeHtml(c)}" style="flex:1">${escapeHtml(c)}</button>`).join('')}
                 </div>
               </div>
+              ${carrierState(sum.lines).rows.length?`<section style="margin-bottom:14px;padding:12px;border:1px solid var(--border);border-radius:13px;background:var(--surface-soft)">
+                <strong>ظرف و زیرکیکی <span style="color:#DC2626">*</span></strong><p style="font-size:12px">خرید هر مجموعه ۲۰۰٬۰۰۰ تومان است؛ در صورت بازگرداندن، هزینه‌ای ندارد.</p>
+                ${carrierState(sum.lines).rows.map(({line,count})=>`<label style="display:block;margin:9px 0">${escapeHtml(line.name)} — تعداد خرید ظرف و زیرکیکی <select data-carrier="${escapeHtml(line.id)}" style="display:block;width:100%;padding:9px;margin-top:4px"><option value="">انتخاب کنید</option>${Array.from({length:Math.min(line.qty,50)+1},(_,n)=>`<option value="${n}" ${count===n?'selected':''}>${toFa(n)} خرید / ${toFa(line.qty-n)} بازگشت</option>`).join('')}</select></label>`).join('')}
+                <div>هزینهٔ ظرف و زیرکیکی: <b id="carrierTotal">${formatPriceFa(carrierState(sum.lines).total)}</b> تومان</div></section>`:''}
               <section class="field" style="margin-bottom:14px;padding:12px;border:1px solid var(--border);border-radius:13px;background:var(--surface-soft)">
                 <label style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:8px">💳 روش تسویهٔ فاکتور <span style="color:#DC2626">*</span></label>
                 <div id="checkoutPaymentOptions" style="display:grid;gap:7px">
-                  <button type="button" class="payment-choice ${selectedPaymentOption==='full'?'active':''}" data-pay-choice="full"><span>پرداخت کامل پیش از تحویل</span><strong>${formatPriceFa(payTotal)} تومان</strong></button>
-                  <button type="button" class="payment-choice ${selectedPaymentOption==='half'?'active':''}" data-pay-choice="half"><span>نصف اکنون، نصف هنگام تحویل</span><strong>${formatPriceFa(payHalf)} + ${formatPriceFa(payTotal-payHalf)} تومان</strong></button>
-                  <button type="button" class="payment-choice ${selectedPaymentOption==='delivery'?'active':''}" data-pay-choice="delivery"><span>پرداخت کامل هنگام تحویل</span><strong>${formatPriceFa(payTotal)} تومان</strong></button>
+                  <button type="button" class="payment-choice ${selectedPaymentOption==='full'?'active':''}" data-pay-choice="full"><span>پرداخت کامل پیش از تحویل</span><strong data-pay-amount="full">${formatPriceFa(payTotal)} تومان</strong></button>
+                  <button type="button" class="payment-choice ${selectedPaymentOption==='half'?'active':''}" data-pay-choice="half"><span>نصف اکنون، نصف هنگام تحویل</span><strong data-pay-amount="half">${formatPriceFa(payHalf)} + ${formatPriceFa(payTotal-payHalf)} تومان</strong></button>
+                  <button type="button" class="payment-choice ${selectedPaymentOption==='delivery'?'active':''}" data-pay-choice="delivery"><span>پرداخت کامل هنگام تحویل</span><strong data-pay-amount="delivery">${formatPriceFa(payTotal)} تومان</strong></button>
                 </div>
                 <div id="checkoutPaymentDetails" style="margin-top:9px"></div>
               </section>
@@ -3641,11 +3668,13 @@ function renderDatabaseAccount(body,modal){
 
             wrap.querySelectorAll('[data-cinc]').forEach(b => b.addEventListener('click', () => {
               selectedReceiptFile=null;
+              delete containerChoices[b.dataset.cinc];
               changeCartQty(b.dataset.cinc, 1);
               renderCartModalContent('checkout');
             }));
             wrap.querySelectorAll('[data-cdec]').forEach(b => b.addEventListener('click', () => {
               selectedReceiptFile=null;
+              delete containerChoices[b.dataset.cdec];
               changeCartQty(b.dataset.cdec, -1);
               renderCartModalContent('checkout');
             }));
@@ -3655,7 +3684,7 @@ function renderDatabaseAccount(body,modal){
             wrap.querySelectorAll('[data-cut]').forEach(p=>p.addEventListener('click',()=>{ selectedCutOption=p.dataset.cut; wrap.querySelectorAll('[data-cut]').forEach(x=>x.classList.toggle('active', x.dataset.cut===selectedCutOption)); }));
             function renderPaymentDetails(){
               const panel=document.getElementById('checkoutPaymentDetails');if(!panel)return;
-              const method=selectedPaymentOption;const total=Math.max(0,Math.round(sum.total||0));const half=Math.ceil(total/2);
+              const method=selectedPaymentOption;const total=getCheckoutTotal();const half=Math.ceil(total/2);
               if(!method){panel.innerHTML='<div class="payment-hint">یکی از روش‌های تسویه را انتخاب کنید.</div>';return;}
               if(method==='delivery'){selectedReceiptFile=null;panel.innerHTML='<div class="payment-hint">کل مبلغ در زمان تحویل سفارش تسویه می‌شود؛ اکنون پیش‌پرداختی لازم نیست.</div>';return;}
               const cardNum=toEnDigits(state.brand.paymentCardNumber||'').replace(/[^0-9]/g,'');
@@ -3664,6 +3693,16 @@ function renderDatabaseAccount(body,modal){
               panel.innerHTML=`<div class="payment-card-info"><div><small>مبلغ قابل واریز اکنون</small><b>${formatPriceFa(payNow)} تومان</b></div>${method==='half'?`<div><small>باقی‌مانده هنگام تحویل</small><b>${formatPriceFa(due)} تومان</b></div>`:''}${ready?`<div class="card-number-row"><div><small>واریز به کارت</small><b dir="ltr">${cardNum.replace(/(\d{4})(?=\d)/g,'$1 ')}</b><small>به نام ${escapeHtml(state.brand.paymentCardHolder)}</small></div><button type="button" id="btnCopyPaymentCard">کپی شماره</button></div>`:'<div class="payment-warning">اطلاعات کارت هنوز در پنل مدیریت تنظیم نشده است؛ مدیر باید نام صاحب کارت و شمارهٔ ۱۶ رقمی را ثبت کند.</div>'}</div><section class="payment-hint" aria-label="ارسال فیش به پشتیبانی"><p><strong>پس از واریز، لطفاً تصویر فیش پرداخت را همراه با نام کافه و نام خانوادگی خود، از طریق بله یا تلگرام برای پشتیبانی ارسال کنید.</strong></p><div style="display:flex;flex-wrap:wrap;gap:10px;margin:12px 0"><a class="icon-btn" href="https://ble.ir/lotuscakesupport" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">ارسال به پشتیبانی در بله</a><a class="icon-btn" href="https://t.me/lotuscakesupport" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">ارسال به پشتیبانی در تلگرام</a></div><p>شناسهٔ پشتیبانی در هر دو پیام‌رسان: <bdi dir="ltr" style="user-select:all">@lotuscakesupport</bdi></p><small>پس از بازشدن گفت‌وگو، عکس را خودتان پیوست و ارسال کنید. اگر برنامه باز نشد، شناسهٔ بالا را در پیام‌رسان جست‌وجو کنید. بازکردن لینک یا ثبت سفارش به‌معنی ارسال فیش یا تأیید پرداخت نیست.</small></section>`;
               const copy=document.getElementById('btnCopyPaymentCard');if(copy)copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(cardNum);copy.textContent='کپی شد ✓';}catch(_){copy.textContent=cardNum;}});
             }
+            wrap.querySelectorAll('[data-carrier]').forEach(select=>select.addEventListener('change',()=>{
+              if(select.value==='')delete containerChoices[select.dataset.carrier];else containerChoices[select.dataset.carrier]=Number(select.value);
+              const cs=carrierState(sum.lines),total=getCheckoutTotal(),half=Math.ceil(total/2);
+              document.getElementById('carrierTotal').textContent=formatPriceFa(cs.total);
+              document.getElementById('checkoutTotal').textContent=formatPriceFa(total)+' تومان';
+              wrap.querySelector('[data-pay-amount="full"]').textContent=formatPriceFa(total)+' تومان';
+              wrap.querySelector('[data-pay-amount="delivery"]').textContent=formatPriceFa(total)+' تومان';
+              wrap.querySelector('[data-pay-amount="half"]').textContent=formatPriceFa(half)+' + '+formatPriceFa(total-half)+' تومان';
+              selectedReceiptFile=null;renderPaymentDetails();
+            }));
             wrap.querySelectorAll('[data-pay-choice]').forEach(btn=>btn.addEventListener('click',()=>{
               if(selectedPaymentOption&&selectedPaymentOption!==btn.dataset.payChoice)selectedReceiptFile=null;
               selectedPaymentOption=btn.dataset.payChoice;
@@ -3697,6 +3736,9 @@ function renderDatabaseAccount(body,modal){
               if (!cafeName) { elCafe.style.borderColor = '#DC2626'; missing.push('نام کافه'); }
               if (phoneDigits.length < 10) { elPhone.style.borderColor = '#DC2626'; missing.push('شماره تلفن معتبر'); }
               if (!address) { elAddr.style.borderColor = '#DC2626'; missing.push('آدرس'); }
+              const carrierCheck=carrierState(sum.lines);
+              if (!carrierCheck.valid) missing.push('تعداد خرید یا بازگرداندن ظرف و زیرکیکی');
+              if (sum.lines.length+carrierCheck.rows.reduce((n,x)=>n+(x.count>0?1:0)+(x.count<x.line.qty?1:0),0)>40) missing.push('تعداد اقلام کمتر (حداکثر ۴۰ ردیف با ظرف‌ها)');
               if (!paymentOption) missing.push('روش تسویهٔ فاکتور');
               if (paymentOption && paymentOption!=='delivery'){
                 if(!String(state.brand.paymentCardHolder||'').trim()||cardDigits.length!==16) missing.push('تنظیم شماره کارت و نام صاحب کارت توسط مدیریت');
@@ -3717,6 +3759,11 @@ function renderDatabaseAccount(body,modal){
               if(!isDatabaseCustomer)localStorage.setItem('lotus_customer_profile_v1', JSON.stringify(customerProfile));
               renderAll();
 
+              const carrier=carrierState(sum.lines),orderTotal=getCheckoutTotal();
+              const carrierLines=carrier.rows.flatMap(({line,count},i)=>[
+                ...(count>0?[{id:'carrierbuy_'+i,name:('خرید ظرف و زیرکیکی — '+line.name).slice(0,120),serving:'مجموعه',qty:count,unitPrice:200000,lineTotal:count*200000}]:[]),
+                ...(line.qty-count>0?[{id:'carrierreturn_'+i,name:('بازگشت ظرف و زیرکیکی — '+line.name).slice(0,120),serving:'مجموعه',qty:line.qty-count,unitPrice:0,lineTotal:0}]:[])
+              ]);
               const orderObj = {
                 kind: 'order',
                 id: 'LC-' + Math.floor(1000 + Math.random() * 9000),
@@ -3732,13 +3779,14 @@ function renderDatabaseAccount(body,modal){
                 deliverySlot,
                 cutOption,
                 note: address,
-                items: sum.lines,
-                total: sum.total,
+                items: sum.lines.concat(carrierLines),
+                carrierSelections: carrier.rows.map(({line,count})=>({productId:line.id,productName:line.name,ordered:line.qty,purchased:count,returned:line.qty-count})),
+                total: orderTotal,
                 status: 'new',
                 paymentMethod:paymentOption,
                 paymentMethodLabel:paymentOption==='full'?'تسویه کامل پیش از تحویل':paymentOption==='half'?'نصف اکنون، نصف هنگام تحویل':'تسویه کامل هنگام تحویل',
-                paymentDueNow:paymentOption==='full'?Math.round(sum.total):paymentOption==='half'?Math.ceil(sum.total/2):0,
-                paymentDueAtDelivery:paymentOption==='full'?0:paymentOption==='half'?Math.floor(sum.total/2):Math.round(sum.total),
+                paymentDueNow:paymentOption==='full'?orderTotal:paymentOption==='half'?Math.ceil(orderTotal/2):0,
+                paymentDueAtDelivery:paymentOption==='full'?0:paymentOption==='half'?Math.floor(orderTotal/2):orderTotal,
                 receiptDeliveryMode:paymentOption==='delivery'?'not_required':'manual_support',
                 paymentReceived:0,
                 paymentStatus:paymentOption==='delivery'?'awaiting_delivery':'awaiting_confirmation',
@@ -3788,7 +3836,7 @@ function renderDatabaseAccount(body,modal){
 
                 if(!isDatabaseCustomer){myOrderHistory.unshift(orderObj);localStorage.setItem('lotus_my_orders_v1', JSON.stringify(myOrderHistory.slice(0, 30)));}
                 pendingAccountOrderSignature='';pendingAccountOrderId='';
-                selectedPaymentOption=''; selectedReceiptFile=null;
+                selectedPaymentOption=''; selectedReceiptFile=null;containerChoices=Object.create(null);
                 cart = {};
                 saveCart();
                 renderAll();
@@ -3855,6 +3903,14 @@ function renderDatabaseAccount(body,modal){
       document.getElementById('btnCancelLogin').addEventListener('click', () => {
         document.getElementById('loginModal').classList.add('hidden');
       });
+      document.getElementById('btnPublicRegistrations').addEventListener('click',()=>{
+        document.getElementById('loginModal').classList.add('hidden');
+        const modal=document.getElementById('publicRegistrationsModal'),body=document.getElementById('publicRegistrationsModalBody');
+        body.textContent='';modal.classList.remove('hidden');mountPublicRegistrationDirectory(body);
+      });
+      document.getElementById('btnClosePublicRegistrations').addEventListener('click',()=>{
+        document.getElementById('publicRegistrationsModal').classList.add('hidden');document.getElementById('publicRegistrationsModalBody').textContent='';
+      });
 
       async function openAdminModalNow() {
         document.getElementById('adminModal').classList.remove('hidden');
@@ -3870,6 +3926,7 @@ function renderDatabaseAccount(body,modal){
       document.getElementById('btnCloseAdmin').addEventListener('click', () => {
         clearCustomerDirectory();
         document.querySelector('#adminBody #customerDatabaseSection')?.remove();
+        document.querySelector('#adminBody #publicRegistrationDirectory')?.remove();
         collectAdminInputs();
         document.getElementById('adminModal').classList.add('hidden');
       });
@@ -4359,6 +4416,26 @@ return {createDirectorySession,createCustomerDirectoryBridge};
 const customerDirectorySession=directoryTools.createDirectorySession({origin:'https://pwmdixtmkqzutaaulozl.supabase.co',publicKey:"sb_publishable_CuJkFbCWZLqkiPUfL__fgA_3n67OUS7",recoveryEnabled:manualRecoveryReleaseEnabled,fetchImpl:(...args)=>fetch(...args)});
 const customerDirectoryBridge=directoryTools.createCustomerDirectoryBridge({enabled:true,rpc:(...args)=>customerDirectorySession.rpc(...args)});
 function clearCustomerDirectory(){customerDirectoryBridge.invalidate();customerDirectorySession.signOut().catch(()=>{});}
+function mountPublicRegistrationDirectory(body){
+ const root=document.createElement('section');root.id='publicRegistrationDirectory';
+ root.style.cssText='padding:14px;border:1px solid var(--border);border-radius:12px;margin-bottom:20px';
+ root.innerHTML=`<h3 style="margin-top:0">ثبت‌نام مشتریان جدید</h3><form id="publicRegistrationSearchForm"><input id="publicRegistrationSearch" type="search" autocomplete="off" maxlength="120" placeholder="جست‌وجوی نام، کافه، نام کاربری، تلفن یا آدرس"><button class="icon-btn" type="submit">جست‌وجو</button><button class="icon-btn" type="button" id="refreshPublicRegistrations">به‌روزرسانی</button></form><p id="publicRegistrationStatus" role="status" aria-live="polite"></p><div id="publicRegistrationRows"></div><div id="publicRegistrationPages" hidden><button class="icon-btn" type="button" id="publicRegistrationPrev">قبلی</button><button class="icon-btn" type="button" id="publicRegistrationNext">بعدی</button></div>`;
+ body.prepend(root);const $=id=>root.querySelector('#'+id);let offset=0,query='',serial=0;
+ const active=()=>root.isConnected&&((currentAdminTab==='registrations'&&root.closest('#adminBody')&&!document.getElementById('adminModal').classList.contains('hidden'))||(root.closest('#publicRegistrationsModal')&&!document.getElementById('publicRegistrationsModal').classList.contains('hidden')));
+ async function load(){
+  const ticket=++serial;$('publicRegistrationRows').textContent='';$('publicRegistrationPages').hidden=true;$('publicRegistrationStatus').textContent='در حال دریافت ثبت‌نام‌ها…';
+  try{const r=await fetch('https://pwmdixtmkqzutaaulozl.supabase.co/rest/v1/rpc/lotus_public_customer_registrations',{method:'POST',headers:{'apikey':'sb_publishable_CuJkFbCWZLqkiPUfL__fgA_3n67OUS7','authorization':'Bearer sb_publishable_CuJkFbCWZLqkiPUfL__fgA_3n67OUS7','Content-Type':'application/json'},body:JSON.stringify({p_query:query,p_limit:26,p_offset:offset}),credentials:'omit',cache:'no-store'});
+   if(!r.ok)throw Error();const data=await r.json();if(!active()||ticket!==serial)return;
+   if(!Array.isArray(data)||data.length>26)throw Error();const rows=data.slice(0,25);
+   $('publicRegistrationRows').innerHTML=rows.map(c=>`<article class="order-card-admin"><strong>${escapeHtml(c.full_name||'—')}</strong><div>کافه: ${escapeHtml(c.cafe_name||'—')}</div><div>نام کاربری: <bdi>@${escapeHtml(c.username||'—')}</bdi></div><div>تلفن: <bdi>${escapeHtml(c.phone||'—')}</bdi></div><div>آدرس: ${escapeHtml(c.address||'—')}</div><div>تاریخ ثبت‌نام: ${formatPersianDate(c.created_at,{time:true})}</div></article>`).join('');
+   $('publicRegistrationStatus').textContent=rows.length?'نمایش '+toFa(rows.length)+' مشتری از ردیف '+toFa(offset+1):'موردی یافت نشد.';
+   $('publicRegistrationPrev').disabled=offset===0;$('publicRegistrationNext').disabled=data.length<=25;$('publicRegistrationPages').hidden=false;
+  }catch(_){if(active()&&ticket===serial)$('publicRegistrationStatus').textContent='دریافت ثبت‌نام‌ها انجام نشد؛ اتصال را بررسی و دوباره تلاش کنید.';}
+ }
+ $('publicRegistrationSearchForm').addEventListener('submit',e=>{e.preventDefault();query=$('publicRegistrationSearch').value.trim();offset=0;load()});
+ $('refreshPublicRegistrations').onclick=()=>load();$('publicRegistrationPrev').onclick=()=>{offset=Math.max(0,offset-25);load()};$('publicRegistrationNext').onclick=()=>{offset+=25;load()};
+ load();
+}
 function mountCustomerDirectory(body){
  const directoryTab=currentAdminTab;
  const root=document.createElement('section');root.id='customerDatabaseSection';root.dataset.directoryTab=directoryTab;root.style.cssText='padding:14px;border:1px solid var(--border);border-radius:12px;margin-bottom:20px;box-sizing:border-box;min-width:0;overflow-wrap:anywhere';
@@ -4389,13 +4466,115 @@ function mountCustomerDirectory(body){
 }
 
 
+      // Workbook contents stay only in memory; no recipe or ingredient price is published.
+      const recipePricing={books:[],selections:Object.create(null)};
+      async function parseRecipeWorkbook(bytes,fileName){
+        if(!bytes||bytes.byteLength>5000000)throw Error('حجم فایل بیشتر از ۵ مگابایت است.');
+        const zip=await JSZip.loadAsync(bytes),parse=txt=>{const d=new DOMParser().parseFromString(txt,'application/xml');if(d.getElementsByTagName('parsererror').length)throw Error('فایل اکسل قابل خواندن نیست.');return d;};
+        const read=async path=>{const f=zip.file(path);if(!f)throw Error('ساختار فایل اکسل کامل نیست.');const t=await f.async('string');if(t.length>3000000)throw Error('یکی از شیت‌ها بیش از حد بزرگ است.');return parse(t);};
+        const children=(node,name)=>Array.from(node.getElementsByTagNameNS('*',name));
+        const book=await read('xl/workbook.xml'),rels=await read('xl/_rels/workbook.xml.rels');
+        const links=new Map(children(rels,'Relationship').filter(x=>x.getAttribute('TargetMode')!=='External').map(x=>[x.getAttribute('Id'),x.getAttribute('Target')]));
+        let shared=[];if(zip.file('xl/sharedStrings.xml')){const doc=await read('xl/sharedStrings.xml');shared=children(doc,'si').map(si=>children(si,'t').map(t=>t.textContent).join(''));}
+        async function cells(sheet){
+          const id=sheet.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id')||sheet.getAttribute('r:id');
+          const target=links.get(id)||'';const path=target.startsWith('/')?target.slice(1):'xl/'+target;
+          if(!/^xl\/worksheets\/sheet[\w.-]+\.xml$/.test(path))throw Error('مسیر شیت اکسل معتبر نیست.');
+          const doc=await read(path),out=Object.create(null);
+          for(const c of children(doc,'c')){const addr=c.getAttribute('r');if(!/^[A-H]\d+$/.test(addr||''))continue;
+            const typ=c.getAttribute('t'),v=children(c,'v')[0]?.textContent;
+            if(typ==='s')out[addr]=shared[Number(v)]??'';
+            else if(typ==='inlineStr')out[addr]=children(c,'t').map(t=>t.textContent).join('');
+            else if(typ==='str')out[addr]=v||'';
+            else if(typ==='e')out[addr]=null;
+            else if(v!==undefined&&v!=='')out[addr]=Number(v);
+          }return out;
+        }
+        const sheets=children(book,'sheet'),matSheet=sheets.find(s=>s.getAttribute('name')==='مواد اولیه');
+        if(!matSheet)throw Error('شیت «مواد اولیه» پیدا نشد.');
+        const materialsCells=await cells(matSheet),materials=Object.create(null);
+        const number=v=>{if(typeof v==='number')return Number.isFinite(v)?v:null;if(typeof v!=='string'||!v.trim())return null;const t=toEnDigits(v).replace(/[\s,،٬]/g,'').replace('٫','.');if(!/^\d+(?:\.\d+)?$/.test(t))return null;return Number(t)};
+        for(let n=5;n<=1000;n++){const name=materialsCells['B'+n];if(typeof name!=='string'||!name.trim()||(typeof materialsCells['A'+n]!=='number'&&materialsCells['D'+n]===undefined))continue;
+          const price=number(materialsCells['D'+n]),base=number(materialsCells['E'+n]);
+          if(Object.prototype.hasOwnProperty.call(materials,name))throw Error('نام مادهٔ تکراری: '+name);
+          materials[name]={price,base};
+        }
+        if(!Object.keys(materials).length)throw Error('جدول مواد اولیه خوانده نشد.');
+        const recipes=[];
+        for(const sheet of sheets){if(sheet===matSheet||sheet.getAttribute('name')==='فهرست')continue;
+          const c=await cells(sheet),ingredients=[];
+          for(let n=6;n<=1000;n++){if(typeof c['A'+n]!=='number'||!c['B'+n])continue;const ref=c['G'+n],qty=number(c['F'+n]);
+            if(c['H'+n]==='*')continue;
+            ingredients.push({ref,qty});
+          }
+          if(ingredients.length)recipes.push({title:String(c.A1||sheet.getAttribute('name')),detail:String(c.A2||''),ingredients});
+        }
+        if(!recipes.length)throw Error('رسپی قابل خواندن پیدا نشد.');
+        return {name:String(fileName||'اکسل').slice(0,160),materials,recipes};
+      }
+      function recipeCost(book,recipe){
+        let total=0;const missing=[];
+        for(const i of recipe.ingredients){const m=book.materials[i.ref];if(!m||m.price===null||m.base===null||m.base<=0||i.qty===null||i.qty<0){missing.push(String(i.ref||'مادهٔ نامشخص'));continue;}
+          total+=Math.round(m.price/m.base*i.qty);
+        }
+        return {total,missing};
+      }
+      function priceForRecipe(book,recipe,single,yieldCount,factor){
+        const cost=recipeCost(book,recipe);
+        if(cost.missing.length||!Number.isInteger(yieldCount)||yieldCount<1||yieldCount>100||![2,2.3,2.5].includes(factor))return null;
+        return Math.round(((cost.total/yieldCount+(single?15000:50000))*factor)/10000)*10000;
+      }
+      function defaultRecipeYield(recipe,single){
+        if(!single)return 1;
+        const text=toEnDigits(recipe.title+' '+recipe.detail);
+        const m=text.match(/(\d+)\s*(?:عدد\s*)?(?:چیزکیک\s*)?(?:تک[‌\s-]*نفره|ظرف)/);
+        return m&&Number(m[1])>=1&&Number(m[1])<=100?Number(m[1]):1;
+      }
+      function mountRecipePricing(body){
+        const section=document.createElement('section');section.id='recipePricing';section.style.cssText='padding:14px;border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow-wrap:anywhere';body.prepend(section);
+        function draw(){
+          const recipes=[];recipePricing.books.forEach((b,bi)=>b.recipes.forEach((r,ri)=>recipes.push({b,r,key:bi+':'+ri})));
+          const optionHtml=recipes.map(({b,r,key})=>`<option value="${key}">${escapeHtml(b.name)} — ${escapeHtml(r.title)}</option>`).join('');
+          section.innerHTML=`<h3 style="margin-top:0">محاسبهٔ قیمت با اکسل</h3><p style="font-size:12px">فایل‌های XLSX را انتخاب کنید. رسپی‌ها و قیمت مواد فقط در حافظهٔ این صفحه می‌مانند. برای هر محصول رسپی، تعداد خروجی و ضریب را انتخاب و پیش‌نمایش را بررسی کنید.</p><input id="pricingFiles" type="file" accept=".xlsx" multiple><p id="pricingStatus" role="status" aria-live="polite"></p>
+          ${recipePricing.books.map((b,bi)=>`<details style="margin:10px 0"><summary>مواد اولیهٔ ${escapeHtml(b.name)} — ویرایش قیمت بسته</summary><div style="max-height:220px;overflow:auto">${Object.entries(b.materials).map(([name,m],mi)=>`<label style="display:flex;gap:8px;align-items:center;margin:5px 0"><span style="flex:1">${escapeHtml(name)} (مبنا: ${escapeHtml(String(m.base??'نامشخص'))})</span><input type="number" min="0" step="1" autocomplete="off" data-material-book="${bi}" data-material-index="${mi}" value="${m.price??''}" style="width:135px"></label>`).join('')}</div></details>`).join('')}
+          ${recipes.length?`<div>${state.items.map(item=>{const choice=recipePricing.selections[item.id]||{},selected=recipes.find(x=>x.key===choice.recipe),single=!needsCakeCarrier({id:item.id}),yieldCount=Number(choice.yieldCount||1),cost=selected?recipeCost(selected.b,selected.r):null;const prices=selected?[2,2.3,2.5].map(f=>priceForRecipe(selected.b,selected.r,single,yieldCount,f)):[];
+            return `<article style="padding:10px;margin:8px 0;border:1px solid var(--border);border-radius:10px"><strong>${escapeHtml(item.name)}</strong><div style="font-size:11px">قیمت فعلی: ${escapeHtml(item.price||'—')} تومان · ${single?'تک‌نفره (+۱۵٬۰۰۰)':'کامل (+۵۰٬۰۰۰)'}</div><label>رسپی<select data-price-recipe="${escapeHtml(item.id)}" style="display:block;width:100%;padding:7px"><option value="">بدون انتخاب</option>${optionHtml}</select></label>${selected?`<label>تعداد محصول حاصل از رسپی <input type="number" data-price-yield="${escapeHtml(item.id)}" min="1" max="100" value="${yieldCount}" style="width:75px"></label><div style="font-size:11px">مجموع مواد رسپی: ${formatPriceFa(cost.total)} تومان${cost.missing.length?' — ناقص: '+escapeHtml(cost.missing.join('، ')):''}</div><div style="font-size:11px">${prices.map((p,i)=>[2,2.3,2.5][i]+' × '+(p===null?'نامشخص':formatPriceFa(p)+' تومان')).join(' | ')}</div><label>ضریب انتخابی <select data-price-factor="${escapeHtml(item.id)}"><option value="">انتخاب کنید</option>${[2,2.3,2.5].map(f=>`<option value="${f}" ${Number(choice.factor)===f?'selected':''}>${f}</option>`).join('')}</select></label>`:''}</article>`;}).join('')}</div><button type="button" class="icon-btn btn-green" id="publishCalculatedPrices">تأیید و انتشار قیمت‌های انتخاب‌شده</button>`:''}`;
+          section.querySelectorAll('[data-price-recipe]').forEach(sel=>{const ch=recipePricing.selections[sel.dataset.priceRecipe];sel.value=ch?.recipe||'';sel.addEventListener('change',()=>{const id=sel.dataset.priceRecipe;if(!sel.value)delete recipePricing.selections[id];else{const found=recipes.find(x=>x.key===sel.value),item=state.items.find(x=>x.id===id);recipePricing.selections[id]={recipe:sel.value,yieldCount:defaultRecipeYield(found.r,!needsCakeCarrier({id:item.id})),factor:''};}draw()});});
+          section.querySelectorAll('[data-price-yield]').forEach(inp=>inp.addEventListener('change',()=>{recipePricing.selections[inp.dataset.priceYield].yieldCount=Number(inp.value);draw()}));
+          section.querySelectorAll('[data-price-factor]').forEach(inp=>inp.addEventListener('change',()=>{recipePricing.selections[inp.dataset.priceFactor].factor=inp.value;}));
+          section.querySelectorAll('[data-material-book]').forEach(inp=>inp.addEventListener('change',()=>{const b=recipePricing.books[Number(inp.dataset.materialBook)],name=Object.keys(b.materials)[Number(inp.dataset.materialIndex)];const val=inp.value.trim();b.materials[name].price=val!==''&&Number.isFinite(Number(val))&&Number(val)>=0?Number(val):null;draw()}));
+          section.querySelector('#pricingFiles').addEventListener('change',async e=>{const files=Array.from(e.target.files||[]);const status=section.querySelector('#pricingStatus');if(!files.length)return;status.textContent='در حال خواندن فایل‌ها…';try{const parsed=[];for(const f of files)parsed.push(await parseRecipeWorkbook(await f.arrayBuffer(),f.name));recipePricing.books=parsed;recipePricing.selections=Object.create(null);draw();section.querySelector('#pricingStatus').textContent='فایل‌ها خوانده شدند؛ رسپی هر محصول را انتخاب کنید.';}catch(err){status.textContent=err.message||'خواندن اکسل انجام نشد.';}});
+          const publish=section.querySelector('#publishCalculatedPrices');if(publish)publish.addEventListener('click',async()=>{const changes=[];for(const item of state.items){const ch=recipePricing.selections[item.id];if(!ch)continue;const found=recipes.find(x=>x.key===ch.recipe),factor=Number(ch.factor),yc=Number(ch.yieldCount),price=found&&priceForRecipe(found.b,found.r,!needsCakeCarrier({id:item.id}),yc,factor);if(price===null||price===false||!price){section.querySelector('#pricingStatus').textContent='برای «'+item.name+'» رسپی، مواد، تعداد خروجی و ضریب معتبر را کامل کنید.';return;}changes.push({id:item.id,oldPrice:item.price,price});}if(!changes.length){section.querySelector('#pricingStatus').textContent='ابتدا حداقل یک رسپی و ضریب انتخاب کنید.';return;}if(!confirm('قیمت '+toFa(changes.length)+' محصول انتخاب‌شده پس از انتشار تغییر کند؟'))return;publish.disabled=true;try{await publishSelectedPrices(changes);section.querySelector('#pricingStatus').textContent='قیمت‌های انتخاب‌شده منتشر شدند؛ آماده‌سازی Pages ممکن است چند دقیقه طول بکشد.';}catch(err){section.querySelector('#pricingStatus').textContent=err.message||'انتشار انجام نشد.';}finally{publish.disabled=false;}});
+        }
+        draw();
+      }
+      async function publishSelectedPrices(changes){
+        const cfg=detectCloudRepo();if(!cfg.token||!cfg.ghOwner||!cfg.ghRepo)throw Error('ابتدا اتصال GitHub را در تب همگام‌سازی تنظیم کنید.');
+        const base='https://api.github.com/repos/'+encodeURIComponent(cfg.ghOwner)+'/'+encodeURIComponent(cfg.ghRepo),headers={'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json','Content-Type':'application/json'};
+        async function api(path,options={}){const r=await fetch(base+path,{...options,headers});if(!r.ok)throw Error('اتصال یا انتشار GitHub ناموفق بود؛ قیمت‌های سایت را بررسی کنید.');return r.json();}
+        const ref=await api('/git/ref/heads/'+encodeURIComponent(cfg.ghBranch)),head=ref.object.sha,commit=await api('/git/commits/'+head);
+        const [menuFile,indexFile]=await Promise.all([api('/contents/menu-data.js?ref='+encodeURIComponent(head)),api('/contents/index.html?ref='+encodeURIComponent(head))]);
+        const menu=parseMenuJs(base64ToUtf8(menuFile.content)),html=base64ToUtf8(indexFile.content);if(!menu||!Array.isArray(menu.items))throw Error('منوی منتشرشده قابل خواندن نیست.');
+        for(const ch of changes){const item=menu.items.find(x=>x.id===ch.id);if(!item||String(item.price)!==String(ch.oldPrice))throw Error('منوی منتشرشده از زمان باز شدن پنل تغییر کرده؛ صفحه را تازه‌سازی و دوباره بررسی کنید.');item.price=formatPriceFa(ch.price);}
+        const start='/*MENU_DATA_FALLBACK_START*/',end='/*MENU_DATA_FALLBACK_END*/',a=html.indexOf(start),b=html.indexOf(end,a);if(a<0||b<0)throw Error('قالب انتشار منو معتبر نیست.');
+        let newHtml=html.slice(0,a)+start+'window.__MENU_DATA_FALLBACK_B64__='+JSON.stringify(utf8ToBase64(JSON.stringify(menu)))+';'+html.slice(b);
+        newHtml=newHtml.replace(/menu-data\.js\?v=[^"']+/, 'menu-data.js?v='+Date.now());
+        const contents=[['index.html',newHtml],['menu-data.js','window.MENU_DATA = '+JSON.stringify(menu,null,2)+';\n']];
+        const blobs=await Promise.all(contents.map(async ([path,content])=>{const blob=await api('/git/blobs',{method:'POST',body:JSON.stringify({content:utf8ToBase64(content),encoding:'base64'})});return {path,mode:'100644',type:'blob',sha:blob.sha};}));
+        const tree=await api('/git/trees',{method:'POST',body:JSON.stringify({base_tree:commit.tree.sha,tree:blobs})});const next=await api('/git/commits',{method:'POST',body:JSON.stringify({message:'Update approved menu prices',tree:tree.sha,parents:[head]})});
+        await api('/git/refs/heads/'+encodeURIComponent(cfg.ghBranch),{method:'PATCH',body:JSON.stringify({sha:next.sha,force:false})});
+        for(const ch of changes){const idx=state.items.findIndex(x=>x.id===ch.id);if(idx>=0){state.items[idx].price=formatPriceFa(ch.price);const input=document.querySelector('.edit-item-row[data-idx="'+idx+'"] .ei-price');if(input)input.value=state.items[idx].price;}}renderAll();
+      }
+
       function renderAdminTab() {
-        if(currentAdminTab!=='database' && currentAdminTab!=='registrations')clearCustomerDirectory();
+        if(currentAdminTab!=='database')clearCustomerDirectory();
         syncAdminMobileNavigation();
         const body = document.getElementById('adminBody');
         // Preserve the MFA-gated directory and its in-flight requests on same-tab rerenders.
         const directoryNode=body.querySelector('#customerDatabaseSection');
         const reuseDirectory=directoryNode && directoryNode.dataset.directoryTab===currentAdminTab ? directoryNode : null;
+        const publicNode=body.querySelector('#publicRegistrationDirectory');
+        const reusePublic=currentAdminTab==='registrations'?publicNode:null;
 
         if (currentAdminTab === 'orders') {
           const onlyOrders = adminOrders.filter(o => o.kind !== 'registration' && o.deleted !== true);
@@ -4439,6 +4618,7 @@ function mountCustomerDirectory(body){
                     </div>
                     <div style="padding:10px 12px;border-radius:10px;background:var(--bg);margin-bottom:10px;font-size:13px">
                       ${(ord.items || []).map(it => `<div>• <strong>${escapeHtml(it.name)}</strong> (${toFa(it.serving || '')}) × <strong>${toFa(it.qty)}</strong> — ${formatPriceFa(it.lineTotal)} تومان</div>`).join('')}
+                      ${(Array.isArray(ord.carrierSelections)?ord.carrierSelections:[]).map(c=>`<div style="font-size:12px">ظرف ${escapeHtml(c.productName)}: ${toFa(c.purchased)} خرید، ${toFa(c.returned)} بازگشت</div>`).join('')}
                       <div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px;font-weight:800;color:var(--accent)">
                         جمع کل سفارش: ${formatPriceFa(ord.total)} تومان
                       </div>
@@ -4524,7 +4704,7 @@ function mountCustomerDirectory(body){
               ? `<div class="empty-state">
                   <div style="font-size:32px;margin-bottom:8px">👥</div>
                   ثبت‌نام قدیمی در آرشیو پنل موجود نیست.<br>
-                  <span style="font-size:12px">حساب‌های تازه در بخش مشتریان دیتابیس بالا، پس از ورود امن مدیر نمایش داده می‌شوند.</span>
+                  <span style="font-size:12px">حساب‌های تازه در بخش ثبت‌نام مشتریان جدید بالا نمایش داده می‌شوند.</span>
                 </div>`
               : regs.map((r,regIndex) => {
                   const st = r.status || 'new';
@@ -4563,7 +4743,7 @@ function mountCustomerDirectory(body){
                   </div>`;
                 }).join('')}`;
 
-          if(reuseDirectory)body.prepend(reuseDirectory);else mountCustomerDirectory(body);
+          if(reusePublic)body.prepend(reusePublic);else mountPublicRegistrationDirectory(body);
           const regSearchInput=document.getElementById('customerRegistrationSearch');
           const applyRegSearch=()=>{const q=normalizeRegSearch(regSearchInput.value),compact=q.replace(/[\s()+-]/g,'');let shown=0;body.querySelectorAll('[data-registration-index]').forEach(card=>{const text=regSearchTexts[Number(card.dataset.registrationIndex)]||'',match=!q||text.includes(q)||(compact.length>0&&text.replace(/[\s()+-]/g,'').includes(compact));card.hidden=!match;if(match)shown++;});document.getElementById('registrationSearchCount').textContent=toFa(shown)+' مشتری از '+toFa(regs.length)+' مورد دریافت‌شده';};
           regSearchInput.addEventListener('input',applyRegSearch);applyRegSearch();
@@ -4664,7 +4844,7 @@ function mountCustomerDirectory(body){
           });
 
         } else if (currentAdminTab === 'database') {
-          body.innerHTML='<div class="info-callout"><strong>حساب‌های جدید مشتریان</strong><br>نام کاربری هر مشتری در کارت او دیده می‌شود. این فهرست فقط‌خواندنی است؛ برای امنیت، ورود مدیر با رمزساز لازم است. تب «ثبت‌نام مشتریان» فهرست قدیمی دریافتی‌ها را نگه می‌دارد.</div>';
+          body.innerHTML='<div class="info-callout"><strong>حساب‌های جدید مشتریان</strong><br>این بخش برای بازیابی رمز حساب مشتری است و برای صدور لینک، ورود مدیر با رمزساز و بررسی هویت مشتری لازم است.</div>';
           if(reuseDirectory)body.prepend(reuseDirectory);else mountCustomerDirectory(body);
 
         } else if (currentAdminTab === 'prices') {
@@ -4932,6 +5112,8 @@ function mountCustomerDirectory(body){
               else prev.style.display='none';
             });
           }
+
+          mountRecipePricing(body);
 
         } else if (currentAdminTab === 'customers') {
           const base = getBaseSiteUrl();
