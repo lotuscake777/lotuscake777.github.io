@@ -726,6 +726,13 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
 
     .modal-img { position: relative; width: 100%; aspect-ratio: 5 / 4; background: var(--surface-soft); }
     .modal-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .gallery-nav { position:absolute; z-index:6; top:50%; transform:translateY(-50%); border:0; border-radius:50%; width:40px; height:40px; background:rgba(0,0,0,.6); color:white; font-size:24px; cursor:pointer; }
+    .gallery-prev { right:10px; } .gallery-next { left:10px; }
+    .gallery-count { position:absolute; z-index:6; bottom:10px; left:50%; transform:translateX(-50%); color:white; background:rgba(0,0,0,.65); padding:3px 10px; border-radius:20px; font-size:12px; }
+    .product-gallery-editor { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .product-gallery-editor figure { margin:0; display:grid; gap:4px; width:78px; text-align:center; font-size:11px; }
+    .product-gallery-editor img { width:78px; height:62px; object-fit:cover; border-radius:8px; }
+    .product-gallery-editor button { font-size:11px; }
 
     .modal-close {
       position: absolute;
@@ -1250,6 +1257,9 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       <div class="modal-img">
         <img id="mImg" src="" alt="">
         <span id="modalLotusWatermarkSlot"></span>
+        <button type="button" id="galleryPrev" class="gallery-nav gallery-prev hidden" aria-label="عکس قبلی">‹</button>
+        <button type="button" id="galleryNext" class="gallery-nav gallery-next hidden" aria-label="عکس بعدی">›</button>
+        <span id="galleryCount" class="gallery-count hidden" aria-live="polite"></span>
         <button class="modal-close" type="button" id="btnCloseDetail">&times;</button>
       </div>
       <div class="modal-content">
@@ -1491,6 +1501,14 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;');
+      }
+
+      // Keep legacy single-image products compatible with galleries.
+      function productImages(item) {
+        return [...new Set([item.image, ...(Array.isArray(item.images) ? item.images : [])].filter(x => typeof x === 'string' && x))];
+      }
+      function productImagePreview(path) {
+        return pendingImageUploads[path] ? 'data:image/jpeg;base64,' + pendingImageUploads[path] : path;
       }
 
       // Refresh only the built-in watermark URL; custom uploaded images keep their original paths.
@@ -1969,7 +1987,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       }
 
       function updateOrderBadges() {
-        const newOrdersCnt = adminOrders.filter(o => o.kind !== 'registration' && (o.status || 'new') === 'new').length;
+        const newOrdersCnt = adminOrders.filter(o => o.kind !== 'registration' && o.deleted !== true && (o.status || 'new') === 'new').length;
         const newRegsCnt = adminOrders.filter(o => o.kind === 'registration' && o.deleted !== true && (o.status || 'new') === 'new').length;
         const totalUnread = newOrdersCnt + newRegsCnt;
 
@@ -2015,8 +2033,8 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           const vaultOrders = JSON.parse(new TextDecoder().decode(plain));
           for (const vo of vaultOrders) {
             const idx = adminOrders.findIndex(x => x.id === vo.id);
-            if (vo.kind === 'registration' && vo.deleted === true) {
-              const tombstone = {kind:'registration',id:vo.id,deleted:true,deletedAt:Number(vo.deletedAt)||Date.now(),status:'done'};
+            if (vo.deleted === true && (vo.kind === 'registration' || vo.kind === 'order')) {
+              const tombstone = {kind:vo.kind,id:vo.id,deleted:true,deletedAt:Number(vo.deletedAt)||Date.now(),status:'done'};
               if (idx === -1) adminOrders.push(tombstone); else adminOrders[idx] = tombstone;
             } else if (idx === -1) adminOrders.push(vo);
             else {
@@ -2033,6 +2051,45 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           localStorage.setItem('lotus_admin_orders_cache_v1', JSON.stringify(adminOrders));
           updateOrderBadges();
         } catch (_) {}
+      }
+
+      // Remove only the selected order in a freshly read, decryptable archive.
+      // GitHub's SHA prevents overwriting concurrent updates. No customer history or ledger writes.
+      async function deleteOneOrderFromVault(id) {
+        const cfg=detectCloudRepo();
+        if(passwordChangePendingDeploy || !unlockedAdminPassword || !cfg.token || !cfg.ghOwner || !cfg.ghRepo)
+          throw Error('ابتدا پنل و اتصال همگام‌سازی GitHub را آماده کنید.');
+        const api=`https://api.github.com/repos/${encodeURIComponent(cfg.ghOwner)}/${encodeURIComponent(cfg.ghRepo)}/contents/orders-vault.enc.json`;
+        const headers={'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json','Content-Type':'application/json'};
+        let meta, records;
+        try {
+          const res=await fetch(api+'?ref='+encodeURIComponent(cfg.ghBranch)+'&t='+Date.now(),{headers,cache:'no-store'});
+          if(!res.ok)throw Error();
+          meta=await res.json();
+          if(!meta.sha || !meta.content)throw Error();
+          const payload=JSON.parse(base64ToUtf8(meta.content));
+          const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(unlockedAdminPassword),'PBKDF2',false,['deriveKey']);
+          const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:base64ToUint8(payload.salt),iterations:100000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+          records=JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:base64ToUint8(payload.iv)},key,base64ToUint8(payload.ct))));
+          if(!Array.isArray(records))throw Error();
+        } catch(_) { throw Error('خواندن آرشیو تأیید نشد؛ سفارشی حذف نشد.'); }
+        const matches=records.filter(o=>o && o.id===id && o.kind!=='registration');
+        if(matches.length!==1 || matches[0].deleted===true) throw Error('سفارش در آرشیو پیدا نشد یا قبلاً حذف شده است؛ ابتدا همگام‌سازی کنید.');
+        const tombstone={kind:'order',id,deleted:true,deletedAt:Date.now(),status:'done'};
+        records=records.map(o=>o===matches[0]?tombstone:o);
+        const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+        const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(unlockedAdminPassword),'PBKDF2',false,['deriveKey']);
+        const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt']);
+        const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(records)));
+        const payload=JSON.stringify({salt:arrayBufferToBase64(salt.buffer),iv:arrayBufferToBase64(iv.buffer),ct:arrayBufferToBase64(ct)});
+        let put;
+        try { put=await fetch(api,{method:'PUT',headers,body:JSON.stringify({message:'Remove one order from encrypted archive',content:utf8ToBase64(payload),sha:meta.sha,branch:cfg.ghBranch})}); }
+        catch(_) { throw Error('نتیجهٔ ذخیره مشخص نیست؛ پیش از تلاش دوباره پنل را همگام کنید.'); }
+        if(!put.ok) throw Error('ذخیره تأیید نشد؛ ابتدا آرشیو را همگام‌سازی و نتیجه را بررسی کنید.');
+        const idx=adminOrders.findIndex(o=>o.id===id && o.kind!=='registration');
+        if(idx!==-1)adminOrders[idx]=tombstone; else adminOrders.push(tombstone);
+        try { localStorage.setItem('lotus_admin_orders_cache_v1',JSON.stringify(adminOrders)); } catch (_) {}
+        updateOrderBadges();
       }
 
       async function saveOrdersVaultToGithub() {
@@ -2629,7 +2686,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
                   return `
                   <article class="card" data-id="${item.id}">
                     <div class="card-img-wrap">
-                      <img src="${item.image}" alt="${escapeHtml(item.name)}" loading="lazy">
+                      <img src="${escapeHtml(productImagePreview(item.image))}" alt="${escapeHtml(item.name)}" loading="lazy">
                       ${item.available === false ? '<div class="soldout-overlay"><span>اتمام موجودی روز</span></div>' : ''}
                       ${watermarkHtml}
                     </div>
@@ -2696,11 +2753,26 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         renderAll();
       });
 
+      let detailGalleryIndex=0;
+      function showDetailGallery() {
+        const item=state.items.find(x=>x.id===detailItemId); if(!item)return;
+        const images=productImages(item); if(!images.length)return;
+        detailGalleryIndex=(detailGalleryIndex+images.length)%images.length;
+        document.getElementById('mImg').src=productImagePreview(images[detailGalleryIndex]);
+        for(const id of ['galleryPrev','galleryNext','galleryCount'])document.getElementById(id).classList.toggle('hidden',images.length<2);
+        document.getElementById('galleryCount').textContent=toFa(detailGalleryIndex+1)+' / '+toFa(images.length);
+      }
+      document.getElementById('galleryPrev').addEventListener('click',()=>{detailGalleryIndex--;showDetailGallery();});
+      document.getElementById('galleryNext').addEventListener('click',()=>{detailGalleryIndex++;showDetailGallery();});
+      let galleryTouchX=null;
+      document.querySelector('#detailModal .modal-img').addEventListener('touchstart',e=>{galleryTouchX=e.touches[0].clientX;},{passive:true});
+      document.querySelector('#detailModal .modal-img').addEventListener('touchend',e=>{if(galleryTouchX!==null && e.changedTouches.length){const dx=e.changedTouches[0].clientX-galleryTouchX;if(Math.abs(dx)>40){detailGalleryIndex+=dx<0?1:-1;showDetailGallery();}}galleryTouchX=null;},{passive:true});
+
       function openDetail(id) {
         const item = state.items.find(x => x.id === id);
         if (!item) return;
         detailItemId = id;
-        document.getElementById('mImg').src = item.image;
+        detailGalleryIndex=0; showDetailGallery();
         document.getElementById('mImg').alt = item.name;
         const wmSlot=document.getElementById('modalLotusWatermarkSlot'); if(wmSlot) wmSlot.innerHTML=getLotusWatermarkHtml();
         document.getElementById('mTitle').textContent = item.name;
@@ -3966,8 +4038,7 @@ function renderDatabaseAccount(body,modal){
         const mBody = document.getElementById('addProductModalBody');
         modal.classList.remove('hidden');
 
-        let pickedDataUrl = '';
-        let pickedBase64 = '';
+        let pickedImages = [];
         const fallbackImg = (state.items[0] && state.items[0].image) || 'assets/images/k01-snickers.jpg';
 
         mBody.innerHTML = `
@@ -3978,10 +4049,11 @@ function renderDatabaseAccount(body,modal){
           <div style="display:flex;align-items:center;gap:14px;padding:12px;border-radius:12px;background:var(--surface-soft);border:1px solid var(--border);margin-bottom:14px">
             <img id="np_preview" src="${fallbackImg}" alt="" style="width:92px;height:76px;border-radius:10px;object-fit:cover;border:1px solid var(--border-strong)">
             <div style="flex:1">
-              <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">تصویر محصول جدید:</div>
+              <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">تصاویر محصول جدید (عکس اول، تصویر اصلی است):</div>
               <label class="icon-btn admin-trigger" style="cursor:pointer;display:inline-flex">
-                📷 انتخاب عکس از گالری / فایل‌ها
-                <input type="file" accept="image/*" id="np_file" class="hidden">
+                📷 انتخاب عکس‌ها از گالری / فایل‌ها
+                <input type="file" accept="image/*" multiple id="np_file" class="hidden">
+                <span id="np_photo_count"></span>
               </label>
             </div>
           </div>
@@ -4026,21 +4098,17 @@ function renderDatabaseAccount(body,modal){
         });
 
         document.getElementById('np_file').addEventListener('change', async e => {
-          const f = e.target.files && e.target.files[0];
-          if (!f) return;
+          const files=Array.from(e.target.files||[]); if(!files.length)return;
+          const button=document.getElementById('btnConfirmAddProd'); button.disabled=true;
           try {
-            const rawDataUrl = await fileToDataUrl(f);
-            const { dataUrl, base64 } = await openImageCropEditor(rawDataUrl, f.name);
-            pickedDataUrl = dataUrl;
-            pickedBase64 = base64;
-            document.getElementById('np_preview').src = dataUrl;
-          } catch (err) {
-            if(err.message!=='لغو شد'){
-              document.getElementById('np_err').textContent = err.message;
-              document.getElementById('np_err').classList.remove('hidden');
+            for(const file of files){
+              pickedImages.push(await openImageCropEditor(await fileToDataUrl(file),file.name));
+              document.getElementById('np_preview').src=pickedImages[0].dataUrl;
+              document.getElementById('np_photo_count').textContent=toFa(pickedImages.length)+' عکس انتخاب شد';
             }
-            e.target.value='';
-          }
+          } catch(err) {
+            if(err.message!=='لغو شد'){document.getElementById('np_err').textContent=err.message;document.getElementById('np_err').classList.remove('hidden');}
+          } finally { button.disabled=false; e.target.value=''; }
         });
 
         document.getElementById('btnConfirmAddProd').addEventListener('click', () => {
@@ -4058,16 +4126,13 @@ function renderDatabaseAccount(body,modal){
           }
 
           const newId = 'item_' + Date.now();
-          let imgPath = fallbackImg;
-          if (pickedBase64) {
-            imgPath = `assets/images/custom_${newId}.jpg`;
-            pendingImageUploads[imgPath] = pickedBase64;
-            fetch('api/upload-image', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ path: imgPath, base64: pickedBase64 })
-            }).catch(() => {});
-          }
+          const imagePaths=pickedImages.map((image,n)=>{
+            const path=`assets/images/custom_${newId}_${n}.jpg`;
+            pendingImageUploads[path]=image.base64;
+            fetch('api/upload-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path,base64:image.base64})}).catch(()=>{});
+            return path;
+          });
+          const imgPath=imagePaths[0]||fallbackImg;
 
           const newItem = {
             id: newId,
@@ -4077,9 +4142,10 @@ function renderDatabaseAccount(body,modal){
             desc,
             price: formatPriceFa(parsePriceNumber(rawPrice)) || rawPrice,
             available: true,
-            image: imgPath
+            image: imgPath,
+            images: imagePaths.length ? imagePaths : [imgPath]
           };
-          if (pickedDataUrl) newItem._previewDataUrl = pickedDataUrl;
+          if (pickedImages.length) newItem._previewDataUrl = pickedImages[0].dataUrl;
 
           state.items.unshift(newItem);
           const newCostRaw=toEnDigits((document.getElementById('np_cost')||{}).value||'').replace(/[^0-9]/g,'').trim();
@@ -4311,7 +4377,7 @@ function mountCustomerDirectory(body){
         const body = document.getElementById('adminBody');
 
         if (currentAdminTab === 'orders') {
-          const onlyOrders = adminOrders.filter(o => o.kind !== 'registration');
+          const onlyOrders = adminOrders.filter(o => o.kind !== 'registration' && o.deleted !== true);
           const filtered = onlyOrders.filter(o => {
             if (adminOrderFilter === 'all') return true;
             return (o.status || 'new') === adminOrderFilter;
@@ -4365,6 +4431,7 @@ function mountCustomerDirectory(body){
                       <div style="display:flex;gap:8px;flex-wrap:wrap">
                         <a href="tel:${toEnDigits(String(ord.phone||'')).replace(/[^0-9+]/g,'')}" class="icon-btn btn-green">📞 تماس با مشتری (${escapeHtml(toFa(ord.phone))})</a>
                         <a href="sms:${toEnDigits(String(ord.phone||'')).replace(/[^0-9+]/g,'')}?body=${smsBody}" class="icon-btn">💬 پیامک تایید</a>
+                        <button type="button" class="icon-btn btn-danger" data-delete-order="${escapeHtml(ord.id)}">🗑 حذف این سفارش</button>
                       </div>
                       <select data-ostatus="${escapeHtml(ord.id)}" style="padding:7px 10px;border-radius:9px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);font-size:12.2px;font-weight:700">
                         <option value="new" ${st === 'new' ? 'selected' : ''}>🟠 در انتظار تماس</option>
@@ -4388,6 +4455,17 @@ function mountCustomerDirectory(body){
             reconcileOrdersWithAccounting();
             renderAdminTab();
           });
+          body.querySelectorAll('[data-delete-order]').forEach(btn=>btn.addEventListener('click',async()=>{
+            const id=btn.dataset.deleteOrder;
+            if(!window.confirm('سفارش '+id+' از فهرست و آرشیو پنل حذف شود؟ تاریخچهٔ مشتری و حسابداری حذف نمی‌شوند.'))return;
+            btn.disabled=true;
+            try {
+              await deleteOneOrderFromVault(id);
+              document.getElementById('adminToast').textContent='سفارش از آرشیو پنل حذف شد؛ تاریخچهٔ مشتری و حسابداری حفظ شدند.';
+              renderAdminTab();
+            } catch(err) { document.getElementById('adminToast').textContent=err.message; }
+            finally { if(btn.isConnected)btn.disabled=false; }
+          }));
           body.querySelectorAll('[data-confirm-payment]').forEach(btn=>btn.addEventListener('click',()=>confirmOrderPayment(btn.dataset.confirmPayment)));
           body.querySelectorAll('[data-open-receipt]').forEach(btn=>btn.addEventListener('click',()=>openOrderReceipt(btn.dataset.openReceipt)));
           body.querySelectorAll('[data-ostatus]').forEach(sel => {
@@ -4604,7 +4682,7 @@ function mountCustomerDirectory(body){
               ${state.items.map((it, idx) => `
                 <div class="edit-item-row" data-idx="${idx}">
                   <div class="photo-box">
-                    <img src="${it._previewDataUrl || it.image}" alt="" class="ei-preview">
+                    <img src="${escapeHtml(it._previewDataUrl || productImagePreview(it.image))}" alt="" class="ei-preview">
                     <label class="change-photo-lbl">
                       📷 تغییر عکس
                       <input type="file" accept="image/*" class="ei-file hidden" data-fidx="${idx}">
@@ -4645,6 +4723,11 @@ function mountCustomerDirectory(body){
                   <div class="field" style="grid-column:3/-1">
                     <label>ماندگاری / نکته نگهداری</label>
                     <input class="ei-shelf" data-sidx="${idx}" value="${escapeHtml(it.shelfLife||'')}" placeholder="ماندگاری در یخچال: ۴ روز">
+                  </div>
+                  <div class="product-gallery-editor">
+                    <span>عکس‌های اسلاید (عکس اول، تصویر اصلی است):</span>
+                    ${productImages(it).map((src,photoIndex)=>`<figure><img src="${escapeHtml(productImagePreview(src))}" alt="عکس ${toFa(photoIndex+1)}"><span>${photoIndex===0?'اصلی':toFa(photoIndex+1)}</span>${productImages(it).length>1?`<button type="button" class="icon-btn btn-danger" data-remove-photo="${idx}" data-photo-index="${photoIndex}">حذف عکس</button>`:''}</figure>`).join('')}
+                    <label class="icon-btn" style="cursor:pointer">➕ افزودن عکس‌ها<input type="file" accept="image/*" multiple class="ei-gallery-file hidden" data-fidx="${idx}"></label>
                   </div>
                   <div class="field" style="grid-column:1/-1;padding:8px 10px;border:1px dashed var(--border-strong);border-radius:10px;background:var(--surface-soft)">
                     <label>🔒 هزینهٔ تمام‌شدهٔ یک قالب کامل — فقط مدیر (تومان)</label>
@@ -4724,6 +4807,27 @@ function mountCustomerDirectory(body){
             inp.addEventListener('change',()=>{ collectAdminInputs(); const idx=+inp.dataset.sidx; if(state.items[idx]) state.items[idx].shelfLife=inp.value.trim(); });
           });
 
+          body.querySelectorAll('[data-remove-photo]').forEach(btn=>btn.addEventListener('click',()=>{
+            collectAdminInputs(); const it=state.items[+btn.dataset.removePhoto]; if(!it)return;
+            const images=productImages(it); if(images.length<2)return;
+            images.splice(+btn.dataset.photoIndex,1); it.image=images[0]; it.images=images; delete it._previewDataUrl;
+            renderAdminTab(); renderAll(); document.getElementById('adminToast').textContent='عکس از اسلاید برداشته شد؛ برای انتشار دکمه سبز را بزنید.';
+          }));
+          body.querySelectorAll('.ei-gallery-file').forEach(inp=>inp.addEventListener('change',async()=>{
+            const files=Array.from(inp.files||[]); if(!files.length)return;
+            collectAdminInputs(); const item=state.items[+inp.dataset.fidx],toast=document.getElementById('adminToast');
+            if(!item)return; inp.disabled=true;
+            try {
+              for(const file of files){
+                const {base64}=await openImageCropEditor(await fileToDataUrl(file),file.name);
+                const path=`assets/images/custom_${item.id}_${Date.now()}_${Math.random().toString(36).slice(2,8)}.jpg`;
+                pendingImageUploads[path]=base64; item.images=[...productImages(item),path];
+              }
+              toast.textContent='عکس‌ها آماده شدند؛ برای انتشار دکمه سبز را بزنید.';
+            } catch(err) { toast.textContent=err.message==='لغو شد'?'انتخاب عکس متوقف شد؛ عکس‌های قبلی حفظ شدند.':'خطا در تصویر: '+err.message; }
+            finally { renderAdminTab();renderAll(); }
+          }));
+
           body.querySelectorAll('.ei-file').forEach(inp => {
             inp.addEventListener('change', async () => {
               const file = inp.files && inp.files[0];
@@ -4737,7 +4841,9 @@ function mountCustomerDirectory(body){
                 const { dataUrl, base64 } = await openImageCropEditor(rawDataUrl, file.name);
                 const newRelPath = `assets/images/custom_${state.items[idx].id}_${Date.now()}.jpg`;
                 pendingImageUploads[newRelPath] = base64;
+                const existingImages=productImages(state.items[idx]);
                 state.items[idx].image = newRelPath;
+                state.items[idx].images = [newRelPath,...existingImages.slice(1)];
                 state.items[idx]._previewDataUrl = dataUrl;
                 fetch('api/upload-image', {
                   method: 'POST',
@@ -4755,8 +4861,8 @@ function mountCustomerDirectory(body){
             });
           });
 
-          // Logo upload handler placeholder for prices - do nothing, handler is in design tab
-          
+          // The logo control is optional in this tab.
+          const logoUp=document.getElementById('f_logoUpload');
           if(logoUp){
             logoUp.addEventListener('change', async (e)=>{
               const f=e.target.files&&e.target.files[0]; if(!f) return;
@@ -5440,7 +5546,7 @@ function mountCustomerDirectory(body){
             'assets/fonts/Vazirmatn-Medium.woff2',
             'assets/fonts/Vazirmatn-Bold.woff2',
             'assets/fonts/Vazirmatn-ExtraBold.woff2'
-          ].concat(cleanState.items.map(i => i.image))));
+          ].concat(cleanState.items.flatMap(i => productImages(i)))));
 
           for (const bp of uniqueAssetPaths) {
             if (pendingImageUploads[bp]) {
@@ -5629,7 +5735,7 @@ function mountCustomerDirectory(body){
             'assets/fonts/Vazirmatn-Medium.woff2',
             'assets/fonts/Vazirmatn-Bold.woff2',
             'assets/fonts/Vazirmatn-ExtraBold.woff2'
-          ].concat(cleanState.items.map(i => i.image))));
+          ].concat(cleanState.items.flatMap(i => productImages(i)))));
 
           for (const rel of uniqueAssets) {
             if (pendingImageUploads[rel]) {
