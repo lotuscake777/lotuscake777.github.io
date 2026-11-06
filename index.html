@@ -657,6 +657,17 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     #accountPage .account-actions { display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:24px; }
     #accountPage .account-save { width:auto;flex:0 0 auto;padding:0 24px;min-height:46px;background:#1F6F4A;color:#fff; }
     #accountPage .account-status { color:var(--accent);font-size:12px; }
+    #accountPage .birth-picker { position:relative; }
+    #accountPage .birth-toggle { width:100%;min-height:47px;text-align:right;padding:10px 12px;border:1px solid var(--border-strong);border-radius:10px;background:var(--bg);color:var(--text);font:inherit;cursor:pointer; }
+    #accountPage .birth-cta { color:var(--text-muted);font-size:12px;line-height:1.9;font-weight:400; }
+    #accountPage .birth-calendar { margin-top:8px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow-sm); }
+    #accountPage .birth-controls { display:flex;gap:8px; }
+    #accountPage .birth-controls select { min-width:0;flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font:inherit; }
+    #accountPage .birth-grid { display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center;margin-top:10px; }
+    #accountPage .birth-grid span { font-size:11px;color:var(--text-muted); }
+    #accountPage .birth-grid button { min-height:34px;border:0;border-radius:7px;background:transparent;color:var(--text);font:inherit;cursor:pointer; }
+    #accountPage .birth-grid button:hover,#accountPage .birth-grid button[aria-pressed="true"] { background:var(--accent-soft);color:var(--accent);font-weight:800; }
+    #accountPage .birth-clear { margin-top:8px;border:0;background:none;color:var(--text-muted);font:inherit;cursor:pointer;text-decoration:underline; }
     #accountPage .account-order,#accountPage .account-favorite { background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:15px;margin:10px 0;font-size:13px;line-height:1.9; }
     #accountPage .account-order-head,#accountPage .account-invoice-lines > div { display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap; }
     #accountPage .account-invoice-lines { margin:8px 0;border-block:1px solid var(--border);padding:7px 0; }
@@ -3074,11 +3085,30 @@ function bindExistingCustomerForm(body,{mode,session,onLogin,onRegistered}={}){
  const isSignup=mode==='signup';if(isSignup){button.textContent='ثبت‌نام و سپس ورود';const pass=q('reg_pass');pass.placeholder='حداقل ۶ نویسه';const label=pass.closest('.field')?.querySelector('label');if(label)label.textContent='رمز عبور *'}
  async function submit(){
   if(busy||!active())return;
-  const field=id=>q(id).value;const input=isSignup?{username:field('reg_user'),password:field('reg_pass'),fullName:field('reg_name'),cafeName:field('reg_cafe'),phone:field('reg_phone'),address:field('reg_address')}:{username:field('lg_user'),password:field('lg_pass')};
+  const field=id=>q(id).value;const first=isSignup?field('reg_name').trim():'',last=isSignup?field('reg_lastname').trim():'';const input=isSignup?{username:field('reg_user'),password:field('reg_pass'),fullName:first+' '+last,cafeName:field('reg_cafe'),phone:field('reg_phone'),address:field('reg_address')}:{username:field('lg_user'),password:field('lg_pass')};
+  if(isSignup&&(!first||!last||first.length>60||last.length>60||input.fullName.length>120)){show('نام و نام خانوادگی را کامل و جداگانه وارد کنید.');return;}
   input.username=input.username.trim().toLowerCase();
   if(!/^[a-z0-9_.-]{3,40}$/.test(input.username)||!input.password||new TextEncoder().encode(input.password).length>72||(isSignup&&(Array.from(input.password).length<6||/[\u0000-\u001f\u007f]/.test(input.password)))){show('نام کاربری معتبر نیست؛ فقط نام کاربری را وارد کنید. رمز باید دست‌کم ۶ نویسه و حداکثر ۷۲ بایت باشد.');return;}
   busy=true;button.disabled=true;error.classList.add('hidden');q(isSignup?'reg_pass':'lg_pass').value='';
-  const outcome=await session[mode](input);input.password='';
+  let outcome=await session[mode](input);
+  if(isSignup&&outcome.outcome==='registered'&&active()){
+   // Authenticate the newly created user before saving their separate names; never persist the password.
+   const login=await session.login({username:input.username,password:input.password});
+   input.password='';
+   if(login.outcome==='signed_in'&&active()){
+    const existing=await session.getAccountDetails();
+    let namesSaved=false;
+    if(existing.outcome==='ok'&&!existing.details.first&&!existing.details.last){
+     const profile=session.profile();
+     if(profile&&profile.username===input.username&&profile.name===input.fullName){
+      const result=await session.saveAccount({first,last,cafe:profile.cafeName,phone:profile.phone,address:profile.address,email:existing.details.email,birth:existing.details.birth});
+      namesSaved=result.outcome==='ok';
+     }
+    }
+    input.password='';if(!active())return;onLogin(session.profile(),{namesSaved});return;
+   }
+  }
+  input.password='';
   if(!active())return;
   if(outcome.outcome==='signed_in'){onLogin(outcome.profile);return;}
   if(outcome.outcome==='registered'){onRegistered(outcome.username);return;}
@@ -3173,22 +3203,39 @@ function renderDatabaseAccount(body){
  const paymentLabel=m=>({full:'تسویه کامل پیش از تحویل',half:'نصف اکنون، نصف هنگام تحویل',delivery:'تسویه کامل هنگام تحویل'}[m]||'—');
  const icon=(path)=>`<svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
  const icons={profile:icon('<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-3.6 3.1-5.5 7-5.5s6.3 1.9 7 5.5"/>'),orders:icon('<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 5a4 4 0 0 1 8 0M8 11h8M8 15h5"/>'),favorites:icon('<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>'),address:icon('<path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0z"/><circle cx="12" cy="10" r="2.3"/>'),invoices:icon('<path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h4"/>'),logout:icon('<path d="M10 4H5v16h5M14 8l4 4-4 4M9 12h9"/>')};
- const logo=state.design?.logoImage||'assets/images/logo-lotus-cake-original.png';
- body.innerHTML=`<div class="account-topbar"><div class="account-topbar-inner"><div class="account-brand"><img src="${escapeHtml(logo)}" alt=""><span dir="ltr">LOTUS CAKE</span></div><button type="button" class="icon-btn account-back" id="btnAccountBack">بازگشت به منو ←</button></div></div><div class="account-wrap"><header class="account-head"><div><span class="account-kicker">حساب مشتری</span><h1>حساب کاربری من</h1><p>${escapeHtml(p.name)} · <bdi dir="ltr">${escapeHtml(p.phone)}</bdi></p></div></header><div class="account-layout"><nav class="account-nav" aria-label="بخش‌های حساب"><button type="button" data-account-tab="profile">${icons.profile}<span>اطلاعات حساب</span></button><button type="button" data-account-tab="orders">${icons.orders}<span>سفارش‌های من</span></button><button type="button" data-account-tab="favorites">${icons.favorites}<span>علاقه‌مندی‌ها</span></button><button type="button" data-account-tab="address">${icons.address}<span>آدرس</span></button><button type="button" data-account-tab="invoices">${icons.invoices}<span>صورت‌حساب سفارش‌ها</span></button><button type="button" id="btnLogoutInsideModal">${icons.logout}<span>خروج از حساب</span></button></nav><section id="accountPanel" class="account-panel" aria-live="polite"></section></div></div>`;
+ body.innerHTML=`<div class="account-topbar"><div class="account-topbar-inner"><div></div><button type="button" class="icon-btn account-back" id="btnAccountBack">بازگشت به منو ←</button></div></div><div class="account-wrap"><header class="account-head"><div><h1>حساب کاربری من</h1><p>${escapeHtml(p.name)}</p></div></header><div class="account-layout"><nav class="account-nav" aria-label="بخش‌های حساب"><button type="button" data-account-tab="profile">${icons.profile}<span>اطلاعات حساب</span></button><button type="button" data-account-tab="orders">${icons.orders}<span>سفارش‌های من</span></button><button type="button" data-account-tab="favorites">${icons.favorites}<span>علاقه‌مندی‌ها</span></button><button type="button" data-account-tab="address">${icons.address}<span>آدرس</span></button><button type="button" data-account-tab="invoices">${icons.invoices}<span>صورت‌حساب سفارش‌ها</span></button><button type="button" id="btnLogoutInsideModal">${icons.logout}<span>خروج از حساب</span></button></nav><section id="accountPanel" class="account-panel" aria-live="polite"></section></div></div>`;
  const panel=body.querySelector('#accountPanel');
  body.querySelector('#btnAccountBack').onclick=returnFromAccount;
  body.querySelector('#btnLogoutInsideModal').onclick=()=>{accountRequestedAfterLogin=false;if(location.hash==='#account')history.replaceState(history.state,'',location.pathname+location.search);hideAccountPage();logoutCustomerAccount()};
  function capture(){panel.querySelectorAll('[data-account-field]').forEach(e=>{draft[e.dataset.accountField]=e.value});}
  body.querySelectorAll('[data-account-tab]').forEach(b=>b.addEventListener('click',()=>{capture();tab=b.dataset.accountTab;page=0;orders=null;draw()}));
  const field=(label,key,opts={})=>`<label class="account-field"><span>${label}</span><input data-account-field="${key}" value="${escapeHtml(key==='birth'?toFa(draft[key]):draft[key])}" ${opts.type?'type="'+opts.type+'"':''} ${opts.dir?'dir="ltr"':''} ${opts.placeholder?'placeholder="'+opts.placeholder+'"':''} autocomplete="off"></label>`;
+ function birthField(){return `<div class="account-field birth-picker"><span id="birth-label">تاریخ تولد شمسی (اختیاری)</span><input type="hidden" data-account-field="birth" value="${escapeHtml(draft.birth)}"><button type="button" class="birth-toggle" aria-labelledby="birth-label birth-value" aria-expanded="false"><span id="birth-value">${draft.birth?escapeHtml(toFa(draft.birth)):'انتخاب تاریخ تولد'}</span> ▾</button><span class="birth-cta">تاریخ تولدتان را با لوتوس کیک به اشتراک بگذارید تا روزتان را شیرین‌تر کنیم.</span><div class="birth-calendar hidden"></div></div>`;}
+ function bindBirthPicker(){
+  const picker=panel.querySelector('.birth-picker');if(!picker)return;
+  const input=picker.querySelector('input'),toggle=picker.querySelector('.birth-toggle'),calendar=picker.querySelector('.birth-calendar');
+  const months=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+  const now=new Intl.DateTimeFormat('en-US-u-ca-persian-nu-latn',{year:'numeric',month:'numeric',timeZone:'Asia/Tehran'}).formatToParts(new Date());
+  const part=k=>Number(now.find(x=>x.type===k)?.value),saved=normalizeJalaliBirthdate(draft.birth),pieces=saved?saved.split('/').map(Number):[];
+  let year=pieces[0]||part('year'),month=pieces[1]||part('month');
+  function weekday(y,m){let lo=Math.floor(Date.UTC(1800,0,1,12)/86400000),hi=Math.floor(Date.UTC(2200,0,1,12)/86400000);const f=new Intl.DateTimeFormat('en-US-u-ca-persian-nu-latn',{year:'numeric',month:'numeric',day:'numeric',timeZone:'UTC'}),target=y*10000+m*100+1;while(lo<=hi){const mid=Math.floor((lo+hi)/2),d=new Date(mid*86400000+43200000),p=f.formatToParts(d),n=k=>Number(p.find(x=>x.type===k)?.value),v=n('year')*10000+n('month')*100+n('day');if(v===target)return (d.getUTCDay()+1)%7;if(v<target)lo=mid+1;else hi=mid-1;}return 0;}
+  function render(){
+   const selected=normalizeJalaliBirthdate(input.value),days=month<=6?31:month<=11?30:(normalizeJalaliBirthdate(year+'/12/30')?30:29),start=weekday(year,month);
+   const years=Array.from({length:301},(_,i)=>1500-i).map(y=>`<option value="${y}" ${y===year?'selected':''}>${toFa(y)}</option>`).join('');
+   calendar.innerHTML=`<div class="birth-controls"><select aria-label="ماه تولد">${months.map((m,i)=>`<option value="${i+1}" ${i+1===month?'selected':''}>${m}</option>`).join('')}</select><select aria-label="سال تولد">${years}</select></div><div class="birth-grid">${['ش','ی','د','س','چ','پ','ج'].map(d=>`<span>${d}</span>`).join('')}${'<span></span>'.repeat(start)}${Array.from({length:days},(_,i)=>{const day=i+1,date=`${year}/${String(month).padStart(2,'0')}/${String(day).padStart(2,'0')}`;return `<button type="button" data-birth-date="${date}" aria-label="${toFa(day)} ${months[month-1]} ${toFa(year)}" aria-pressed="${date===selected}">${toFa(day)}</button>`}).join('')}</div><button type="button" class="birth-clear">پاک کردن تاریخ تولد</button>`;
+   const selects=calendar.querySelectorAll('select');selects[0].onchange=()=>{month=Number(selects[0].value);render()};selects[1].onchange=()=>{year=Number(selects[1].value);render()};
+   calendar.querySelectorAll('[data-birth-date]').forEach(b=>b.onclick=()=>{input.value=b.dataset.birthDate;draft.birth=input.value;picker.querySelector('#birth-value').textContent=toFa(input.value);calendar.classList.add('hidden');toggle.setAttribute('aria-expanded','false');toggle.focus()});
+   calendar.querySelector('.birth-clear').onclick=()=>{input.value='';draft.birth='';picker.querySelector('#birth-value').textContent='انتخاب تاریخ تولد';calendar.classList.add('hidden');toggle.setAttribute('aria-expanded','false');toggle.focus()};
+  }
+  toggle.onclick=()=>{const opening=calendar.classList.contains('hidden');if(opening)render();calendar.classList.toggle('hidden',!opening);toggle.setAttribute('aria-expanded',String(opening));};
+ }
  function saveButton(){return `<div class="account-actions"><button type="button" class="cta-primary account-save" ${busy?'disabled':''}>ذخیره تغییرات</button><span class="account-status" role="status"></span></div>`;}
  async function loadOrders(){const ticket=++serial;panel.innerHTML='<h2>'+ (tab==='orders'?'سفارش‌های من':'صورت‌حساب سفارش‌ها')+'</h2><p>در حال دریافت…</p>';const result=await customerBrowserSession.listOrders(page*10);if(!isActive()||ticket!==serial||!['orders','invoices'].includes(tab))return;if(result.outcome!=='ok'){panel.innerHTML='<p>دریافت سفارش‌ها ناموفق بود. دوباره تلاش کنید.</p><button type="button" class="icon-btn" id="accountRetry">تلاش مجدد</button>';panel.querySelector('#accountRetry').onclick=loadOrders;return;}orders=result.orders.slice(0,10);hasMore=result.orders.length>10;draw();}
  function draw(){
   if(!isActive())return;serial++;body.querySelectorAll('[data-account-tab]').forEach(b=>{const selected=b.dataset.accountTab===tab;b.classList.toggle('active',selected);b.setAttribute('aria-current',selected?'page':'false')});
   if(!details){panel.innerHTML='<p>در حال دریافت اطلاعات حساب…</p>';return;}
   if(tab==='profile'){
-   const savedName=customerBrowserSession.profile()?.name||p.name;
-   panel.innerHTML=`<h2>اطلاعات حساب</h2><p class="account-hint">نام ثبت‌شدهٔ فعلی: ${escapeHtml(savedName)}. اگر نام و نام خانوادگی را جدا وارد نکنید، نام قبلی حفظ می‌شود.</p><div class="account-fields">${field('نام','first',{placeholder:'اختیاری'})}${field('نام خانوادگی','last',{placeholder:'اختیاری'})}${field('نام کافه *','cafe')}${field('تلفن *','phone',{type:'tel',dir:true})}<label class="account-field"><span>نام کاربری</span><input value="${escapeHtml(p.username)}" dir="ltr" readonly></label>${field('ایمیل تماس (اختیاری)','email',{type:'email',dir:true})}${field('تاریخ تولد شمسی (اختیاری)','birth',{dir:true,placeholder:'۱۳۷۰/۰۱/۰۱'})}</div><p class="account-hint">ایمیل تماس برای ورود استفاده نمی‌شود.</p>${saveButton()}`;
+   panel.innerHTML=`<h2>اطلاعات حساب</h2><div class="account-fields">${field('نام','first',{placeholder:'اختیاری'})}${field('نام خانوادگی','last',{placeholder:'اختیاری'})}${field('نام کافه *','cafe')}${field('تلفن *','phone',{type:'tel',dir:true})}<label class="account-field"><span>نام کاربری</span><input value="${escapeHtml(p.username)}" dir="ltr" readonly></label>${field('ایمیل تماس (اختیاری)','email',{type:'email',dir:true})}${birthField()}</div>${saveButton()}`;
   }else if(tab==='address'){
    panel.innerHTML=`<h2>آدرس تحویل</h2><p class="account-hint">این آدرس برای سفارش‌های بعدی استفاده می‌شود؛ آدرس سفارش‌های قبلی تغییر نمی‌کند.</p><label class="account-field"><span>آدرس *</span><textarea data-account-field="address" rows="4">${escapeHtml(draft.address)}</textarea></label>${saveButton()}`;
   }else if(tab==='favorites'){
@@ -3202,6 +3249,7 @@ function renderDatabaseAccount(body){
    panel.innerHTML=`<h2>${tab==='orders'?'سفارش‌های من':'صورت‌حساب سفارش‌ها'}</h2>${orders.length?orders.map(o=>`<article class="account-order"><div class="account-order-head"><strong>سفارش ${escapeHtml(o.orderCode)}</strong><span>${formatPersianDate(o.createdAt,{time:true})}</span></div><div>تحویل: ${o.deliveryDate?formatPersianDate(o.deliveryDate,{dateOnly:true}):'—'} ${escapeHtml(o.deliverySlot)}</div>${tab==='invoices'?`<div class="account-invoice-lines">${o.items.map(i=>`<div><span>${escapeHtml(i.name)} × ${toFa(i.qty)}</span><span>${formatPriceFa(i.lineTotal)} تومان</span></div>`).join('')}</div>`:`<div>${o.items.map(i=>escapeHtml(i.name)+' × '+toFa(i.qty)).join('، ')}</div>`}<div><strong>جمع: ${formatPriceFa(o.total)} تومان</strong> · روش تسویه: ${paymentLabel(o.paymentMethod)}</div></article>`).join(''):'<p>هنوز سفارشی برای این حساب ثبت نشده است.</p>'}<div class="account-pages"><button type="button" class="icon-btn" id="accountPrev" ${page===0?'disabled':''}>صفحهٔ قبل</button><span>صفحهٔ ${toFa(page+1)}</span><button type="button" class="icon-btn" id="accountNext" ${!hasMore?'disabled':''}>صفحهٔ بعد</button></div>`;
    panel.querySelector('#accountPrev').onclick=()=>{page--;orders=null;draw()};panel.querySelector('#accountNext').onclick=()=>{page++;orders=null;draw()};
   }
+  if(tab==='profile')bindBirthPicker();
   const save=panel.querySelector('.account-save');if(save)save.onclick=async()=>{
    capture();const status=panel.querySelector('.account-status'),fn=draft.first.trim(),ln=draft.last.trim(),cafe=draft.cafe.trim(),phone=toEnDigits(draft.phone).replace(/[\s()-]/g,''),address=draft.address.trim(),email=draft.email.trim(),birth=normalizeJalaliBirthdate(draft.birth);
    if((!fn)!==(!ln)||fn.length>60||ln.length>60||(fn+' '+ln).length>120){status.textContent='نام و نام خانوادگی را هر دو وارد کنید یا هر دو را خالی بگذارید.';return;}
@@ -3210,7 +3258,7 @@ function renderDatabaseAccount(body){
    if(birth===null){status.textContent='تاریخ تولد شمسی معتبر مانند ۱۳۷۰/۰۱/۰۱ وارد کنید.';return;}
    busy=true;save.disabled=true;body.querySelectorAll('[data-account-tab]').forEach(b=>b.disabled=true);status.textContent='در حال ذخیره…';const result=await customerBrowserSession.saveAccount({first:fn,last:ln,cafe,phone,address,email,birth});busy=false;
    if(!isActive())return;body.querySelectorAll('[data-account-tab]').forEach(b=>b.disabled=false);if(result.outcome!=='ok'){if(status.isConnected){status.textContent='ذخیره انجام نشد؛ دوباره تلاش کنید.';save.disabled=false}return;}
-   draft={first:fn,last:ln,cafe,phone,address,email,birth};body.querySelector('.account-head p').innerHTML=escapeHtml(result.profile.name)+' · <span dir="ltr">'+escapeHtml(result.profile.phone)+'</span>';draw();panel.querySelector('.account-status').textContent='تغییرات ذخیره شد.';
+   draft={first:fn,last:ln,cafe,phone,address,email,birth};body.querySelector('.account-head p').textContent=result.profile.name;draw();panel.querySelector('.account-status').textContent='تغییرات ذخیره شد.';
   };
  }
  draw();customerBrowserSession.getAccountDetails().then(r=>{if(!isActive())return;if(r.outcome!=='ok'){panel.innerHTML='<p>دریافت اطلاعات حساب ناموفق بود.</p><button type="button" class="icon-btn" id="accountReload">تلاش مجدد</button>';panel.querySelector('#accountReload').onclick=()=>renderDatabaseAccount(body);return;}details=r.details;Object.assign(draft,{first:details.first,last:details.last,email:details.email,birth:details.birth});draw()});
@@ -3352,8 +3400,12 @@ function renderDatabaseAccount(body){
                 </div>
               </div>
               <div class="field">
-                <label>نام و نام خانوادگی <span style="color:#DC2626">*</span></label>
-                <input autocomplete="off" id="reg_name" placeholder="مثلاً علی رضایی">
+                <label for="reg_name">نام <span style="color:#DC2626">*</span></label>
+                <input autocomplete="given-name" id="reg_name" placeholder="مثلاً علی" maxlength="60">
+              </div>
+              <div class="field">
+                <label for="reg_lastname">نام خانوادگی <span style="color:#DC2626">*</span></label>
+                <input autocomplete="family-name" id="reg_lastname" placeholder="مثلاً رضایی" maxlength="60">
               </div>
               <div class="field">
                 <label>نام کافه <span style="color:#DC2626">*</span></label>
@@ -3384,9 +3436,9 @@ function renderDatabaseAccount(body){
 
         if(customerDbFormsEnabled){
           if(mode==='login')document.getElementById('linkGoSignup').addEventListener('click',()=>openRegisterModal('signup'));
-          bindExistingCustomerForm(body,{mode,session:customerBrowserSession,onLogin(){modal.classList.add('hidden');showLuxuryToast('با موفقیت وارد حساب شدید');if(accountRequestedAfterLogin)showAccountPage()},onRegistered(username){
+          bindExistingCustomerForm(body,{mode,session:customerBrowserSession,onLogin(profile,options){modal.classList.add('hidden');document.getElementById('detailModal').classList.add('hidden');document.getElementById('cartModal').classList.add('hidden');accountRequestedAfterLogin=false;if(location.hash==='#account')history.replaceState(history.state,'',location.pathname+location.search);hideAccountPage();window.scrollTo(0,0);showLuxuryToast(options&&options.namesSaved===false?'وارد شدید؛ لطفاً نام و نام خانوادگی را در حساب کاربری تکمیل کنید.':'با موفقیت وارد حساب شدید')},onRegistered(username){
             openRegisterModal('login');document.getElementById('lg_user').value=username;
-            const message=document.getElementById('loginCustError');message.textContent='حساب ثبت شد؛ اکنون با رمز انتخابی خود وارد شوید.';message.classList.remove('hidden');
+            const message=document.getElementById('loginCustError');message.textContent='حساب ثبت شد. اکنون وارد شوید و نام و نام خانوادگی را در حساب کاربری تکمیل کنید.';message.classList.remove('hidden');
           }});
           return; // No legacy decrypt/publish/notification handlers for DB accounts.
         }
@@ -3459,6 +3511,7 @@ function renderDatabaseAccount(body){
           const elUser = document.getElementById('reg_user');
           const elPass = document.getElementById('reg_pass');
           const elName = document.getElementById('reg_name');
+          const elLastName = document.getElementById('reg_lastname');
           const elCafe = document.getElementById('reg_cafe');
           const elPhone = document.getElementById('reg_phone');
           const elAddr = document.getElementById('reg_address');
@@ -3466,20 +3519,21 @@ function renderDatabaseAccount(body){
 
           const cleanUser = normalizeUsername(elUser.value);
           const cleanPass = normalizePassword(elPass.value);
-          const name = elName.value.trim();
+          const name = [elName.value.trim(),elLastName.value.trim()].filter(Boolean).join(' ');
           const cafeName = elCafe.value.trim();
           const phone = toEnDigits(elPhone.value.trim()).replace(/\s+/g, '');
           const address = elAddr.value.trim();
           const phoneDigits = phone.replace(/[^\d]/g, '');
 
-          [elUser, elPass, elName, elCafe, elPhone, elAddr].forEach(el => { el.style.borderColor = ''; });
+          [elUser, elPass, elName, elLastName, elCafe, elPhone, elAddr].forEach(el => { el.style.borderColor = ''; });
           const missing = [];
           if (!cleanUser || cleanUser.length < 3 || !/^[a-z0-9_.-]+$/.test(cleanUser)) {
             elUser.style.borderColor = '#DC2626';
             missing.push('نام کاربری انگلیسی (حداقل ۳ حرف یا عدد بدون فاصله)');
           }
           if (cleanPass.length < 4) { elPass.style.borderColor = '#DC2626'; missing.push('رمز عبور (حداقل ۴ کاراکتر)'); }
-          if (!name) { elName.style.borderColor = '#DC2626'; missing.push('نام و نام خانوادگی'); }
+          if (!elName.value.trim()) { elName.style.borderColor = '#DC2626'; missing.push('نام'); }
+          if (!elLastName.value.trim()) { elLastName.style.borderColor = '#DC2626'; missing.push('نام خانوادگی'); }
           if (!cafeName) { elCafe.style.borderColor = '#DC2626'; missing.push('نام کافه'); }
           if (phoneDigits.length < 10) { elPhone.style.borderColor = '#DC2626'; missing.push('شماره تلفن معتبر'); }
           if (!address) { elAddr.style.borderColor = '#DC2626'; missing.push('آدرس دقیق'); }
