@@ -729,10 +729,6 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     .gallery-nav { position:absolute; z-index:6; top:50%; transform:translateY(-50%); border:0; border-radius:50%; width:40px; height:40px; background:rgba(0,0,0,.6); color:white; font-size:24px; cursor:pointer; }
     .gallery-prev { right:10px; } .gallery-next { left:10px; }
     .gallery-count { position:absolute; z-index:6; bottom:10px; left:50%; transform:translateX(-50%); color:white; background:rgba(0,0,0,.65); padding:3px 10px; border-radius:20px; font-size:12px; }
-    .card-img-wrap .card-gallery-nav { width:30px; height:30px; font-size:20px; }
-    .card-img-wrap .gallery-prev { right:5px; } .card-img-wrap .gallery-next { left:5px; }
-    .card-img-wrap .gallery-count { bottom:5px; font-size:10px; padding:2px 7px; }
-    .items-list .card-img-wrap .card-gallery-nav { width:27px; height:27px; }
     .product-gallery-editor { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:8px; background:var(--surface); border:1px solid var(--border); border-radius:10px; }
     .product-gallery-editor figure { margin:0; display:grid; gap:4px; width:78px; text-align:center; font-size:11px; }
     .product-gallery-editor img { width:78px; height:62px; object-fit:cover; border-radius:8px; }
@@ -2724,7 +2720,6 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
                       <img class="card-product-image" src="${escapeHtml(productImagePreview(photos[0]||item.image))}" alt="${escapeHtml(item.name)}" loading="lazy">
                       ${item.available === false ? '<div class="soldout-overlay"><span>اتمام موجودی روز</span></div>' : ''}
                       ${watermarkHtml}
-                      ${photos.length>1?`<button type="button" class="gallery-nav gallery-prev card-gallery-nav" data-gallery-step="-1" data-stop="1" aria-label="عکس قبلی">‹</button><button type="button" class="gallery-nav gallery-next card-gallery-nav" data-gallery-step="1" data-stop="1" aria-label="عکس بعدی">›</button><span class="gallery-count card-gallery-count" aria-live="polite">${toFa(1)} / ${toFa(photos.length)}</span>`:''}
                     </div>
                     <div class="card-body">
                       <div>
@@ -2773,14 +2768,12 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         container.querySelectorAll('.card').forEach(card => {
           const item=state.items.find(x=>String(x.id)===card.dataset.id), photos=item?productImages(item):[];
           let photoIndex=0, touchX=null, touchY=null, lastSwipe=0;
-          const wrap=card.querySelector('.card-img-wrap'), image=card.querySelector('.card-product-image'), count=card.querySelector('.card-gallery-count');
+          const wrap=card.querySelector('.card-img-wrap'), image=card.querySelector('.card-product-image');
           const movePhoto=step=>{
             if(photos.length<2)return;
             photoIndex=(photoIndex+step+photos.length)%photos.length;
             image.src=productImagePreview(photos[photoIndex]);
-            count.textContent=toFa(photoIndex+1)+' / '+toFa(photos.length);
           };
-          card.querySelectorAll('[data-gallery-step]').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();movePhoto(Number(btn.dataset.galleryStep));}));
           if(photos.length>1){
             wrap.addEventListener('touchstart',e=>{if(e.touches.length===1){touchX=e.touches[0].clientX;touchY=e.touches[0].clientY;}},{passive:true});
             wrap.addEventListener('touchend',e=>{if(touchX!==null&&e.changedTouches.length){const dx=e.changedTouches[0].clientX-touchX,dy=e.changedTouches[0].clientY-touchY;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)){movePhoto(dx<0?1:-1);lastSwipe=Date.now();}}touchX=null;touchY=null;},{passive:true});
