@@ -1970,7 +1970,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
 
       function updateOrderBadges() {
         const newOrdersCnt = adminOrders.filter(o => o.kind !== 'registration' && (o.status || 'new') === 'new').length;
-        const newRegsCnt = adminOrders.filter(o => o.kind === 'registration' && (o.status || 'new') === 'new').length;
+        const newRegsCnt = adminOrders.filter(o => o.kind === 'registration' && o.deleted !== true && (o.status || 'new') === 'new').length;
         const totalUnread = newOrdersCnt + newRegsCnt;
 
         const bTop = document.getElementById('adminNewBadge');
@@ -2015,7 +2015,10 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           const vaultOrders = JSON.parse(new TextDecoder().decode(plain));
           for (const vo of vaultOrders) {
             const idx = adminOrders.findIndex(x => x.id === vo.id);
-            if (idx === -1) adminOrders.push(vo);
+            if (vo.kind === 'registration' && vo.deleted === true) {
+              const tombstone = {kind:'registration',id:vo.id,deleted:true,deletedAt:Number(vo.deletedAt)||Date.now(),status:'done'};
+              if (idx === -1) adminOrders.push(tombstone); else adminOrders[idx] = tombstone;
+            } else if (idx === -1) adminOrders.push(vo);
             else {
               if ((vo.updatedStatusAt || 0) > (adminOrders[idx].updatedStatusAt || 0)) {
                 adminOrders[idx].status = vo.status;
@@ -2035,7 +2038,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       async function saveOrdersVaultToGithub() {
         if(passwordChangePendingDeploy)return false;
         const cfg = detectCloudRepo();
-        if (!cfg.token || !cfg.ghOwner || !cfg.ghRepo || !unlockedAdminPassword) return;
+        if (!cfg.token || !cfg.ghOwner || !cfg.ghRepo || !unlockedAdminPassword) return false;
         try {
           const salt = crypto.getRandomValues(new Uint8Array(16));
           const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -2062,10 +2065,11 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           let sha;
           const g = await fetch(apiUrl + '?ref=' + encodeURIComponent(cfg.ghBranch) + '&t=' + Date.now(), { headers });
           if (g.ok) sha = (await g.json()).sha;
-          const body = { message: 'Sync encrypted customer orders vault', content: utf8ToBase64(encObj), branch: cfg.ghBranch };
-          if (sha) body.sha = sha;
-          await fetch(apiUrl, { method: 'PUT', headers, body: JSON.stringify(body) });
-        } catch (_) {}
+          const payload = { message: 'Sync encrypted customer orders vault', content: utf8ToBase64(encObj), branch: cfg.ghBranch };
+          if (sha) payload.sha = sha;
+          const put = await fetch(apiUrl, { method: 'PUT', headers, body: JSON.stringify(payload) });
+          return put.ok;
+        } catch (_) { return false; }
       }
 
       function emptyAccountingVault(){return {version:1,updatedAt:0,productCostHistory:{},entries:[],receiptBlobs:{}};}
@@ -4401,7 +4405,7 @@ function mountCustomerDirectory(body){
           });
 
         } else if (currentAdminTab === 'registrations') {
-          const regs = adminOrders.filter(o => o.kind === 'registration').slice().sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
+          const regs = adminOrders.filter(o => o.kind === 'registration' && o.deleted !== true).slice().sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
           const normalizeRegSearch = value => toEnDigits(String(value||'')).toLowerCase().replace(/ي/g,'ی').replace(/ك/g,'ک').trim();
           const regSearchTexts = regs.map(r=>normalizeRegSearch([r.username,r.customerName,r.cafeName,r.phone,r.address].join(' ')));
           body.innerHTML = `
@@ -4409,7 +4413,10 @@ function mountCustomerDirectory(body){
               <div style="font-size:13px;font-weight:700">
                 فهرست مشتریان و کافه‌هایی که در صفحه اول فرم «ثبت نام همکاری» را پر کرده‌اند (${toFa(regs.length)} مورد):
               </div>
-              <button type="button" class="icon-btn" id="btnRefreshRegs">🔄 بررسی ثبت‌نام جدید</button>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button type="button" class="icon-btn" id="btnRefreshRegs">🔄 بررسی ثبت‌نام جدید</button>
+                <button type="button" class="icon-btn btn-danger" id="btnClearOldRegistrations" ${regs.length?'':'disabled'} title="فقط ثبت‌نام‌های قدیمی را پاک می‌کند؛ سفارش‌ها را دست‌نخورده می‌گذارد.">پاک‌سازی ثبت‌نام‌های قدیمی (${toFa(regs.length)})</button>
+              </div>
             </div>
             <label style="display:block;margin-bottom:12px;font-size:13px">جست‌وجوی مشتری، کافه، نام کاربری، تلفن یا نشانی<input id="customerRegistrationSearch" type="search" autocomplete="off" placeholder="نام یا شماره را وارد کنید" style="display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:10px;border:1px solid var(--border);border-radius:9px"></label>
             <div id="registrationSearchCount" role="status" aria-live="polite" style="font-size:12px;margin-bottom:10px"></div>
@@ -4464,6 +4471,30 @@ function mountCustomerDirectory(body){
             document.getElementById('btnRefreshRegs').textContent = 'در حال دریافت...';
             await fetchLiveOrdersFromRelay();
             renderAdminTab();
+          });
+          const clearOldRegsBtn=document.getElementById('btnClearOldRegistrations');
+          clearOldRegsBtn.addEventListener('click',async()=>{
+            if(clearOldRegsBtn.disabled)return;
+            const cfg=detectCloudRepo();
+            if(!unlockedAdminPassword||!cfg.token||!cfg.ghOwner||!cfg.ghRepo){document.getElementById('adminToast').textContent='برای پاک‌سازی دائمی، پنل مدیریت و اتصال مخزن را باز و آماده کنید.';return;}
+            clearOldRegsBtn.disabled=true;clearOldRegsBtn.textContent='در حال همگام‌سازی…';
+            try{
+              await fetchLiveOrdersFromRelay();
+              const targets=adminOrders.filter(o=>o.kind==='registration'&&o.deleted!==true);
+              if(!targets.length){document.getElementById('adminToast').textContent='ثبت‌نام قدیمی برای پاک‌سازی پیدا نشد.';renderAdminTab();return;}
+              if(targets.some(r=>typeof r.id!=='string'||!r.id)){document.getElementById('adminToast').textContent='پاک‌سازی متوقف شد؛ یکی از رکوردها شناسهٔ معتبر ندارد.';return;}
+              if(!window.confirm('تعداد '+toFa(targets.length)+' ثبت‌نام قدیمی از فهرست و آرشیو رمزگذاری‌شده پاک شود؟ سفارش‌ها دست‌نخورده می‌مانند.'))return;
+              if(!window.confirm('تأیید نهایی: پاک‌سازی ثبت‌نام‌های قدیمی قابل بازگشت نیست. ادامه می‌دهید؟'))return;
+              const before=adminOrders.slice(),deletedAt=Date.now();
+              adminOrders=adminOrders.filter(o=>!(o.kind==='registration'&&o.deleted!==true));
+              adminOrders.push(...targets.map(r=>({kind:'registration',id:r.id,deleted:true,deletedAt,status:'done'})));
+              localStorage.setItem('lotus_admin_orders_cache_v1',JSON.stringify(adminOrders));updateOrderBadges();
+              const saved=await saveOrdersVaultToGithub();
+              if(!saved){adminOrders=before;localStorage.setItem('lotus_admin_orders_cache_v1',JSON.stringify(adminOrders));updateOrderBadges();throw Error('ذخیرهٔ آرشیو ناموفق بود؛ داده‌های محلی بازگردانده شدند. تنظیم اتصال GitHub را بررسی کنید.');}
+              document.getElementById('adminToast').textContent='ثبت‌نام‌های قدیمی از فهرست و آرشیو رمزگذاری‌شده پاک شدند؛ سفارش‌ها باقی ماندند.';
+              renderAdminTab();
+            }catch(err){document.getElementById('adminToast').textContent=err.message||'پاک‌سازی انجام نشد؛ داده‌ها حفظ شدند.';}
+            finally{if(clearOldRegsBtn.isConnected){clearOldRegsBtn.disabled=false;clearOldRegsBtn.textContent='پاک‌سازی ثبت‌نام‌های قدیمی';}}
           });
           body.querySelectorAll('.btn-apply-acct').forEach(btn => {
             btn.addEventListener('click', async () => {
@@ -5628,5 +5659,5 @@ function mountCustomerDirectory(body){
       setTimeout(signalSplashAppReady,4500);
     })();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5030d4849f7c5cf',t:'MTc5Mjk1MDUwMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5031732ead1c5cf',t:'MTc5Mjk1MDkwOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a50322cdcec31ac7',t:'MTc5Mjk1MTM4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a55f9ef74c9437cc',t:'MTc5MzkyMTE2MA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a55f9ef74c9437cc',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5030d4849f7c5cf',t:'MTc5Mjk1MDUwMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5031732ead1c5cf',t:'MTc5Mjk1MDkwOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a50322cdcec31ac7',t:'MTc5Mjk1MTM4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
