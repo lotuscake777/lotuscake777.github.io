@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1793985034150,
+  "updatedAt": 1793985153937,
   "cloud": {
     "ghOwner": "lotuscake777",
     "ghRepo": "lotuscake777.github.io",
@@ -43,7 +43,7 @@ window.MENU_DATA = {
       "category": "cakes",
       "name": "کیک اسنیکرز",
       "desc": "خامه شکلاتی شیری، دریپ سس کارامل دست‌ساز و بادام‌زمینی کاراملی",
-      "serving": "قالب سایز ۲۰ / ۸ اسلایس",
+      "serving": "۸ اسلایس",
       "price": "1600000",
       "image": "assets/images/k01-snickers.jpg",
       "available": true,
