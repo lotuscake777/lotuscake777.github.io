@@ -844,7 +844,8 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     /* Product details fit ordinary viewports; unusually long content can still scroll. */
     #detailModal { padding:12px; }
     #detailModal .modal-card { max-width:500px; max-height:calc(100vh - 24px); max-height:calc(100dvh - 24px); }
-    #detailModal .modal-img { aspect-ratio:auto; height:clamp(105px, 30vh, 290px); height:clamp(105px, 30dvh, 290px); overflow:hidden; }
+    #detailModal .modal-img { aspect-ratio:auto; height:clamp(220px, 42vh, 380px); height:clamp(220px, 42dvh, 380px); overflow:hidden; }
+    #detailModal .modal-img img { object-fit:contain; }
     #detailModal .modal-content { padding:12px 16px 14px; }
     #detailModal .modal-meta { margin-bottom:3px; gap:7px; }
     #detailModal .modal-title { font-size:17px; line-height:1.4; }
@@ -854,7 +855,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     #detailModal #mAddCartBtn { min-width:0; height:44px; }
     #detailModal #mFavoriteBtn { width:44px; height:44px; }
     #detailModal #mFavoriteBtn .heart-icon { width:24px; height:24px; }
-    @media(max-height:600px) { #detailModal .modal-img { height:clamp(85px, 24vh, 140px); height:clamp(85px, 24dvh, 140px); } #detailModal .modal-content { padding:8px 12px 10px; } }
+    @media(max-height:600px) { #detailModal .modal-img { height:clamp(200px, 45vh, 270px); height:clamp(200px, 45dvh, 270px); } #detailModal .modal-content { padding:8px 12px 10px; } }
 
     /* SPACIOUS TALL OWNER ADMIN PANEL — ZERO SQUISHING GUARANTEED */
     .admin-modal {
@@ -951,6 +952,10 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
 
     .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
     @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+    #customerSignupForm .field { min-width:0; }
+    #customerSignupForm .field input { box-sizing:border-box; height:48px; min-width:0; }
+    #customerSignupForm .pass-wrap { width:100%; }
+
 
     .field label {
       display: block;
@@ -3355,7 +3360,7 @@ function renderDatabaseAccount(body){
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
             <div style="display:flex;gap:6px">
               <button type="button" class="tab-pill ${mode === 'login' ? 'active' : ''}" id="authTabLogin">🔑 ورود به حساب</button>
-              <button type="button" class="tab-pill ${mode === 'signup' ? 'active' : ''}" id="authTabSignup">📝 ثبت نام جدید</button>
+              <button type="button" class="tab-pill ${mode === 'signup' ? 'active' : ''}" id="authTabSignup">📝 ثبت نام</button>
             </div>
             <button type="button" class="icon-btn" id="btnCloseRegisterModal" style="height:32px;padding:0 10px">&times;</button>
           </div>
@@ -3411,7 +3416,7 @@ function renderDatabaseAccount(body){
                 <label>نام کافه <span style="color:#DC2626">*</span></label>
                 <input autocomplete="off" id="reg_cafe" value="${escapeHtml(vip ? vip.name : '')}" placeholder="مثلاً کافه لمیز">
               </div>
-              <div class="field" style="grid-column:1/-1">
+              <div class="field">
                 <label>شماره تلفن تماس <span style="color:#DC2626">*</span></label>
                 <input autocomplete="off" dir="ltr" type="tel" id="reg_phone" placeholder="0912xxxxxxx">
               </div>
@@ -4695,10 +4700,10 @@ function mountPublicRegistrationDirectory(body){
  const active=()=>root.isConnected&&((currentAdminTab==='registrations'&&root.closest('#adminBody')&&!document.getElementById('adminModal').classList.contains('hidden'))||(root.closest('#publicRegistrationsModal')&&!document.getElementById('publicRegistrationsModal').classList.contains('hidden')));
  async function load(){
   const ticket=++serial;$('publicRegistrationRows').textContent='';$('publicRegistrationPages').hidden=true;$('publicRegistrationStatus').textContent='در حال دریافت ثبت‌نام‌ها…';
-  try{const r=await fetch('https://pwmdixtmkqzutaaulozl.supabase.co/rest/v1/rpc/lotus_public_customer_registrations',{method:'POST',headers:{'apikey':'sb_publishable_CuJkFbCWZLqkiPUfL__fgA_3n67OUS7','authorization':'Bearer sb_publishable_CuJkFbCWZLqkiPUfL__fgA_3n67OUS7','Content-Type':'application/json'},body:JSON.stringify({p_query:query,p_limit:26,p_offset:offset}),credentials:'omit',cache:'no-store'});
+  try{const r=await fetch('https://pwmdixtmkqzutaaulozl.supabase.co/rest/v1/rpc/lotus_public_customer_registrations_v2',{method:'POST',headers:{'apikey':'sb_publishable_CuJkFbCWZLqkiPUfL__fgA_3n67OUS7','authorization':'Bearer sb_publishable_CuJkFbCWZLqkiPUfL__fgA_3n67OUS7','Content-Type':'application/json'},body:JSON.stringify({p_query:query,p_limit:26,p_offset:offset}),credentials:'omit',cache:'no-store'});
    if(!r.ok)throw Error();const data=await r.json();if(!active()||ticket!==serial)return;
    if(!Array.isArray(data)||data.length>26)throw Error();const rows=data.slice(0,25);
-   $('publicRegistrationRows').innerHTML=rows.map(c=>`<article class="order-card-admin"><strong>${escapeHtml(c.full_name||'—')}</strong><div>کافه: ${escapeHtml(c.cafe_name||'—')}</div><div>نام کاربری: <bdi>@${escapeHtml(c.username||'—')}</bdi></div><div>تلفن: <bdi>${escapeHtml(c.phone||'—')}</bdi></div><div>آدرس: ${escapeHtml(c.address||'—')}</div><div>تاریخ ثبت‌نام: ${formatPersianDate(c.created_at,{time:true})}</div></article>`).join('');
+   $('publicRegistrationRows').innerHTML=rows.map(c=>`<article class="order-card-admin"><strong>${escapeHtml(c.full_name||'—')}</strong><div>کافه: ${escapeHtml(c.cafe_name||'—')}</div><div>نام کاربری: <bdi>@${escapeHtml(c.username||'—')}</bdi></div><div>تلفن: <bdi>${escapeHtml(c.phone||'—')}</bdi></div><div>آدرس: ${escapeHtml(c.address||'—')}</div><div>تاریخ تولد شمسی: <bdi>${c.birthdate_jalali?escapeHtml(toFa(c.birthdate_jalali)):'ثبت نشده'}</bdi></div><div>تاریخ ثبت‌نام: ${formatPersianDate(c.created_at,{time:true})}</div></article>`).join('');
    $('publicRegistrationStatus').textContent=rows.length?'نمایش '+toFa(rows.length)+' مشتری از ردیف '+toFa(offset+1):'موردی یافت نشد.';
    $('publicRegistrationPrev').disabled=offset===0;$('publicRegistrationNext').disabled=data.length<=25;$('publicRegistrationPages').hidden=false;
   }catch(_){if(active()&&ticket===serial)$('publicRegistrationStatus').textContent='دریافت ثبت‌نام‌ها انجام نشد؛ اتصال را بررسی و دوباره تلاش کنید.';}
