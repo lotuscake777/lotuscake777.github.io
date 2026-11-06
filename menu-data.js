@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1793985153937,
+  "updatedAt": 1793985239082,
   "cloud": {
     "ghOwner": "lotuscake777",
     "ghRepo": "lotuscake777.github.io",
@@ -60,7 +60,11 @@ window.MENU_DATA = {
       "image": "assets/images/custom_k02_1793751809831.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
+      "images": [
+        "assets/images/custom_k02_1793751809831.jpg",
+        "assets/images/custom_k02_1793985235435_a3ynpq.jpg"
+      ]
     },
     {
       "id": "k03",
