@@ -14,7 +14,7 @@ function takeRecoveryToken(location, history) {
   return token;
 }
 function validPassword(value) {
-  return typeof value === 'string' && Array.from(value).length >= 12 &&
+  return typeof value === 'string' && Array.from(value).length >= 6 &&
     new TextEncoder().encode(value).length <= 72 && !/[\u0000-\u001f\u007f]/.test(value);
 }
 function createRecoveryClient(transport) {
@@ -102,7 +102,7 @@ function installCustomerRecovery({enabled=false,windowImpl=globalThis.window,doc
   const modal=documentImpl.getElementById('registerModal'),body=documentImpl.getElementById('registerModalBody');
   if(!modal||!body){token=null;return;}
   modal.classList.remove('hidden');
-  body.innerHTML='<h3 style="margin:0 0 12px">تعیین رمز تازه</h3><p data-recovery-status role="status" aria-live="polite"></p><form data-recovery-form hidden style="margin-top:16px"><label style="display:block;margin-bottom:14px;font-size:13px">رمز تازه (حداقل ۱۲ نویسه)<input data-new-password type="password" dir="ltr" autocomplete="new-password" required style="display:block;width:100%;box-sizing:border-box;margin-top:7px;padding:12px;border:1px solid var(--border);border-radius:10px;background:#fff;font:inherit"></label><label style="display:block;margin-bottom:18px;font-size:13px">تکرار رمز تازه<input data-confirm-password type="password" dir="ltr" autocomplete="new-password" required style="display:block;width:100%;box-sizing:border-box;margin-top:7px;padding:12px;border:1px solid var(--border);border-radius:10px;background:#fff;font:inherit"></label><button type="submit" class="cta-primary" style="width:100%;min-height:44px">ثبت رمز تازه</button></form><button type="button" class="cta-secondary" data-recovery-close style="margin-top:14px;padding:10px 20px;min-height:44px">بستن</button>';
+  body.innerHTML='<h3 style="margin:0 0 12px">تعیین رمز تازه</h3><p data-recovery-status role="status" aria-live="polite"></p><form data-recovery-form hidden style="margin-top:16px"><label style="display:block;margin-bottom:14px;font-size:13px">رمز تازه (حداقل ۶ نویسه)<input data-new-password type="password" dir="ltr" autocomplete="new-password" required style="display:block;width:100%;box-sizing:border-box;margin-top:7px;padding:12px;border:1px solid var(--border);border-radius:10px;background:#fff;font:inherit"></label><label style="display:block;margin-bottom:18px;font-size:13px">تکرار رمز تازه<input data-confirm-password type="password" dir="ltr" autocomplete="new-password" required style="display:block;width:100%;box-sizing:border-box;margin-top:7px;padding:12px;border:1px solid var(--border);border-radius:10px;background:#fff;font:inherit"></label><button type="submit" class="cta-primary" style="width:100%;min-height:44px">ثبت رمز تازه</button></form><button type="button" class="cta-secondary" data-recovery-close style="margin-top:14px;padding:10px 20px;min-height:44px">بستن</button>';
   const status=body.querySelector('[data-recovery-status]'),form=body.querySelector('[data-recovery-form]'),pass=body.querySelector('[data-new-password]'),confirm=body.querySelector('[data-confirm-password]'),close=body.querySelector('[data-recovery-close]');
   let busy=false,client=null;
   const active=()=>body.querySelector('[data-recovery-form]')===form&&!modal.classList.contains('hidden');
@@ -118,7 +118,7 @@ function installCustomerRecovery({enabled=false,windowImpl=globalThis.window,doc
    if(opened.status!=='ready'){status.textContent='لینک قابل استفاده نیست؛ ممکن است منقضی یا استفاده شده باشد.';return;}
    form.hidden=false;status.textContent='رمز را خودتان وارد کنید؛ برای پشتیبانی نفرستید.';
    form.addEventListener('submit',async e=>{e.preventDefault();if(busy||!active())return;const p=pass.value,c=confirm.value;
-    if(p!==c||Array.from(p).length<12||new TextEncoder().encode(p).length>72||/[\u0000-\u001f\u007f]/.test(p)){status.textContent='رمز باید حداقل ۱۲ نویسه و حداکثر ۷۲ بایت باشد و تکرار آن یکسان باشد.';return;}
+    if(p!==c||Array.from(p).length<6||new TextEncoder().encode(p).length>72||/[\u0000-\u001f\u007f]/.test(p)){status.textContent='رمز باید حداقل ۶ نویسه و حداکثر ۷۲ بایت باشد و تکرار آن یکسان باشد.';return;}
     pass.value='';confirm.value='';form.hidden=true;busy=true;close.disabled=true;status.textContent='در حال ثبت رمز و بستن نشست‌های قبلی…';
     try{const r=await client.submit(p,c);if(!active())return;status.textContent=r.status==='completed'?'رمز تازه ثبت شد و درخواست بستن نشست‌های قبلی پذیرفته شد.':r.status==='password_changed_sessions_unconfirmed'?'رمز تغییر کرد؛ بستن نشست‌های قبلی تأیید نشد. با پشتیبانی بررسی کنید.':'نتیجهٔ تغییر رمز مشخص نیست؛ دوباره ارسال نکنید. ابتدا ورود با رمز تازه را بررسی کنید.';}
     catch(_){if(active())status.textContent='نتیجه مشخص نیست؛ درخواست را تکرار نکنید.'}
@@ -2921,12 +2921,12 @@ function bindExistingCustomerForm(body,{mode,session,onLogin,onRegistered}={}){
  if(userLabel)userLabel.textContent=mode==='login'?'نام کاربری *':'نام کاربری دلخواه (فقط حروف لاتین، عدد، نقطه، خط تیره یا زیرخط) *';
  if(user)user.placeholder='مثلاً cafe_lamiz';
  if(mode==='login')error.insertAdjacentHTML('beforebegin','<p style="font-size:12px;line-height:1.9;margin:10px 0">رمز را فراموش کرده‌اید؟<br>پس از بررسی هویت توسط ادمین لینک بازیابی رمز را دریافت کنید ،پشتیبانی <a href="https://ble.ir/lotuscakesupport" target="_blank" rel="noopener noreferrer">بله</a> و <a href="https://t.me/lotuscakesupport" target="_blank" rel="noopener noreferrer">تلگرام</a></p>');
- const isSignup=mode==='signup';if(isSignup){button.textContent='ثبت‌نام و سپس ورود';const pass=q('reg_pass');pass.placeholder='حداقل ۱۲ نویسه، حداکثر ۷۲ بایت';const label=pass.closest('.field')?.querySelector('label');if(label)label.textContent='رمز عبور دلخواه (حداقل ۱۲ نویسه) *'}
+ const isSignup=mode==='signup';if(isSignup){button.textContent='ثبت‌نام و سپس ورود';const pass=q('reg_pass');pass.placeholder='حداقل ۶ نویسه، حداکثر ۷۲ بایت';const label=pass.closest('.field')?.querySelector('label');if(label)label.textContent='رمز عبور دلخواه (حداقل ۶ نویسه) *'}
  async function submit(){
   if(busy||!active())return;
   const field=id=>q(id).value;const input=isSignup?{username:field('reg_user'),password:field('reg_pass'),fullName:field('reg_name'),cafeName:field('reg_cafe'),phone:field('reg_phone'),address:field('reg_address')}:{username:field('lg_user'),password:field('lg_pass')};
   input.username=input.username.trim().toLowerCase();
-  if(!/^[a-z0-9_.-]{3,40}$/.test(input.username)||!input.password||new TextEncoder().encode(input.password).length>72||(isSignup&&(Array.from(input.password).length<12||/[\u0000-\u001f\u007f]/.test(input.password)))){show('نام کاربری معتبر نیست؛ فقط نام کاربری را وارد کنید. رمز باید دست‌کم ۱۲ نویسه و حداکثر ۷۲ بایت باشد.');return;}
+  if(!/^[a-z0-9_.-]{3,40}$/.test(input.username)||!input.password||new TextEncoder().encode(input.password).length>72||(isSignup&&(Array.from(input.password).length<6||/[\u0000-\u001f\u007f]/.test(input.password)))){show('نام کاربری معتبر نیست؛ فقط نام کاربری را وارد کنید. رمز باید دست‌کم ۶ نویسه و حداکثر ۷۲ بایت باشد.');return;}
   busy=true;button.disabled=true;error.classList.add('hidden');q(isSignup?'reg_pass':'lg_pass').value='';
   const outcome=await session[mode](input);input.password='';
   if(!active())return;
