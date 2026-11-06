@@ -623,33 +623,60 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     .favorite-button.is-favorite .heart-icon { fill:currentColor; }
     .account-nav .heart-icon { display:inline-block;vertical-align:middle;width:16px;height:16px; }
     .favorite-button:disabled { opacity:.55;cursor:wait; }
-    #registerModal .account-modal-card { max-width:900px; }
-    .account-head { display:flex;justify-content:space-between;align-items:start;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--border); }
-    .account-head h3 { font-size:21px;margin:3px 0; }
-    .account-head p,.account-hint { font-size:12px;color:var(--text-muted);line-height:1.8; }
-    .account-kicker { color:var(--accent);font-size:11px;font-weight:800; }
-    .account-layout { display:grid;grid-template-columns:190px minmax(0,1fr);gap:18px;padding-top:16px; }
-    .account-nav { display:flex;flex-direction:column;gap:5px; }
-    .account-nav button { border:0;border-radius:10px;background:transparent;color:var(--text);text-align:right;padding:11px;font:inherit;font-size:13px;cursor:pointer; }
-    .account-nav button.active { color:var(--accent);background:var(--accent-soft);font-weight:800; }
-    .account-nav #btnLogoutInsideModal { color:#aa3746;margin-top:8px;border-top:1px solid var(--border); }
-    .account-panel { padding:18px;border-radius:14px;background:var(--surface-soft);min-width:0; }
-    .account-panel h4 { font-size:16px;margin:0 0 12px; }
-    .account-fields { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px; }
-    .account-field { display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:var(--text-muted); }
-    .account-field input,.account-field textarea { width:100%;min-width:0;border:1px solid var(--border-strong);border-radius:9px;background:var(--surface);color:var(--text);padding:10px;font:inherit;font-size:13px; }
-    .account-field input[readonly] { opacity:.7; }
-    .account-actions { display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px; }
-    .account-save { width:auto;padding:0 18px;min-height:42px; }
-    .account-status { color:var(--accent);font-size:12px; }
-    .account-order,.account-favorite { background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:12px;margin:9px 0;font-size:12px;line-height:1.9; }
-    .account-order-head,.account-invoice-lines > div { display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap; }
-    .account-invoice-lines { margin:8px 0;border-block:1px solid var(--border);padding:7px 0; }
-    .account-favorite { display:flex;align-items:center;gap:10px; }
-    .account-favorite img { width:56px;height:50px;object-fit:cover;border-radius:8px; }
-    .account-favorite > div { flex:1;min-width:0; }
-    .account-pages { display:flex;gap:10px;align-items:center;justify-content:center;margin-top:12px;font-size:12px; }
-    @media(max-width:650px) { .account-layout { grid-template-columns:1fr; } .account-nav { flex-direction:row;overflow-x:auto; } .account-nav button { white-space:nowrap; } .account-nav #btnLogoutInsideModal { margin:0;border:0; } .account-panel { padding:14px; } .account-fields { grid-template-columns:1fr; } }
+    /* Full customer account page: a spacious desktop sidebar and mobile grid. */
+    body.account-page-active > #vipBanner, body.account-page-active > #mainHeaderBar,
+    body.account-page-active > #bakeStatusBar, body.account-page-active > #trustBar,
+    body.account-page-active > .sticky-controls, body.account-page-active > #menuContainer,
+    body.account-page-active > section.container, body.account-page-active > .bottom-bar { display:none !important; }
+    #accountPage { min-height:100vh; background:var(--bg); color:var(--text); padding:0 20px 56px; }
+    #accountPage .account-topbar { border-bottom:1px solid var(--border); }
+    #accountPage .account-topbar-inner { max-width:1120px;margin:auto;min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:15px; }
+    #accountPage .account-brand { display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);font-weight:800;letter-spacing:.04em; }
+    #accountPage .account-brand img { width:42px;height:42px;object-fit:contain; }
+    #accountPage .account-back { min-height:42px;padding:0 14px;border-radius:10px;background:var(--surface); }
+    #accountPage .account-wrap { max-width:1120px;margin:0 auto; }
+    #accountPage .account-head { display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding:34px 2px 24px; }
+    #accountPage .account-head h1 { font-size:clamp(22px,3vw,30px);margin:5px 0;line-height:1.4; }
+    #accountPage .account-head p,#accountPage .account-hint { font-size:13px;color:var(--text-muted);line-height:1.9; }
+    #accountPage .account-kicker { color:var(--accent);font-size:11px;font-weight:800;letter-spacing:.03em; }
+    #accountPage .account-layout { display:grid;grid-template-columns:245px minmax(0,1fr);gap:22px;align-items:start; }
+    #accountPage .account-nav { display:flex;flex-direction:column;gap:5px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-sm); }
+    #accountPage .account-nav button { border:0;border-radius:10px;background:transparent;color:var(--text);text-align:right;padding:12px;font:inherit;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:45px; }
+    #accountPage .account-nav button.active { color:var(--accent);background:var(--accent-soft);font-weight:800; }
+    #accountPage .account-nav button:focus-visible,#accountPage button:focus-visible { outline:2px solid var(--accent);outline-offset:2px; }
+    #accountPage .account-nav .account-icon { width:19px;height:19px;display:block;flex:0 0 19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round; }
+    #accountPage .account-nav #btnLogoutInsideModal { color:#a33142;margin-top:9px;border-top:1px solid var(--border);border-radius:0 0 10px 10px; }
+    #accountPage .account-panel { padding:30px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:var(--shadow-sm);min-width:0; }
+    #accountPage .account-panel h2 { font-size:19px;margin:0 0 9px; }
+    #accountPage .account-fields { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 16px;margin-top:24px; }
+    #accountPage .account-field { display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:700;color:var(--text-muted); }
+    #accountPage .account-field input,#accountPage .account-field textarea { width:100%;min-width:0;border:1px solid var(--border-strong);border-radius:10px;background:var(--bg);color:var(--text);padding:12px;font:inherit;font-size:14px; }
+    #accountPage .account-field input { min-height:47px; }
+    #accountPage .account-field input:focus,#accountPage .account-field textarea:focus { outline:2px solid var(--accent-soft);border-color:var(--accent); }
+    #accountPage .account-field input[readonly] { opacity:.75; }
+    #accountPage .account-actions { display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:24px; }
+    #accountPage .account-save { width:auto;flex:0 0 auto;padding:0 24px;min-height:46px;background:#1F6F4A;color:#fff; }
+    #accountPage .account-status { color:var(--accent);font-size:12px; }
+    #accountPage .account-order,#accountPage .account-favorite { background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:15px;margin:10px 0;font-size:13px;line-height:1.9; }
+    #accountPage .account-order-head,#accountPage .account-invoice-lines > div { display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap; }
+    #accountPage .account-invoice-lines { margin:8px 0;border-block:1px solid var(--border);padding:7px 0; }
+    #accountPage .account-favorite { display:flex;align-items:center;gap:12px; }
+    #accountPage .account-favorite img { width:64px;height:60px;object-fit:cover;border-radius:9px; }
+    #accountPage .account-favorite > div { flex:1;min-width:0;overflow-wrap:anywhere; }
+    #accountPage .account-pages { display:flex;gap:10px;align-items:center;justify-content:center;margin-top:18px;font-size:12px; }
+    @media(max-width:700px) {
+      #accountPage { padding:0 14px 36px; }
+      #accountPage .account-topbar-inner { min-height:66px; }
+      #accountPage .account-head { padding:24px 2px 18px; }
+      #accountPage .account-layout { grid-template-columns:minmax(0,1fr);gap:14px; }
+      #accountPage .account-nav { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding:8px; }
+      #accountPage .account-nav button { min-width:0;padding:10px 8px;font-size:12px;line-height:1.5; }
+      #accountPage .account-nav #btnLogoutInsideModal { margin:0;border-top:0;border-radius:10px; }
+      #accountPage .account-panel { padding:20px 16px; }
+      #accountPage .account-fields { grid-template-columns:minmax(0,1fr);gap:15px;margin-top:18px; }
+      #accountPage .account-field input,#accountPage .account-field textarea { font-size:16px; }
+      #accountPage .account-favorite { flex-wrap:wrap; }
+    }
 
     .qty-stepper {
       display: inline-flex;
@@ -1279,6 +1306,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     </div>
   </div>
 
+  <main id="accountPage" class="hidden" aria-label="حساب کاربری"></main>
   <main class="container" id="menuContainer"></main>
 
   <section class="container">
@@ -3068,10 +3096,10 @@ if(customerDbFormsEnabled&&customerProfile?.source!=='customer_database'){
 }
 const customerBrowserSession=createCustomerBrowserSession({enabled:customerDbFormsEnabled,projectUrl:'https://pwmdixtmkqzutaaulozl.supabase.co',publicKey:'sb_publishable_CuJkFbCWZLqkiPUfL__fgA_3n67OUS7',onProfile(profile){
  if(profile){customerProfile={...profile,source:'customer_database',loggedIn:true,discount:0};try{localStorage.removeItem('lotus_active_user_v2');localStorage.removeItem('lotus_customer_profile_v1')}catch(_){}}
- else if(customerProfile?.source==='customer_database'){customerProfile={loggedIn:false,username:'',name:'',cafeName:'',phone:'',address:'',discount:0};document.getElementById('registerModal').classList.add('hidden');document.getElementById('registerModalBody').textContent='';}
+ else if(customerProfile?.source==='customer_database'){customerProfile={loggedIn:false,username:'',name:'',cafeName:'',phone:'',address:'',discount:0};document.getElementById('registerModal').classList.add('hidden');document.getElementById('registerModalBody').textContent='';if(location.hash==='#account')history.replaceState(history.state,'',location.pathname+location.search);hideAccountPage();}
  favoriteIds=new Set();favoriteStatus='idle';favoriteGeneration++;favoritePending.clear();renderAll();if(profile)void refreshFavorites();
 }});
-void customerBrowserSession.restore();
+const customerRestore=customerBrowserSession.restore();
 function formatPersianDate(value,{time=false,dateOnly=false}={}){
  try{
   let d;
@@ -3110,38 +3138,68 @@ async function toggleFavorite(id){
  if(result.outcome==='ok'){if(value)favoriteIds.add(id);else favoriteIds.delete(id);showLuxuryToast(value?'به علاقه‌مندی‌ها اضافه شد.':'از علاقه‌مندی‌ها برداشته شد.');}
  else showLuxuryToast('ذخیرهٔ علاقه‌مندی انجام نشد؛ دوباره تلاش کنید.');renderAll();
 }
-function renderDatabaseAccount(body,modal){
- const p=customerBrowserSession.profile();if(!p){openRegisterModal('login');return;}
- const card=modal.querySelector('.modal-card');card.classList.add('account-modal-card');
+let accountRequestedAfterLogin=false, accountRouteTicket=0, accountReturnScroll=0;
+function hideAccountPage(){
+ const root=document.getElementById('accountPage');
+ if(!root.classList.contains('hidden')){root.classList.add('hidden');root.replaceChildren();document.body.classList.remove('account-page-active');window.scrollTo(0,accountReturnScroll);}
+}
+function returnFromAccount(){
+ accountRequestedAfterLogin=false;
+ if(location.hash==='#account'&&history.state?.lotusAccountPage){history.back();}
+ else {if(location.hash==='#account')history.replaceState(history.state,'',location.pathname+location.search);hideAccountPage();}
+}
+function showAccountPage({navigate=true}={}){
+ if(!customerBrowserSession.profile()){accountRequestedAfterLogin=true;openRegisterModal('login');return;}
+ accountRequestedAfterLogin=false;document.getElementById('registerModal').classList.add('hidden');
+ const root=document.getElementById('accountPage');
+ if(root.classList.contains('hidden'))accountReturnScroll=window.scrollY;
+ if(navigate&&location.hash!=='#account')history.pushState({...history.state,lotusAccountPage:true},'',location.pathname+location.search+'#account');
+ document.body.classList.add('account-page-active');root.classList.remove('hidden');renderDatabaseAccount(root);window.scrollTo(0,0);
+}
+function requestCustomerAccount(){if(!customerDbFormsEnabled){openRegisterModal();return;}accountRequestedAfterLogin=true;if(customerBrowserSession.profile())showAccountPage();else openRegisterModal('login');}
+async function syncAccountRoute(){
+ const ticket=++accountRouteTicket;
+ if(location.hash!=='#account'){const requested=accountRequestedAfterLogin;accountRequestedAfterLogin=false;hideAccountPage();if(requested)document.getElementById('registerModal').classList.add('hidden');return;}
+ await customerRestore;if(ticket!==accountRouteTicket||location.hash!=='#account')return;
+ if(!document.getElementById('accountPage').classList.contains('hidden'))return;
+ if(customerBrowserSession.profile())showAccountPage({navigate:false});else{accountRequestedAfterLogin=true;openRegisterModal('login');}
+}
+window.addEventListener('popstate',syncAccountRoute);
+window.addEventListener('hashchange',syncAccountRoute);
+function renderDatabaseAccount(body){
+ const p=customerBrowserSession.profile();if(!p){requestCustomerAccount();return;}
  let tab='profile',details=null,draft={first:'',last:'',cafe:p.cafeName,phone:p.phone,address:p.address,email:'',birth:''},page=0,orders=null,hasMore=false,serial=0,busy=false;
- const isActive=()=>body.isConnected&&body.contains(panel)&&!modal.classList.contains('hidden')&&customerBrowserSession.profile()?.id===p.id;
+ const isActive=()=>body.isConnected&&body.contains(panel)&&!body.classList.contains('hidden')&&customerBrowserSession.profile()?.id===p.id;
  const paymentLabel=m=>({full:'تسویه کامل پیش از تحویل',half:'نصف اکنون، نصف هنگام تحویل',delivery:'تسویه کامل هنگام تحویل'}[m]||'—');
- body.innerHTML=`<div class="account-head"><div><span class="account-kicker">حساب مشتری</span><h3>حساب کاربری من</h3><p>${escapeHtml(p.name)} · <span dir="ltr">${escapeHtml(p.phone)}</span></p></div><button type="button" class="icon-btn" id="btnCloseRegisterModal">بستن ×</button></div><div class="account-layout"><nav class="account-nav" aria-label="بخش‌های حساب"><button type="button" data-account-tab="profile">👤 اطلاعات حساب</button><button type="button" data-account-tab="orders">📦 سفارش‌های من</button><button type="button" data-account-tab="favorites">${heartIcon()} علاقه‌مندی‌ها</button><button type="button" data-account-tab="address">⌖ آدرس</button><button type="button" data-account-tab="invoices">▤ صورت‌حساب سفارش‌ها</button><button type="button" id="btnLogoutInsideModal">خروج از حساب</button></nav><section id="accountPanel" class="account-panel" aria-live="polite"></section></div>`;
+ const icon=(path)=>`<svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
+ const icons={profile:icon('<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-3.6 3.1-5.5 7-5.5s6.3 1.9 7 5.5"/>'),orders:icon('<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 5a4 4 0 0 1 8 0M8 11h8M8 15h5"/>'),favorites:icon('<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>'),address:icon('<path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0z"/><circle cx="12" cy="10" r="2.3"/>'),invoices:icon('<path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h4"/>'),logout:icon('<path d="M10 4H5v16h5M14 8l4 4-4 4M9 12h9"/>')};
+ const logo=state.design?.logoImage||'assets/images/logo-lotus-cake-original.png';
+ body.innerHTML=`<div class="account-topbar"><div class="account-topbar-inner"><div class="account-brand"><img src="${escapeHtml(logo)}" alt=""><span dir="ltr">LOTUS CAKE</span></div><button type="button" class="icon-btn account-back" id="btnAccountBack">بازگشت به منو ←</button></div></div><div class="account-wrap"><header class="account-head"><div><span class="account-kicker">حساب مشتری</span><h1>حساب کاربری من</h1><p>${escapeHtml(p.name)} · <bdi dir="ltr">${escapeHtml(p.phone)}</bdi></p></div></header><div class="account-layout"><nav class="account-nav" aria-label="بخش‌های حساب"><button type="button" data-account-tab="profile">${icons.profile}<span>اطلاعات حساب</span></button><button type="button" data-account-tab="orders">${icons.orders}<span>سفارش‌های من</span></button><button type="button" data-account-tab="favorites">${icons.favorites}<span>علاقه‌مندی‌ها</span></button><button type="button" data-account-tab="address">${icons.address}<span>آدرس</span></button><button type="button" data-account-tab="invoices">${icons.invoices}<span>صورت‌حساب سفارش‌ها</span></button><button type="button" id="btnLogoutInsideModal">${icons.logout}<span>خروج از حساب</span></button></nav><section id="accountPanel" class="account-panel" aria-live="polite"></section></div></div>`;
  const panel=body.querySelector('#accountPanel');
- body.querySelector('#btnCloseRegisterModal').onclick=()=>{modal.classList.add('hidden');card.classList.remove('account-modal-card')};
- body.querySelector('#btnLogoutInsideModal').onclick=()=>{modal.classList.add('hidden');card.classList.remove('account-modal-card');logoutCustomerAccount()};
+ body.querySelector('#btnAccountBack').onclick=returnFromAccount;
+ body.querySelector('#btnLogoutInsideModal').onclick=()=>{accountRequestedAfterLogin=false;if(location.hash==='#account')history.replaceState(history.state,'',location.pathname+location.search);hideAccountPage();logoutCustomerAccount()};
  function capture(){panel.querySelectorAll('[data-account-field]').forEach(e=>{draft[e.dataset.accountField]=e.value});}
  body.querySelectorAll('[data-account-tab]').forEach(b=>b.addEventListener('click',()=>{capture();tab=b.dataset.accountTab;page=0;orders=null;draw()}));
  const field=(label,key,opts={})=>`<label class="account-field"><span>${label}</span><input data-account-field="${key}" value="${escapeHtml(key==='birth'?toFa(draft[key]):draft[key])}" ${opts.type?'type="'+opts.type+'"':''} ${opts.dir?'dir="ltr"':''} ${opts.placeholder?'placeholder="'+opts.placeholder+'"':''} autocomplete="off"></label>`;
  function saveButton(){return `<div class="account-actions"><button type="button" class="cta-primary account-save" ${busy?'disabled':''}>ذخیره تغییرات</button><span class="account-status" role="status"></span></div>`;}
- async function loadOrders(){const ticket=++serial;panel.innerHTML='<h4>'+ (tab==='orders'?'سفارش‌های من':'صورت‌حساب سفارش‌ها')+'</h4><p>در حال دریافت…</p>';const result=await customerBrowserSession.listOrders(page*10);if(!isActive()||ticket!==serial||!['orders','invoices'].includes(tab))return;if(result.outcome!=='ok'){panel.innerHTML='<p>دریافت سفارش‌ها ناموفق بود. دوباره تلاش کنید.</p><button type="button" class="icon-btn" id="accountRetry">تلاش مجدد</button>';panel.querySelector('#accountRetry').onclick=loadOrders;return;}orders=result.orders.slice(0,10);hasMore=result.orders.length>10;draw();}
+ async function loadOrders(){const ticket=++serial;panel.innerHTML='<h2>'+ (tab==='orders'?'سفارش‌های من':'صورت‌حساب سفارش‌ها')+'</h2><p>در حال دریافت…</p>';const result=await customerBrowserSession.listOrders(page*10);if(!isActive()||ticket!==serial||!['orders','invoices'].includes(tab))return;if(result.outcome!=='ok'){panel.innerHTML='<p>دریافت سفارش‌ها ناموفق بود. دوباره تلاش کنید.</p><button type="button" class="icon-btn" id="accountRetry">تلاش مجدد</button>';panel.querySelector('#accountRetry').onclick=loadOrders;return;}orders=result.orders.slice(0,10);hasMore=result.orders.length>10;draw();}
  function draw(){
   if(!isActive())return;serial++;body.querySelectorAll('[data-account-tab]').forEach(b=>{const selected=b.dataset.accountTab===tab;b.classList.toggle('active',selected);b.setAttribute('aria-current',selected?'page':'false')});
   if(!details){panel.innerHTML='<p>در حال دریافت اطلاعات حساب…</p>';return;}
   if(tab==='profile'){
    const savedName=customerBrowserSession.profile()?.name||p.name;
-   panel.innerHTML=`<h4>اطلاعات حساب</h4><p class="account-hint">نام ثبت‌شدهٔ فعلی: ${escapeHtml(savedName)}. اگر نام و نام خانوادگی را جدا وارد نکنید، نام قبلی حفظ می‌شود.</p><div class="account-fields">${field('نام','first',{placeholder:'اختیاری'})}${field('نام خانوادگی','last',{placeholder:'اختیاری'})}${field('نام کافه *','cafe')}${field('تلفن *','phone',{type:'tel',dir:true})}<label class="account-field"><span>نام کاربری</span><input value="${escapeHtml(p.username)}" dir="ltr" readonly></label>${field('ایمیل تماس (اختیاری)','email',{type:'email',dir:true})}${field('تاریخ تولد شمسی (اختیاری)','birth',{dir:true,placeholder:'۱۳۷۰/۰۱/۰۱'})}</div><p class="account-hint">ایمیل تماس برای ورود استفاده نمی‌شود.</p>${saveButton()}`;
+   panel.innerHTML=`<h2>اطلاعات حساب</h2><p class="account-hint">نام ثبت‌شدهٔ فعلی: ${escapeHtml(savedName)}. اگر نام و نام خانوادگی را جدا وارد نکنید، نام قبلی حفظ می‌شود.</p><div class="account-fields">${field('نام','first',{placeholder:'اختیاری'})}${field('نام خانوادگی','last',{placeholder:'اختیاری'})}${field('نام کافه *','cafe')}${field('تلفن *','phone',{type:'tel',dir:true})}<label class="account-field"><span>نام کاربری</span><input value="${escapeHtml(p.username)}" dir="ltr" readonly></label>${field('ایمیل تماس (اختیاری)','email',{type:'email',dir:true})}${field('تاریخ تولد شمسی (اختیاری)','birth',{dir:true,placeholder:'۱۳۷۰/۰۱/۰۱'})}</div><p class="account-hint">ایمیل تماس برای ورود استفاده نمی‌شود.</p>${saveButton()}`;
   }else if(tab==='address'){
-   panel.innerHTML=`<h4>آدرس تحویل</h4><p class="account-hint">این آدرس برای سفارش‌های بعدی استفاده می‌شود؛ آدرس سفارش‌های قبلی تغییر نمی‌کند.</p><label class="account-field"><span>آدرس *</span><textarea data-account-field="address" rows="4">${escapeHtml(draft.address)}</textarea></label>${saveButton()}`;
+   panel.innerHTML=`<h2>آدرس تحویل</h2><p class="account-hint">این آدرس برای سفارش‌های بعدی استفاده می‌شود؛ آدرس سفارش‌های قبلی تغییر نمی‌کند.</p><label class="account-field"><span>آدرس *</span><textarea data-account-field="address" rows="4">${escapeHtml(draft.address)}</textarea></label>${saveButton()}`;
   }else if(tab==='favorites'){
-   if(favoriteStatus!=='ready'){panel.innerHTML='<h4>علاقه‌مندی‌ها</h4><p>در حال دریافت علاقه‌مندی‌ها…</p>';refreshFavorites().then(()=>{if(isActive()&&tab==='favorites'){if(favoriteStatus==='ready')draw();else{panel.innerHTML='<p>دریافت علاقه‌مندی‌ها ناموفق بود.</p><button type="button" class="icon-btn" id="accountRetry">تلاش مجدد</button>';panel.querySelector('#accountRetry').onclick=draw;}}});return;}
+   if(favoriteStatus!=='ready'){panel.innerHTML='<h2>علاقه‌مندی‌ها</h2><p>در حال دریافت علاقه‌مندی‌ها…</p>';refreshFavorites().then(()=>{if(isActive()&&tab==='favorites'){if(favoriteStatus==='ready')draw();else{panel.innerHTML='<p>دریافت علاقه‌مندی‌ها ناموفق بود.</p><button type="button" class="icon-btn" id="accountRetry">تلاش مجدد</button>';panel.querySelector('#accountRetry').onclick=draw;}}});return;}
    const available=state.items.filter(i=>favoriteIds.has(i.id)),missing=[...favoriteIds].filter(id=>!state.items.some(i=>i.id===id));
-   panel.innerHTML=`<h4>علاقه‌مندی‌ها</h4>${available.length?available.map(i=>`<div class="account-favorite"><img src="${escapeHtml(productImagePreview(i.image))}" alt=""><div><strong>${escapeHtml(i.name)}</strong><div>${formatPriceFa(getEffectivePriceNum(i))} تومان</div></div><button type="button" class="favorite-button is-favorite" data-account-unfavorite="${escapeHtml(i.id)}" aria-label="حذف ${escapeHtml(i.name)} از علاقه‌مندی‌ها">${heartIcon()}</button>${i.available!==false?`<button type="button" class="icon-btn" data-account-add="${escapeHtml(i.id)}">+ سفارش</button>`:'<small>ناموجود</small>'}</div>`).join(''):'<p>هنوز محصولی به علاقه‌مندی‌ها اضافه نشده است.</p>'}${missing.length?'<p class="account-hint">برخی محصولات ذخیره‌شده دیگر در منو نیستند.</p>':''}`;
+   panel.innerHTML=`<h2>علاقه‌مندی‌ها</h2>${available.length?available.map(i=>`<div class="account-favorite"><img src="${escapeHtml(productImagePreview(i.image))}" alt=""><div><strong>${escapeHtml(i.name)}</strong><div>${formatPriceFa(getEffectivePriceNum(i))} تومان</div></div><button type="button" class="favorite-button is-favorite" data-account-unfavorite="${escapeHtml(i.id)}" aria-label="حذف ${escapeHtml(i.name)} از علاقه‌مندی‌ها">${heartIcon()}</button>${i.available!==false?`<button type="button" class="icon-btn" data-account-add="${escapeHtml(i.id)}">+ سفارش</button>`:'<small>ناموجود</small>'}</div>`).join(''):'<p>هنوز محصولی به علاقه‌مندی‌ها اضافه نشده است.</p>'}${missing.length?'<p class="account-hint">برخی محصولات ذخیره‌شده دیگر در منو نیستند.</p>':''}`;
    panel.querySelectorAll('[data-account-unfavorite]').forEach(b=>b.onclick=async()=>{b.disabled=true;await toggleFavorite(b.dataset.accountUnfavorite);if(isActive()&&tab==='favorites')draw()});
    panel.querySelectorAll('[data-account-add]').forEach(b=>b.onclick=()=>{changeCartQty(b.dataset.accountAdd,1);showLuxuryToast('به سبد سفارش اضافه شد.')});
   }else{
    if(!orders){loadOrders();return;}
-   panel.innerHTML=`<h4>${tab==='orders'?'سفارش‌های من':'صورت‌حساب سفارش‌ها'}</h4>${orders.length?orders.map(o=>`<article class="account-order"><div class="account-order-head"><strong>سفارش ${escapeHtml(o.orderCode)}</strong><span>${formatPersianDate(o.createdAt,{time:true})}</span></div><div>تحویل: ${o.deliveryDate?formatPersianDate(o.deliveryDate,{dateOnly:true}):'—'} ${escapeHtml(o.deliverySlot)}</div>${tab==='invoices'?`<div class="account-invoice-lines">${o.items.map(i=>`<div><span>${escapeHtml(i.name)} × ${toFa(i.qty)}</span><span>${formatPriceFa(i.lineTotal)} تومان</span></div>`).join('')}</div>`:`<div>${o.items.map(i=>escapeHtml(i.name)+' × '+toFa(i.qty)).join('، ')}</div>`}<div><strong>جمع: ${formatPriceFa(o.total)} تومان</strong> · روش تسویه: ${paymentLabel(o.paymentMethod)}</div></article>`).join(''):'<p>هنوز سفارشی برای این حساب ثبت نشده است.</p>'}<div class="account-pages"><button type="button" class="icon-btn" id="accountPrev" ${page===0?'disabled':''}>صفحهٔ قبل</button><span>صفحهٔ ${toFa(page+1)}</span><button type="button" class="icon-btn" id="accountNext" ${!hasMore?'disabled':''}>صفحهٔ بعد</button></div>`;
+   panel.innerHTML=`<h2>${tab==='orders'?'سفارش‌های من':'صورت‌حساب سفارش‌ها'}</h2>${orders.length?orders.map(o=>`<article class="account-order"><div class="account-order-head"><strong>سفارش ${escapeHtml(o.orderCode)}</strong><span>${formatPersianDate(o.createdAt,{time:true})}</span></div><div>تحویل: ${o.deliveryDate?formatPersianDate(o.deliveryDate,{dateOnly:true}):'—'} ${escapeHtml(o.deliverySlot)}</div>${tab==='invoices'?`<div class="account-invoice-lines">${o.items.map(i=>`<div><span>${escapeHtml(i.name)} × ${toFa(i.qty)}</span><span>${formatPriceFa(i.lineTotal)} تومان</span></div>`).join('')}</div>`:`<div>${o.items.map(i=>escapeHtml(i.name)+' × '+toFa(i.qty)).join('، ')}</div>`}<div><strong>جمع: ${formatPriceFa(o.total)} تومان</strong> · روش تسویه: ${paymentLabel(o.paymentMethod)}</div></article>`).join(''):'<p>هنوز سفارشی برای این حساب ثبت نشده است.</p>'}<div class="account-pages"><button type="button" class="icon-btn" id="accountPrev" ${page===0?'disabled':''}>صفحهٔ قبل</button><span>صفحهٔ ${toFa(page+1)}</span><button type="button" class="icon-btn" id="accountNext" ${!hasMore?'disabled':''}>صفحهٔ بعد</button></div>`;
    panel.querySelector('#accountPrev').onclick=()=>{page--;orders=null;draw()};panel.querySelector('#accountNext').onclick=()=>{page++;orders=null;draw()};
   }
   const save=panel.querySelector('.account-save');if(save)save.onclick=async()=>{
@@ -3150,12 +3208,12 @@ function renderDatabaseAccount(body,modal){
    if(!cafe||cafe.length>120||!/^\+?\d{7,25}$/.test(phone)||!address||address.length>500){status.textContent='نام کافه، شماره تلفن معتبر و آدرس را کامل کنید.';return;}
    if(email&&(email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))){status.textContent='ایمیل معتبر وارد کنید یا آن را خالی بگذارید.';return;}
    if(birth===null){status.textContent='تاریخ تولد شمسی معتبر مانند ۱۳۷۰/۰۱/۰۱ وارد کنید.';return;}
-   busy=true;save.disabled=true;status.textContent='در حال ذخیره…';const result=await customerBrowserSession.saveAccount({first:fn,last:ln,cafe,phone,address,email,birth});busy=false;
-   if(!isActive())return;if(result.outcome!=='ok'){if(status.isConnected){status.textContent='ذخیره انجام نشد؛ دوباره تلاش کنید.';save.disabled=false}return;}
+   busy=true;save.disabled=true;body.querySelectorAll('[data-account-tab]').forEach(b=>b.disabled=true);status.textContent='در حال ذخیره…';const result=await customerBrowserSession.saveAccount({first:fn,last:ln,cafe,phone,address,email,birth});busy=false;
+   if(!isActive())return;body.querySelectorAll('[data-account-tab]').forEach(b=>b.disabled=false);if(result.outcome!=='ok'){if(status.isConnected){status.textContent='ذخیره انجام نشد؛ دوباره تلاش کنید.';save.disabled=false}return;}
    draft={first:fn,last:ln,cafe,phone,address,email,birth};body.querySelector('.account-head p').innerHTML=escapeHtml(result.profile.name)+' · <span dir="ltr">'+escapeHtml(result.profile.phone)+'</span>';draw();panel.querySelector('.account-status').textContent='تغییرات ذخیره شد.';
   };
  }
- draw();customerBrowserSession.getAccountDetails().then(r=>{if(!isActive())return;if(r.outcome!=='ok'){panel.innerHTML='<p>دریافت اطلاعات حساب ناموفق بود.</p><button type="button" class="icon-btn" id="accountReload">تلاش مجدد</button>';panel.querySelector('#accountReload').onclick=()=>renderDatabaseAccount(body,modal);return;}details=r.details;Object.assign(draft,{first:details.first,last:details.last,email:details.email,birth:details.birth});draw()});
+ draw();customerBrowserSession.getAccountDetails().then(r=>{if(!isActive())return;if(r.outcome!=='ok'){panel.innerHTML='<p>دریافت اطلاعات حساب ناموفق بود.</p><button type="button" class="icon-btn" id="accountReload">تلاش مجدد</button>';panel.querySelector('#accountReload').onclick=()=>renderDatabaseAccount(body);return;}details=r.details;Object.assign(draft,{first:details.first,last:details.last,email:details.email,birth:details.birth});draw()});
 }
 
 
@@ -3175,11 +3233,9 @@ function renderDatabaseAccount(body,modal){
         if(customerDbFormsEnabled)customerBrowserSession.cancelPending();
         const modal = document.getElementById('registerModal');
         const body = document.getElementById('registerModalBody');
-        modal.querySelector('.modal-card').classList.remove('account-modal-card');
         const vip = getActiveVip();
+        if(customerDbFormsEnabled&&customerProfile?.source==='customer_database'&&!initialTab){showAccountPage();return;}
         modal.classList.remove('hidden');
-
-        if(customerDbFormsEnabled&&customerProfile?.source==='customer_database'&&!initialTab){renderDatabaseAccount(body,modal);return;}
 
         // If already logged in -> show Account Profile + Logout Button!
         if (customerProfile && customerProfile.loggedIn && !initialTab) {
@@ -3322,13 +3378,13 @@ function renderDatabaseAccount(body,modal){
         // Prevent implicit browser navigation; existing click/Enter handlers perform authentication.
         body.querySelector('form').addEventListener('submit',e=>e.preventDefault());
         attachPasswordEyeToggles(body);
-        document.getElementById('btnCloseRegisterModal').addEventListener('click', () => {if(customerDbFormsEnabled)customerBrowserSession.cancelPending();modal.classList.add('hidden')});
+        document.getElementById('btnCloseRegisterModal').addEventListener('click', () => {if(customerDbFormsEnabled)customerBrowserSession.cancelPending();modal.classList.add('hidden');if(accountRequestedAfterLogin){accountRequestedAfterLogin=false;if(location.hash==='#account')history.replaceState(history.state,'',location.pathname+location.search)}});
         document.getElementById('authTabLogin').addEventListener('click', () => openRegisterModal('login'));
         document.getElementById('authTabSignup').addEventListener('click', () => openRegisterModal('signup'));
 
         if(customerDbFormsEnabled){
           if(mode==='login')document.getElementById('linkGoSignup').addEventListener('click',()=>openRegisterModal('signup'));
-          bindExistingCustomerForm(body,{mode,session:customerBrowserSession,onLogin(){modal.classList.add('hidden');showLuxuryToast('با موفقیت وارد حساب شدید')},onRegistered(username){
+          bindExistingCustomerForm(body,{mode,session:customerBrowserSession,onLogin(){modal.classList.add('hidden');showLuxuryToast('با موفقیت وارد حساب شدید');if(accountRequestedAfterLogin)showAccountPage()},onRegistered(username){
             openRegisterModal('login');document.getElementById('lg_user').value=username;
             const message=document.getElementById('loginCustError');message.textContent='حساب ثبت شد؛ اکنون با رمز انتخابی خود وارد شوید.';message.classList.remove('hidden');
           }});
@@ -3507,9 +3563,9 @@ function renderDatabaseAccount(body,modal){
         });
       }
 
-      document.getElementById('btnRegisterCustomer').addEventListener('click', () => openRegisterModal());
+      document.getElementById('btnRegisterCustomer').addEventListener('click', requestCustomerAccount);
       document.getElementById('registerModal').addEventListener('click', e => {
-        if (e.target.id === 'registerModal'){if(customerDbFormsEnabled)customerBrowserSession.cancelPending();e.target.classList.add('hidden');}
+        if (e.target.id === 'registerModal'){if(customerDbFormsEnabled)customerBrowserSession.cancelPending();e.target.classList.add('hidden');if(accountRequestedAfterLogin){accountRequestedAfterLogin=false;if(location.hash==='#account')history.replaceState(history.state,'',location.pathname+location.search)}}
       });
 
       // CUSTOMER PERSONAL PORTAL & CHECKOUT DRAWER - LOGIN REQUIRED
@@ -3573,7 +3629,7 @@ function renderDatabaseAccount(body,modal){
       const btnMyOrdersEl = document.getElementById('btnMyOrders');
       if (btnMyOrdersEl) btnMyOrdersEl.addEventListener('click', () => openCartModal('checkout'));
       const vipHistBtn = document.getElementById('btnVipHistory');
-      if (vipHistBtn) vipHistBtn.addEventListener('click', () => openRegisterModal(customerProfile && customerProfile.loggedIn ? undefined : 'login'));
+      if (vipHistBtn) vipHistBtn.addEventListener('click', requestCustomerAccount);
       document.getElementById('cartModal').addEventListener('click', e => {
         if (e.target.id === 'cartModal') e.target.classList.add('hidden');
       });
@@ -6095,6 +6151,7 @@ function mountCustomerDirectory(body){
       }
       updateOrderBadges();
       syncLatestFromNetwork();
+      if(location.hash==='#account')void syncAccountRoute();
       requestAnimationFrame(()=>requestAnimationFrame(signalSplashAppReady));
       setTimeout(signalSplashAppReady,4500);
     })();
