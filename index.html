@@ -617,8 +617,11 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
 
 
     .card-actions { display:flex; gap:6px; align-items:center; }
-    .favorite-button { width:32px;height:32px;border:1px solid var(--border-strong);border-radius:9px;background:var(--surface);color:var(--text-muted);font-size:21px;line-height:1;cursor:pointer;display:inline-grid;place-items:center; }
-    .favorite-button.is-favorite { color:#c83f63;background:#fff2f5;border-color:#e9bdc8; }
+    .favorite-button { width:32px;height:32px;border:1px solid var(--border-strong);border-radius:9px;background:var(--surface);color:#262626;line-height:1;cursor:pointer;display:inline-grid;place-items:center;flex:0 0 auto; }
+    .heart-icon { width:21px;height:21px;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round; }
+    .favorite-button.is-favorite { color:#ed4956; }
+    .favorite-button.is-favorite .heart-icon { fill:currentColor; }
+    .account-nav .heart-icon { display:inline-block;vertical-align:middle;width:16px;height:16px; }
     .favorite-button:disabled { opacity:.55;cursor:wait; }
     #registerModal .account-modal-card { max-width:900px; }
     .account-head { display:flex;justify-content:space-between;align-items:start;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--border); }
@@ -798,6 +801,22 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       margin-bottom: 14px;
     }
     .modal-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+
+    /* Product details fit ordinary viewports; unusually long content can still scroll. */
+    #detailModal { padding:12px; }
+    #detailModal .modal-card { max-width:500px; max-height:calc(100vh - 24px); max-height:calc(100dvh - 24px); }
+    #detailModal .modal-img { aspect-ratio:auto; height:clamp(105px, 30vh, 290px); height:clamp(105px, 30dvh, 290px); overflow:hidden; }
+    #detailModal .modal-content { padding:12px 16px 14px; }
+    #detailModal .modal-meta { margin-bottom:3px; gap:7px; }
+    #detailModal .modal-title { font-size:17px; line-height:1.4; }
+    #detailModal .modal-desc { margin:4px 0 8px; font-size:12px; line-height:1.55; }
+    #detailModal .modal-price-row { padding:8px 12px; margin-bottom:9px; }
+    #detailModal .modal-actions { display:flex; flex-wrap:nowrap; align-items:center; gap:8px; }
+    #detailModal #mAddCartBtn { min-width:0; height:44px; }
+    #detailModal #mFavoriteBtn { width:44px; height:44px; }
+    #detailModal #mFavoriteBtn .heart-icon { width:24px; height:24px; }
+    @media(max-height:600px) { #detailModal .modal-img { height:clamp(85px, 24vh, 140px); height:clamp(85px, 24dvh, 140px); } #detailModal .modal-content { padding:8px 12px 10px; } }
 
     /* SPACIOUS TALL OWNER ADMIN PANEL — ZERO SQUISHING GUARANTEED */
     .admin-modal {
@@ -1311,7 +1330,8 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           <div><span class="price-val" id="mPrice"></span><span class="price-unit">تومان</span></div>
         </div>
         <div class="modal-actions">
-          <button type="button" id="mAddCartBtn" class="cta-primary" style="background:#1F6F4A;color:#fff">+ افزودن به سبد سفارش آنلاین</button>
+          <button type="button" id="mAddCartBtn" class="cta-primary" style="background:#1F6F4A;color:#fff">+ افزودن به سبد</button>
+          <button type="button" id="mFavoriteBtn" class="favorite-button" aria-label="افزودن به علاقه‌مندی‌ها" aria-pressed="false"></button>
         </div>
       </div>
     </div>
@@ -1539,6 +1559,9 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;');
       }
+
+      // SVG avoids font-dependent missing glyphs and matches the outlined heart style.
+      function heartIcon() { return '<svg class="heart-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'; }
 
       // Keep legacy single-image products compatible with galleries.
       function productImages(item) {
@@ -2770,7 +2793,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
                           <span class="price-unit">تومان</span>
                           ${perSliceHtml}
                         </div>
-                        <div class="card-actions">${actionHtml}<button type="button" class="favorite-button ${favoriteIds.has(item.id)?'is-favorite':''}" data-favorite="${escapeHtml(item.id)}" data-stop="1" aria-pressed="${favoriteIds.has(item.id)}" aria-label="${favoriteIds.has(item.id)?'حذف از':'افزودن به'} علاقه‌مندی‌ها: ${escapeHtml(item.name)}" ${favoritePending.has(item.id)?'disabled':''}>${favoriteIds.has(item.id)?'♥':'♡'}</button></div>
+                        <div class="card-actions">${actionHtml}<button type="button" class="favorite-button ${favoriteIds.has(item.id)?'is-favorite':''}" data-favorite="${escapeHtml(item.id)}" data-stop="1" aria-pressed="${favoriteIds.has(item.id)}" aria-label="${favoriteIds.has(item.id)?'حذف از':'افزودن به'} علاقه‌مندی‌ها: ${escapeHtml(item.name)}" ${favoritePending.has(item.id)?'disabled':''}>${heartIcon()}</button></div>
                       </div>
                     </div>
                   </article>`;
@@ -2819,6 +2842,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         });
 
         updateBottomBar();
+        syncDetailFavorite();
       }
 
       const searchInput=document.getElementById('searchInput');
@@ -2850,10 +2874,22 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       document.querySelector('#detailModal .modal-img').addEventListener('touchstart',e=>{galleryTouchX=e.touches[0].clientX;},{passive:true});
       document.querySelector('#detailModal .modal-img').addEventListener('touchend',e=>{if(galleryTouchX!==null && e.changedTouches.length){const dx=e.changedTouches[0].clientX-galleryTouchX;if(Math.abs(dx)>40){detailGalleryIndex+=dx<0?1:-1;showDetailGallery();}}galleryTouchX=null;},{passive:true});
 
+      function syncDetailFavorite() {
+        const btn=document.getElementById('mFavoriteBtn'); if(!btn||!detailItemId)return;
+        const item=state.items.find(x=>x.id===detailItemId); if(!item)return;
+        const liked=favoriteIds.has(item.id);
+        btn.innerHTML=heartIcon();btn.classList.toggle('is-favorite',liked);
+        btn.setAttribute('aria-pressed',String(liked));
+        btn.setAttribute('aria-label',(liked?'حذف از':'افزودن به')+' علاقه‌مندی‌ها: '+item.name);
+        btn.disabled=favoritePending.has(item.id);
+      }
+      document.getElementById('mFavoriteBtn').addEventListener('click',()=>{if(detailItemId)void toggleFavorite(detailItemId)});
+
       function openDetail(id) {
         const item = state.items.find(x => x.id === id);
         if (!item) return;
         detailItemId = id;
+        syncDetailFavorite();
         detailGalleryIndex=0; showDetailGallery();
         document.getElementById('mImg').alt = item.name;
         const wmSlot=document.getElementById('modalLotusWatermarkSlot'); if(wmSlot) wmSlot.innerHTML=getLotusWatermarkHtml();
@@ -3080,7 +3116,7 @@ function renderDatabaseAccount(body,modal){
  let tab='profile',details=null,draft={first:'',last:'',cafe:p.cafeName,phone:p.phone,address:p.address,email:'',birth:''},page=0,orders=null,hasMore=false,serial=0,busy=false;
  const isActive=()=>body.isConnected&&body.contains(panel)&&!modal.classList.contains('hidden')&&customerBrowserSession.profile()?.id===p.id;
  const paymentLabel=m=>({full:'تسویه کامل پیش از تحویل',half:'نصف اکنون، نصف هنگام تحویل',delivery:'تسویه کامل هنگام تحویل'}[m]||'—');
- body.innerHTML=`<div class="account-head"><div><span class="account-kicker">حساب مشتری</span><h3>حساب کاربری من</h3><p>${escapeHtml(p.name)} · <span dir="ltr">${escapeHtml(p.phone)}</span></p></div><button type="button" class="icon-btn" id="btnCloseRegisterModal">بستن ×</button></div><div class="account-layout"><nav class="account-nav" aria-label="بخش‌های حساب"><button type="button" data-account-tab="profile">👤 اطلاعات حساب</button><button type="button" data-account-tab="orders">📦 سفارش‌های من</button><button type="button" data-account-tab="favorites">♡ علاقه‌مندی‌ها</button><button type="button" data-account-tab="address">⌖ آدرس</button><button type="button" data-account-tab="invoices">▤ صورت‌حساب سفارش‌ها</button><button type="button" id="btnLogoutInsideModal">خروج از حساب</button></nav><section id="accountPanel" class="account-panel" aria-live="polite"></section></div>`;
+ body.innerHTML=`<div class="account-head"><div><span class="account-kicker">حساب مشتری</span><h3>حساب کاربری من</h3><p>${escapeHtml(p.name)} · <span dir="ltr">${escapeHtml(p.phone)}</span></p></div><button type="button" class="icon-btn" id="btnCloseRegisterModal">بستن ×</button></div><div class="account-layout"><nav class="account-nav" aria-label="بخش‌های حساب"><button type="button" data-account-tab="profile">👤 اطلاعات حساب</button><button type="button" data-account-tab="orders">📦 سفارش‌های من</button><button type="button" data-account-tab="favorites">${heartIcon()} علاقه‌مندی‌ها</button><button type="button" data-account-tab="address">⌖ آدرس</button><button type="button" data-account-tab="invoices">▤ صورت‌حساب سفارش‌ها</button><button type="button" id="btnLogoutInsideModal">خروج از حساب</button></nav><section id="accountPanel" class="account-panel" aria-live="polite"></section></div>`;
  const panel=body.querySelector('#accountPanel');
  body.querySelector('#btnCloseRegisterModal').onclick=()=>{modal.classList.add('hidden');card.classList.remove('account-modal-card')};
  body.querySelector('#btnLogoutInsideModal').onclick=()=>{modal.classList.add('hidden');card.classList.remove('account-modal-card');logoutCustomerAccount()};
@@ -3100,7 +3136,7 @@ function renderDatabaseAccount(body,modal){
   }else if(tab==='favorites'){
    if(favoriteStatus!=='ready'){panel.innerHTML='<h4>علاقه‌مندی‌ها</h4><p>در حال دریافت علاقه‌مندی‌ها…</p>';refreshFavorites().then(()=>{if(isActive()&&tab==='favorites'){if(favoriteStatus==='ready')draw();else{panel.innerHTML='<p>دریافت علاقه‌مندی‌ها ناموفق بود.</p><button type="button" class="icon-btn" id="accountRetry">تلاش مجدد</button>';panel.querySelector('#accountRetry').onclick=draw;}}});return;}
    const available=state.items.filter(i=>favoriteIds.has(i.id)),missing=[...favoriteIds].filter(id=>!state.items.some(i=>i.id===id));
-   panel.innerHTML=`<h4>علاقه‌مندی‌ها</h4>${available.length?available.map(i=>`<div class="account-favorite"><img src="${escapeHtml(productImagePreview(i.image))}" alt=""><div><strong>${escapeHtml(i.name)}</strong><div>${formatPriceFa(getEffectivePriceNum(i))} تومان</div></div><button type="button" class="favorite-button is-favorite" data-account-unfavorite="${escapeHtml(i.id)}" aria-label="حذف ${escapeHtml(i.name)} از علاقه‌مندی‌ها">♥</button>${i.available!==false?`<button type="button" class="icon-btn" data-account-add="${escapeHtml(i.id)}">+ سفارش</button>`:'<small>ناموجود</small>'}</div>`).join(''):'<p>هنوز محصولی به علاقه‌مندی‌ها اضافه نشده است.</p>'}${missing.length?'<p class="account-hint">برخی محصولات ذخیره‌شده دیگر در منو نیستند.</p>':''}`;
+   panel.innerHTML=`<h4>علاقه‌مندی‌ها</h4>${available.length?available.map(i=>`<div class="account-favorite"><img src="${escapeHtml(productImagePreview(i.image))}" alt=""><div><strong>${escapeHtml(i.name)}</strong><div>${formatPriceFa(getEffectivePriceNum(i))} تومان</div></div><button type="button" class="favorite-button is-favorite" data-account-unfavorite="${escapeHtml(i.id)}" aria-label="حذف ${escapeHtml(i.name)} از علاقه‌مندی‌ها">${heartIcon()}</button>${i.available!==false?`<button type="button" class="icon-btn" data-account-add="${escapeHtml(i.id)}">+ سفارش</button>`:'<small>ناموجود</small>'}</div>`).join(''):'<p>هنوز محصولی به علاقه‌مندی‌ها اضافه نشده است.</p>'}${missing.length?'<p class="account-hint">برخی محصولات ذخیره‌شده دیگر در منو نیستند.</p>':''}`;
    panel.querySelectorAll('[data-account-unfavorite]').forEach(b=>b.onclick=async()=>{b.disabled=true;await toggleFavorite(b.dataset.accountUnfavorite);if(isActive()&&tab==='favorites')draw()});
    panel.querySelectorAll('[data-account-add]').forEach(b=>b.onclick=()=>{changeCartQty(b.dataset.accountAdd,1);showLuxuryToast('به سبد سفارش اضافه شد.')});
   }else{
