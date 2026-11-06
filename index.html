@@ -1312,7 +1312,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         <h3 style="font-size:17px;font-weight:800;margin-bottom:6px">ورود به پنل مدیریت</h3>
         <p style="font-size:12.2px;color:var(--text-muted);margin-bottom:14px">رمز عبور مدیریت را وارد کنید (رمز اولیه پیش‌فرض: <code>1234</code> — از داخل تب ۵ قابل تغییر است):</p>
         <div class="field" style="margin-bottom:12px">
-          <input type="password" dir="ltr" id="adminPassInput" placeholder="رمز مدیریت..." style="text-align:center;font-size:16px;font-weight:700">
+          <input autocomplete="new-password" type="password" dir="ltr" id="adminPassInput" name="panel_admin_password" placeholder="رمز مدیریت..." style="text-align:center;font-size:16px;font-weight:700">
         </div>
         <div id="loginErrMsg" style="color:#DC2626;font-size:12px;margin-bottom:10px" class="hidden">رمز واردشده صحیح نیست.</div>
         <div style="display:flex;gap:8px">
@@ -2240,7 +2240,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         const allEntries=[...(accountingVault.entries||[])].sort((a,b)=>Number(b.date)-Number(a.date));
         const pending=adminOrders.filter(o=>o.kind!=='registration'&&o.status!=='cancelled').reduce((n,o)=>n+Math.max(0,(Number(o.total)||0)-(Number(o.paymentReceived)||0)),0);
         const missingCosts=adminOrders.filter(o=>o.kind!=='registration'&&Number(o.paymentReceived)>0&&orderCostTotal(o)==null).length;
-        const costRows=(state.items||[]).map(it=>{const cost=Object.prototype.hasOwnProperty.call(pendingProductCosts,it.id)?pendingProductCosts[it.id]:currentProductCost(it.id);return `<div class="accounting-cost-row"><div><b>${escapeHtml(it.name)}</b><small>${escapeHtml(it.serving||'')}</small></div><label><span>هزینهٔ یک قالب کامل (تومان)</span><input dir="ltr" class="accounting-cost-input" data-product-cost="${escapeHtml(it.id)}" inputmode="numeric" value="${cost==null?'':formatPriceFa(cost)}" placeholder="وارد نشده"></label></div>`}).join('');
+        const costRows=(state.items||[]).map(it=>{const cost=Object.prototype.hasOwnProperty.call(pendingProductCosts,it.id)?pendingProductCosts[it.id]:currentProductCost(it.id);return `<div class="accounting-cost-row"><div><b>${escapeHtml(it.name)}</b><small>${escapeHtml(it.serving||'')}</small></div><label><span>هزینهٔ یک قالب کامل (تومان)</span><input autocomplete="off" dir="ltr" class="accounting-cost-input" data-product-cost="${escapeHtml(it.id)}" inputmode="numeric" value="${cost==null?'':formatPriceFa(cost)}" placeholder="وارد نشده"></label></div>`}).join('');
         const tableRows=allEntries.slice(0,60).map(x=>{const label=x.type==='income'?'دریافت':x.type==='cogs'?'بهای تمام‌شده':'هزینه';const color=x.type==='income'?'#16734b':x.type==='cogs'?'#8b5cf6':'#c2410c';return `<tr><td>${accountingFormatDate(x.date)}</td><td><span style="color:${color};font-weight:800">${label}</span></td><td>${escapeHtml(x.category||'—')}</td><td>${escapeHtml(x.note||'')}</td><td>${x.orderId?`<span dir="ltr">${escapeHtml(x.orderId)}</span>`:'—'}</td><td dir="ltr" style="font-weight:800">${formatPriceFa(x.amount||0)}</td></tr>`}).join('');
         const weak=!accountingPasswordIsStrong();
         body.innerHTML=`<div class="accounting-wrap">
@@ -2253,7 +2253,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           <div class="accounting-cards"><div><small>وصول سفارش‌ها · ${periodNames[accountingPeriod]}</small><b>${formatPriceFa(tot.sales)} <i>تومان</i></b></div><div><small>درآمدهای متفرقه</small><b>${formatPriceFa(tot.otherIncome)} <i>تومان</i></b></div><div><small>بهای تمام‌شدهٔ محصولات</small><b>${formatPriceFa(tot.directCost)} <i>تومان</i></b></div><div><small>هزینه‌های عملیاتی</small><b>${formatPriceFa(tot.operating)} <i>تومان</i></b></div><div class="${tot.profit>=0?'positive':'negative'}"><small>سود / زیان خالص</small><b>${formatPriceFa(tot.profit)} <i>تومان</i></b></div><div><small>ورودی نقدی</small><b>${formatPriceFa(tot.cashIn)} <i>تومان</i></b></div><div><small>خروجی نقدی</small><b>${formatPriceFa(tot.cashOut)} <i>تومان</i></b></div><div class="${tot.balance>=0?'positive':'negative'}"><small>تغییر خالص نقدی</small><b>${formatPriceFa(tot.balance)} <i>تومان</i></b></div></div>
           <div class="accounting-substats"><span>ماندهٔ دریافتنی سفارش‌ها: <b>${formatPriceFa(pending)} تومان</b></span><span>سفارش دارای بهای تمام‌شدهٔ نامشخص: <b>${toFa(missingCosts)}</b></span><span>گزارش: <b>${periodNames[accountingPeriod]}</b></span></div>
           <details class="accounting-section" open><summary>قیمت تمام‌شدهٔ محصولات — یک قالب کامل</summary><p>مقادیر فقط داخل دفتر رمزگذاری‌شده ذخیره می‌شوند؛ در منو یا منبع عمومی سایت منتشر نمی‌شوند. پس از ثبت هزینه‌ها، برای استفاده از snapshot رمزگذاری‌شده در سفارش‌های جدید، یک بار سایت را از تب همگام‌سازی منتشر کنید.</p><div class="accounting-cost-list">${costRows||'<div class="empty-state">محصولی ثبت نشده است.</div>'}</div><button type="button" id="btnSaveProductCosts" class="icon-btn btn-green" ${weak?'disabled':''}>ذخیره و ثبت تاریخچهٔ هزینه‌ها 🔒</button></details>
-          <details class="accounting-section" open><summary>ثبت درآمد متفرقه یا هزینه</summary><form id="accountingEntryForm" class="accounting-entry-form"><label>نوع<select id="acctType"><option value="income">درآمد دریافتی</option><option value="expense">هزینهٔ پرداخت‌شده</option></select></label><label>مبلغ (تومان)<input id="acctAmount" inputmode="numeric" required placeholder="مثلاً ۲۵۰۰۰۰"></label><label>دسته‌بندی<select id="acctCategory"><option value="other">سایر درآمد</option><option value="sales">فروش متفرقه</option><option value="ingredients">مواد اولیه / موجودی</option><option value="packaging">بسته‌بندی</option><option value="delivery">ارسال</option><option value="rent">اجاره</option><option value="utilities">قبوض و خدمات</option><option value="payroll">دستمزد</option><option value="other-expense">سایر هزینه‌ها</option></select></label><label>تاریخ<input id="acctDate" type="date" value="${accountingDateInput()}"></label><label class="wide">شرح کوتاه<input id="acctNote" maxlength="180" placeholder="توضیح اختیاری"></label><button type="submit" class="icon-btn btn-green" ${weak?'disabled':''}>ثبت تراکنش در دفتر رمزگذاری‌شده</button></form><div class="accounting-hint">هزینهٔ «مواد اولیه / موجودی» از سود عملیاتی کم نمی‌شود تا با بهای تمام‌شدهٔ محصولات دوباره‌شماری نشود؛ ولی در خروجی نقدی ثبت خواهد شد.</div></details>
+          <details class="accounting-section" open><summary>ثبت درآمد متفرقه یا هزینه</summary><form id="accountingEntryForm" class="accounting-entry-form"><label>نوع<select id="acctType"><option value="income">درآمد دریافتی</option><option value="expense">هزینهٔ پرداخت‌شده</option></select></label><label>مبلغ (تومان)<input autocomplete="off" id="acctAmount" inputmode="numeric" required placeholder="مثلاً ۲۵۰۰۰۰"></label><label>دسته‌بندی<select id="acctCategory"><option value="other">سایر درآمد</option><option value="sales">فروش متفرقه</option><option value="ingredients">مواد اولیه / موجودی</option><option value="packaging">بسته‌بندی</option><option value="delivery">ارسال</option><option value="rent">اجاره</option><option value="utilities">قبوض و خدمات</option><option value="payroll">دستمزد</option><option value="other-expense">سایر هزینه‌ها</option></select></label><label>تاریخ<input autocomplete="off" id="acctDate" type="date" value="${accountingDateInput()}"></label><label class="wide">شرح کوتاه<input autocomplete="off" id="acctNote" maxlength="180" placeholder="توضیح اختیاری"></label><button type="submit" class="icon-btn btn-green" ${weak?'disabled':''}>ثبت تراکنش در دفتر رمزگذاری‌شده</button></form><div class="accounting-hint">هزینهٔ «مواد اولیه / موجودی» از سود عملیاتی کم نمی‌شود تا با بهای تمام‌شدهٔ محصولات دوباره‌شماری نشود؛ ولی در خروجی نقدی ثبت خواهد شد.</div></details>
           <details class="accounting-section" open><summary>دفتر تراکنش‌ها (${toFa(allEntries.length)})</summary><div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>تاریخ</th><th>نوع</th><th>دسته</th><th>شرح</th><th>سفارش</th><th>مبلغ · تومان</th></tr></thead><tbody>${tableRows||'<tr><td colspan="6" class="empty-state">هنوز تراکنشی ثبت نشده است.</td></tr>'}</tbody></table></div></details>
         </div>`;
         body.querySelectorAll('[data-acct-period]').forEach(b=>b.addEventListener('click',()=>{accountingPeriod=b.dataset.acctPeriod;accountingPeriodOffset=0;renderAccountingTab(body);}));
@@ -2971,7 +2971,7 @@ function formatPersianDate(value,{time=false,dateOnly=false}={}){
 }
 function renderDatabaseAccount(body,modal){
  const p=customerBrowserSession.profile();if(!p){openRegisterModal('login');return;}
- body.innerHTML=`<h3>حساب کاربری من</h3><p dir="ltr">@${escapeHtml(p.username)}</p><p>${escapeHtml(p.name)}</p><p>${escapeHtml(p.cafeName)}</p><p dir="ltr">${escapeHtml(p.phone)}</p><p>${escapeHtml(p.address)}</p><small>نشست این دستگاه حداکثر یک ساعت فعال می‌ماند؛ رمز عبور در مرورگر ذخیره نمی‌شود.</small><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button type="button" class="cta-secondary" id="btnCloseRegisterModal">بستن</button><button type="button" class="cta-secondary" id="btnLoadAccountOrders">سفارش‌های من</button><button type="button" class="cta-primary" id="btnLogoutInsideModal">خروج از حساب</button></div><div id="accountOrdersResult" aria-live="polite" style="margin-top:14px"></div>`;
+ body.innerHTML=`<h3>حساب کاربری من</h3><p dir="ltr">@${escapeHtml(p.username)}</p><p>${escapeHtml(p.name)}</p><p>${escapeHtml(p.cafeName)}</p><p dir="ltr">${escapeHtml(p.phone)}</p><p>${escapeHtml(p.address)}</p><small>نشست این دستگاه حداکثر یک ساعت فعال می‌ماند؛ رمز عبور در مرورگر ذخیره نمی‌شود.</small><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button type="button" class="cta-secondary" id="btnCloseRegisterModal">بستن</button><button type="button" class="cta-secondary" id="btnLoadAccountOrders">سفارش‌های من</button></div><div style="margin-top:24px;padding-top:12px;border-top:1px solid var(--border)"><button type="button" class="cta-secondary" id="btnLogoutInsideModal" style="color:#b42318;border-color:#d92d20;background:#fff1f0">خروج از حساب</button></div><div id="accountOrdersResult" aria-live="polite" style="margin-top:14px"></div>`;
  body.querySelector('#btnCloseRegisterModal').addEventListener('click',()=>modal.classList.add('hidden'));
  body.querySelector('#btnLogoutInsideModal').addEventListener('click',()=>{modal.classList.add('hidden');logoutCustomerAccount()});
  body.querySelector('#btnLoadAccountOrders').addEventListener('click',async e=>{const b=e.currentTarget,r=body.querySelector('#accountOrdersResult');b.disabled=true;r.textContent='در حال دریافت سفارش‌ها…';try{const result=await customerBrowserSession.listOrders();if(result.outcome!=='ok'){r.textContent='دریافت سفارش‌ها انجام نشد؛ پس از ورود دوباره تلاش کنید.';return;}if(!result.orders.length){r.textContent='هنوز سفارشی برای این حساب ثبت نشده است.';return;}r.innerHTML=result.orders.map(o=>`<article class="order-card-admin" style="margin-bottom:8px"><strong>سفارش ${escapeHtml(o.orderCode)}</strong><div>${formatPersianDate(o.createdAt,{time:true})}</div><div>تحویل: ${o.deliveryDate?formatPersianDate(o.deliveryDate,{dateOnly:true}):'—'} ${escapeHtml(o.deliverySlot)}</div><div>${o.items.map(i=>escapeHtml(i.name)+' × '+toFa(i.qty)).join('، ')}</div><b>${formatPriceFa(o.total)} تومان</b></article>`).join('')}catch{r.textContent='دریافت سفارش‌ها انجام نشد.'}finally{if(b.isConnected)b.disabled=false}});
@@ -3009,25 +3009,27 @@ function renderDatabaseAccount(body,modal){
               <button type="button" class="icon-btn" id="btnCloseRegisterModal" style="height:32px;padding:0 10px">&times;</button>
             </div>
             <div class="form-grid" style="margin-bottom:12px">
-              <div class="field"><label>نام و نام خانوادگی *</label><input id="acc_name" value="${escapeHtml(customerProfile.name || '')}"></div>
-              <div class="field"><label>نام کافه *</label><input id="acc_cafe" value="${escapeHtml(customerProfile.cafeName || '')}"></div>
-              <div class="field"><label>شماره تلفن *</label><input dir="ltr" type="tel" id="acc_phone" value="${escapeHtml(customerProfile.phone || '')}"></div>
+              <div class="field"><label>نام و نام خانوادگی *</label><input autocomplete="off" id="acc_name" value="${escapeHtml(customerProfile.name || '')}"></div>
+              <div class="field"><label>نام کافه *</label><input autocomplete="off" id="acc_cafe" value="${escapeHtml(customerProfile.cafeName || '')}"></div>
+              <div class="field"><label>شماره تلفن *</label><input autocomplete="off" dir="ltr" type="tel" id="acc_phone" value="${escapeHtml(customerProfile.phone || '')}"></div>
               <div class="field">
                 <label>تایید یا تغییر رمز عبور (جهت ذخیره ابری) *</label>
                 <div class="pass-wrap">
-                  <input dir="ltr" type="password" id="acc_pass" placeholder="رمز فعلی یا رمز جدید...">
+                  <input autocomplete="off" dir="ltr" type="password" id="acc_pass" placeholder="رمز فعلی یا رمز جدید...">
                   <button type="button" class="eye-btn" data-target="acc_pass">👁️</button>
                 </div>
               </div>
               <div class="field" style="grid-column:1/-1">
                 <label>آدرس دقیق *</label>
-                <textarea id="acc_address" rows="2">${escapeHtml(customerProfile.address || '')}</textarea>
+                <textarea autocomplete="off" id="acc_address" rows="2">${escapeHtml(customerProfile.address || '')}</textarea>
               </div>
             </div>
             <div id="accMsg" class="hidden" style="font-size:12.2px;font-weight:700;margin-bottom:10px;color:#DC2626"></div>
             <div style="display:flex;flex-direction:column;gap:8px">
               <button type="button" class="cta-primary" id="btnUpdateAccount" style="width:100%;background:#1F6F4A;color:#fff">ذخیره مشخصات در حساب کاربری ✓</button>
-              <button type="button" class="icon-btn btn-danger" id="btnLogoutInsideModal" style="width:100%;height:42px;font-weight:800">🚪 خروج از حساب کاربری</button>
+            </div>
+            <div style="margin-top:24px;padding-top:12px;border-top:1px solid var(--border)">
+              <button type="button" class="icon-btn btn-danger" id="btnLogoutInsideModal" style="height:42px;font-weight:800;background:#fff1f0;border-color:#d92d20">🚪 خروج از حساب کاربری</button>
             </div>`;
 
           attachPasswordEyeToggles(body);
@@ -3097,11 +3099,11 @@ function renderDatabaseAccount(body,modal){
             </div>
             </form>
           ` : `
-            <form id="customerSignupForm" autocomplete="on">
+            <form id="customerSignupForm" autocomplete="off">
             <div class="form-grid" style="margin-bottom:14px">
               <div class="field">
                 <label>نام کاربری دلخواه <span style="color:#DC2626">*</span></label>
-                <input dir="ltr" id="reg_user" name="username" autocomplete="username" placeholder="مثلاً cafe_lamiz">
+                <input dir="ltr" id="reg_user" name="registration_username" autocomplete="off" placeholder="مثلاً cafe_lamiz">
               </div>
               <div class="field">
                 <label>رمز عبور <span style="color:#DC2626">*</span></label>
@@ -3112,19 +3114,19 @@ function renderDatabaseAccount(body,modal){
               </div>
               <div class="field">
                 <label>نام و نام خانوادگی <span style="color:#DC2626">*</span></label>
-                <input id="reg_name" placeholder="مثلاً علی رضایی">
+                <input autocomplete="off" id="reg_name" placeholder="مثلاً علی رضایی">
               </div>
               <div class="field">
                 <label>نام کافه <span style="color:#DC2626">*</span></label>
-                <input id="reg_cafe" value="${escapeHtml(vip ? vip.name : '')}" placeholder="مثلاً کافه لمیز">
+                <input autocomplete="off" id="reg_cafe" value="${escapeHtml(vip ? vip.name : '')}" placeholder="مثلاً کافه لمیز">
               </div>
               <div class="field" style="grid-column:1/-1">
                 <label>شماره تلفن تماس <span style="color:#DC2626">*</span></label>
-                <input dir="ltr" type="tel" id="reg_phone" placeholder="0912xxxxxxx">
+                <input autocomplete="off" dir="ltr" type="tel" id="reg_phone" placeholder="0912xxxxxxx">
               </div>
               <div class="field" style="grid-column:1/-1">
                 <label>آدرس دقیق کافه / محل تحویل <span style="color:#DC2626">*</span></label>
-                <textarea id="reg_address" rows="2" placeholder="خیابان، کوچه، پلاک، واحد..."></textarea>
+                <textarea autocomplete="off" id="reg_address" rows="2" placeholder="خیابان، کوچه، پلاک، واحد..."></textarea>
               </div>
             </div>
             <div id="regError" class="hidden" style="color:#DC2626;font-size:12.2px;font-weight:700;margin-bottom:10px"></div>
@@ -3509,10 +3511,10 @@ function renderDatabaseAccount(body,modal){
             <div style="padding:12px 14px;border-radius:12px;background:var(--surface-soft);border:1px solid var(--border);margin-bottom:14px">
               <div style="font-size:12.5px;font-weight:700;margin-bottom:8px">مشخصات ذخیره شده شما در این گوشی (جهت پر شدن خودکار در سفارش‌ها):</div>
               <div class="form-grid">
-                <div class="field"><label>نام و نام خانوادگی *</label><input id="p_custName" value="${escapeHtml(customerProfile.name || '')}" placeholder="مثلاً علی رضایی"></div>
-                <div class="field"><label>نام کافه *</label><input id="p_custCafe" value="${escapeHtml(customerProfile.cafeName || (vip ? vip.name : ''))}" placeholder="مثلاً کافه لمیز"></div>
-                <div class="field"><label>شماره تلفن *</label><input dir="ltr" id="p_custPhone" value="${escapeHtml(customerProfile.phone || '')}" placeholder="0912..."></div>
-                <div class="field"><label>آدرس دقیق *</label><input id="p_custAddr" value="${escapeHtml(customerProfile.address || '')}" placeholder="آدرس جهت ارسال..."></div>
+                <div class="field"><label>نام و نام خانوادگی *</label><input autocomplete="off" id="p_custName" value="${escapeHtml(customerProfile.name || '')}" placeholder="مثلاً علی رضایی"></div>
+                <div class="field"><label>نام کافه *</label><input autocomplete="off" id="p_custCafe" value="${escapeHtml(customerProfile.cafeName || (vip ? vip.name : ''))}" placeholder="مثلاً کافه لمیز"></div>
+                <div class="field"><label>شماره تلفن *</label><input autocomplete="off" dir="ltr" id="p_custPhone" value="${escapeHtml(customerProfile.phone || '')}" placeholder="0912..."></div>
+                <div class="field"><label>آدرس دقیق *</label><input autocomplete="off" id="p_custAddr" value="${escapeHtml(customerProfile.address || '')}" placeholder="آدرس جهت ارسال..."></div>
               </div>
               <button type="button" class="icon-btn btn-green" id="btnSaveCustProfile" style="margin-top:10px;width:100%">ذخیره مشخصات من ✓</button>
             </div>
@@ -3613,23 +3615,23 @@ function renderDatabaseAccount(body,modal){
               <div class="form-grid" style="margin-bottom:14px">
                 <div class="field">
                   <label>نام و نام خانوادگی <span style="color:#DC2626">*</span></label>
-                  <input id="co_name" required value="${escapeHtml(customerProfile.name || '')}" placeholder="مثلاً علی رضایی">
+                  <input autocomplete="off" id="co_name" required value="${escapeHtml(customerProfile.name || '')}" placeholder="مثلاً علی رضایی">
                 </div>
                 <div class="field">
                   <label>نام کافه <span style="color:#DC2626">*</span></label>
-                  <input id="co_cafe" required value="${escapeHtml(defaultCafe)}" placeholder="مثلاً کافه لمیز">
+                  <input autocomplete="off" id="co_cafe" required value="${escapeHtml(defaultCafe)}" placeholder="مثلاً کافه لمیز">
                 </div>
                 <div class="field">
                   <label>شماره تلفن تماس <span style="color:#DC2626">*</span></label>
-                  <input dir="ltr" type="tel" id="co_phone" required value="${escapeHtml(customerProfile.phone || '')}" placeholder="0912xxxxxxx">
+                  <input autocomplete="off" dir="ltr" type="tel" id="co_phone" required value="${escapeHtml(customerProfile.phone || '')}" placeholder="0912xxxxxxx">
                 </div>
                 <div class="field">
                   <label>توضیحات / نکته برای پخت (اختیاری)</label>
-                  <input id="co_when" placeholder="مثلاً بدون تزئین اضافی">
+                  <input autocomplete="off" id="co_when" placeholder="مثلاً بدون تزئین اضافی">
                 </div>
                 <div class="field" style="grid-column:1/-1">
                   <label>آدرس دقیق تحویل <span style="color:#DC2626">*</span></label>
-                  <textarea id="co_address" rows="2" required placeholder="خیابان، کوچه، پلاک، واحد...">${escapeHtml(customerProfile.address || '')}</textarea>
+                  <textarea autocomplete="off" id="co_address" rows="2" required placeholder="خیابان، کوچه، پلاک، واحد...">${escapeHtml(customerProfile.address || '')}</textarea>
                 </div>
               </div>
               <div id="coError" class="hidden" style="color:#DC2626;font-size:12.2px;font-weight:700;margin-bottom:10px"></div>
@@ -3867,6 +3869,7 @@ function renderDatabaseAccount(body,modal){
       document.getElementById('btnOpenAdmin').addEventListener('click', requestOpenAdmin);
       document.getElementById('btnCloseAdmin').addEventListener('click', () => {
         clearCustomerDirectory();
+        document.querySelector('#adminBody #customerDatabaseSection')?.remove();
         collectAdminInputs();
         document.getElementById('adminModal').classList.add('hidden');
       });
@@ -3876,6 +3879,7 @@ function renderDatabaseAccount(body,modal){
       }
       function activateAdminTab(tab){
         collectAdminInputs();
+        if(tab!==currentAdminTab)clearCustomerDirectory();
         currentAdminTab=tab;
         syncAdminMobileNavigation();
         renderAdminTab();
@@ -4073,7 +4077,7 @@ function renderDatabaseAccount(body,modal){
           <div class="form-grid" style="margin-bottom:14px">
             <div class="field">
               <label>نام محصول جدید *</label>
-              <input id="np_name" placeholder="مثلاً چیزکیک زعفران و پسته">
+              <input autocomplete="off" id="np_name" placeholder="مثلاً چیزکیک زعفران و پسته">
             </div>
             <div class="field">
               <label>دسته‌بندی *</label>
@@ -4083,16 +4087,16 @@ function renderDatabaseAccount(body,modal){
             </div>
             <div class="field">
               <label>قیمت به تومان *</label>
-              <input id="np_price" placeholder="مثلاً ۹۸۰,۰۰۰">
+              <input autocomplete="off" id="np_price" placeholder="مثلاً ۹۸۰,۰۰۰">
             </div>
             <div class="field">
               <label>سایز / تعداد اسلایس *</label>
-              <input id="np_serv" value="۸ اسلایس" placeholder="مثلاً ۸ اسلایس یا تک‌نفره">
+              <input autocomplete="off" id="np_serv" value="۸ اسلایس" placeholder="مثلاً ۸ اسلایس یا تک‌نفره">
             </div>
-            <div class="field" style="grid-column:1/-1"><label>🔒 هزینهٔ تمام‌شدهٔ یک قالب کامل (فقط مدیر، تومان)</label><input id="np_cost" inputmode="numeric" placeholder="اختیاری — در دفتر رمزگذاری‌شده ذخیره می‌شود"></div>
+            <div class="field" style="grid-column:1/-1"><label>🔒 هزینهٔ تمام‌شدهٔ یک قالب کامل (فقط مدیر، تومان)</label><input autocomplete="off" id="np_cost" inputmode="numeric" placeholder="اختیاری — در دفتر رمزگذاری‌شده ذخیره می‌شود"></div>
             <div class="field" style="grid-column:1/-1">
               <label>توضیحات و ترکیبات محصول</label>
-              <input id="np_desc" placeholder="مثلاً تهیه شده با زعفران سرگل و کرم پنیری تازه...">
+              <input autocomplete="off" id="np_desc" placeholder="مثلاً تهیه شده با زعفران سرگل و کرم پنیری تازه...">
             </div>
           </div>
           <div id="np_err" class="hidden" style="color:#DC2626;font-size:12.2px;font-weight:700;margin-bottom:10px"></div>
@@ -4232,7 +4236,7 @@ const manualRecoveryReleaseEnabled=true; // Explicitly authorized public-release
 function mountRecoveryControls(host,{customerId,enabled=false,issue,documentImpl=globalThis.document,randomUUID=()=>globalThis.crypto.randomUUID()}={}) {
  if(typeof customerId!=='string'||!/^[0-9a-f-]{36}$/i.test(customerId))throw Error('invalid_customer');
  const root=documentImpl.createElement('section');root.className='manual-recovery-controls';
- root.innerHTML='<p style="font-size:12px">بازیابی رمز با لینک خصوصی؛ رمز مشتری به مدیر نمایش داده نمی‌شود.</p><label><input type="checkbox" data-role="attest"> هویت مشتری را از مسیر خصوصی معتبر بررسی کرده‌ام؛ دانستن نام کافه یا داشتن عکس فیش کافی نیست.</label><label style="display:block">تحویل دستی در گفت‌وگوی خصوصی <select data-role="delivery"><option value="bale_private">Bale</option><option value="telegram_private">Telegram</option></select></label><button type="button" class="icon-btn" data-role="issue">ساخت لینک بازیابی</button><p data-role="status" role="status" aria-live="polite"></p><textarea data-role="link" dir="ltr" rows="3" readonly hidden aria-label="لینک محرمانه برای ارسال خصوصی" style="width:100%;box-sizing:border-box"></textarea>';
+ root.innerHTML='<p style="font-size:12px">بازیابی رمز با لینک خصوصی؛ رمز مشتری به مدیر نمایش داده نمی‌شود.</p><label><input type="checkbox" data-role="attest"> هویت مشتری را از مسیر خصوصی معتبر بررسی کرده‌ام؛ دانستن نام کافه یا داشتن عکس فیش کافی نیست.</label><label style="display:block">تحویل دستی در گفت‌وگوی خصوصی <select data-role="delivery"><option value="bale_private">Bale</option><option value="telegram_private">Telegram</option></select></label><button type="button" class="icon-btn" data-role="issue">ساخت لینک بازیابی</button><p data-role="status" role="status" aria-live="polite"></p><textarea autocomplete="off" data-role="link" dir="ltr" rows="3" readonly hidden aria-label="لینک محرمانه برای ارسال خصوصی" style="width:100%;box-sizing:border-box"></textarea>';
  host.append(root);const $=name=>root.querySelector('[data-role="'+name+'"]');let started=false;
  $('issue').disabled=true;
  if(enabled!==true || typeof issue!=='function'){
@@ -4356,9 +4360,10 @@ const customerDirectorySession=directoryTools.createDirectorySession({origin:'ht
 const customerDirectoryBridge=directoryTools.createCustomerDirectoryBridge({enabled:true,rpc:(...args)=>customerDirectorySession.rpc(...args)});
 function clearCustomerDirectory(){customerDirectoryBridge.invalidate();customerDirectorySession.signOut().catch(()=>{});}
 function mountCustomerDirectory(body){
- const root=document.createElement('section');root.id='customerDatabaseSection';root.style.cssText='padding:14px;border:1px solid var(--border);border-radius:12px;margin-bottom:20px;box-sizing:border-box;min-width:0;overflow-wrap:anywhere';
- root.innerHTML=`<h3 style="margin-top:0">مشتریان ثبت‌شده در دیتابیس</h3><p style="font-size:12px">ورود امن مدیر برای خواندن اطلاعات سروری در همین صفحه. حساب‌هایی که در سایت ثبت‌نام می‌شوند در این فهرست دیتابیس قرار می‌گیرند. برای حفظ حریم خصوصی، نمایش فقط پس از ورود مدیر و رمزساز انجام می‌شود.</p><form id="directoryLoginForm"><label>ایمیل حساب مدیر<input id="directoryEmail" type="email" autocomplete="off" required style="display:block;width:100%;box-sizing:border-box;margin:6px 0" dir="ltr"></label><label>رمز حساب مدیر<input id="directoryPassword" type="password" autocomplete="off" required style="display:block;width:100%;box-sizing:border-box;margin:6px 0" dir="ltr"></label><button class="icon-btn" type="submit">ورود امن مدیر</button><small>این ایمیل فقط متعلق به حساب مدیر است؛ ثبت‌نام مشتری ایمیل اجباری ندارد.</small></form><form id="directoryMfaForm" hidden><label>کد شش‌رقمی رمزساز<input id="directoryOtp" inputmode="numeric" autocomplete="off" maxlength="6" dir="ltr"></label><button class="icon-btn" type="submit">تأیید و نمایش مشتریان</button></form><form id="directoryQueryForm" hidden><input id="directoryQuery" type="search" maxlength="120" placeholder="جست‌وجوی نام، کافه، نام کاربری یا تلفن"><button class="icon-btn" type="submit">جست‌وجو در دیتابیس</button><button id="directoryDisconnect" class="icon-btn" type="button">قطع اتصال در این صفحه</button></form><p id="directoryStatus" role="status" aria-live="polite"></p><div id="directoryRows"></div><div id="directoryPages" hidden><button id="directoryPrev" class="icon-btn" type="button">قبلی</button><button id="directoryNext" class="icon-btn" type="button">بعدی</button></div><p style="font-size:11px">رمز، کد و توکن این اتصال در حافظهٔ موقت صفحه‌اند و در ذخیره‌سازی مرورگر نوشته نمی‌شوند. قطع اتصال این صفحه جای لغو همهٔ نشست‌های حساب را نمی‌گیرد. اطلاعات را روی دستگاه مشترک باز نگذارید.</p>`;
- body.prepend(root);const $=id=>root.querySelector('#'+id),active=()=>root.isConnected&&currentAdminTab==='database'&&!document.getElementById('adminModal').classList.contains('hidden');
+ const directoryTab=currentAdminTab;
+ const root=document.createElement('section');root.id='customerDatabaseSection';root.dataset.directoryTab=directoryTab;root.style.cssText='padding:14px;border:1px solid var(--border);border-radius:12px;margin-bottom:20px;box-sizing:border-box;min-width:0;overflow-wrap:anywhere';
+ root.innerHTML=`<h3 style="margin-top:0">مشتریان ثبت‌شده در دیتابیس</h3><p style="font-size:12px">ورود امن مدیر برای خواندن اطلاعات سروری در همین صفحه. حساب‌هایی که در سایت ثبت‌نام می‌شوند در این فهرست دیتابیس قرار می‌گیرند. برای حفظ حریم خصوصی، نمایش فقط پس از ورود مدیر و رمزساز انجام می‌شود.</p><form id="directoryLoginForm"><label>ایمیل حساب مدیر<input id="directoryEmail" name="directory_admin_email" type="email" autocomplete="off" required style="display:block;width:100%;box-sizing:border-box;margin:6px 0" dir="ltr"></label><label>رمز حساب مدیر<input id="directoryPassword" type="password" name="directory_admin_password" autocomplete="new-password" required style="display:block;width:100%;box-sizing:border-box;margin:6px 0" dir="ltr"></label><button class="icon-btn" type="submit">ورود امن مدیر</button><small>این ایمیل فقط متعلق به حساب مدیر است؛ ثبت‌نام مشتری ایمیل اجباری ندارد.</small></form><form id="directoryMfaForm" hidden><label>کد شش‌رقمی رمزساز<input id="directoryOtp" inputmode="numeric" autocomplete="off" maxlength="6" dir="ltr"></label><button class="icon-btn" type="submit">تأیید و نمایش مشتریان</button></form><form id="directoryQueryForm" hidden><input autocomplete="off" id="directoryQuery" type="search" maxlength="120" placeholder="جست‌وجوی نام، کافه، نام کاربری یا تلفن"><button class="icon-btn" type="submit">جست‌وجو در دیتابیس</button><button id="directoryDisconnect" class="icon-btn" type="button">قطع اتصال در این صفحه</button></form><p id="directoryStatus" role="status" aria-live="polite"></p><div id="directoryRows"></div><div id="directoryPages" hidden><button id="directoryPrev" class="icon-btn" type="button">قبلی</button><button id="directoryNext" class="icon-btn" type="button">بعدی</button></div><p style="font-size:11px">رمز، کد و توکن این اتصال در حافظهٔ موقت صفحه‌اند و در ذخیره‌سازی مرورگر نوشته نمی‌شوند. قطع اتصال این صفحه جای لغو همهٔ نشست‌های حساب را نمی‌گیرد. اطلاعات را روی دستگاه مشترک باز نگذارید.</p>`;
+ body.prepend(root);const $=id=>root.querySelector('#'+id),active=()=>root.isConnected&&currentAdminTab===directoryTab&&!document.getElementById('adminModal').classList.contains('hidden');
  let offset=0,query='',busy=false;
  const status=text=>{$('directoryStatus').textContent=text};
  function sync(){const st=customerDirectorySession.status();$('directoryLoginForm').hidden=st!=='signed_out';$('directoryMfaForm').hidden=st!=='mfa_required';$('directoryQueryForm').hidden=st!=='ready';}
@@ -4385,9 +4390,12 @@ function mountCustomerDirectory(body){
 
 
       function renderAdminTab() {
-        if(currentAdminTab!=='database')clearCustomerDirectory();
+        if(currentAdminTab!=='database' && currentAdminTab!=='registrations')clearCustomerDirectory();
         syncAdminMobileNavigation();
         const body = document.getElementById('adminBody');
+        // Preserve the MFA-gated directory and its in-flight requests on same-tab rerenders.
+        const directoryNode=body.querySelector('#customerDatabaseSection');
+        const reuseDirectory=directoryNode && directoryNode.dataset.directoryTab===currentAdminTab ? directoryNode : null;
 
         if (currentAdminTab === 'orders') {
           const onlyOrders = adminOrders.filter(o => o.kind !== 'registration' && o.deleted !== true);
@@ -4502,7 +4510,7 @@ function mountCustomerDirectory(body){
           body.innerHTML = `
             <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px">
               <div style="font-size:13px;font-weight:700">
-                فهرست مشتریان و کافه‌هایی که در صفحه اول فرم «ثبت نام همکاری» را پر کرده‌اند (${toFa(regs.length)} مورد):
+                ثبت‌نام‌های قدیمی آرشیو پنل (${toFa(regs.length)} مورد):
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap">
                 <button type="button" class="icon-btn" id="btnRefreshRegs">🔄 بررسی ثبت‌نام جدید</button>
@@ -4515,8 +4523,8 @@ function mountCustomerDirectory(body){
             ${regs.length === 0
               ? `<div class="empty-state">
                   <div style="font-size:32px;margin-bottom:8px">👥</div>
-                  هنوز ثبت‌نام جدیدی ارسال نشده است.<br>
-                  <span style="font-size:12px">ثبت‌نام‌های قدیمی/دریافتی پنل در این فهرست هستند. حساب‌های تازهٔ دیتابیس را در تب «مشتریان دیتابیس» ببینید.</span>
+                  ثبت‌نام قدیمی در آرشیو پنل موجود نیست.<br>
+                  <span style="font-size:12px">حساب‌های تازه در بخش مشتریان دیتابیس بالا، پس از ورود امن مدیر نمایش داده می‌شوند.</span>
                 </div>`
               : regs.map((r,regIndex) => {
                   const st = r.status || 'new';
@@ -4538,7 +4546,7 @@ function mountCustomerDirectory(body){
                     <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 10px;border-radius:9px;background:var(--surface);margin-bottom:10px;font-size:12px">
                       <span>🔑 <strong>مدیریت اکانت مشتری:</strong></span>
                       <input dir="ltr" type="password" autocomplete="new-password" placeholder="رمز جدید (پس از احراز هویت)" class="adm-reset-pass" data-rid="${escapeHtml(r.id)}" style="width:170px;padding:6px 9px;border-radius:8px;border:1px solid var(--border)">
-                      <input dir="ltr" type="number" min="0" max="70" value="${Math.max(0,Math.min(70,Number(r.discount)||0))}" title="درصد تخفیف همکاری اکانت" class="adm-acct-disc" data-rid="${escapeHtml(r.id)}" style="width:74px;padding:6px 9px;border-radius:8px;border:1px solid var(--border)">
+                      <input autocomplete="off" dir="ltr" type="number" min="0" max="70" value="${Math.max(0,Math.min(70,Number(r.discount)||0))}" title="درصد تخفیف همکاری اکانت" class="adm-acct-disc" data-rid="${escapeHtml(r.id)}" style="width:74px;padding:6px 9px;border-radius:8px;border:1px solid var(--border)">
                       <span>٪ تخفیف</span>
                       <button type="button" class="icon-btn admin-trigger btn-apply-acct" data-rid="${escapeHtml(r.id)}" style="height:32px;font-size:11.5px">اعمال روی اکانت مشتری ✓</button>
                     </div>` : ''}
@@ -4555,6 +4563,7 @@ function mountCustomerDirectory(body){
                   </div>`;
                 }).join('')}`;
 
+          if(reuseDirectory)body.prepend(reuseDirectory);else mountCustomerDirectory(body);
           const regSearchInput=document.getElementById('customerRegistrationSearch');
           const applyRegSearch=()=>{const q=normalizeRegSearch(regSearchInput.value),compact=q.replace(/[\s()+-]/g,'');let shown=0;body.querySelectorAll('[data-registration-index]').forEach(card=>{const text=regSearchTexts[Number(card.dataset.registrationIndex)]||'',match=!q||text.includes(q)||(compact.length>0&&text.replace(/[\s()+-]/g,'').includes(compact));card.hidden=!match;if(match)shown++;});document.getElementById('registrationSearchCount').textContent=toFa(shown)+' مشتری از '+toFa(regs.length)+' مورد دریافت‌شده';};
           regSearchInput.addEventListener('input',applyRegSearch);applyRegSearch();
@@ -4656,7 +4665,7 @@ function mountCustomerDirectory(body){
 
         } else if (currentAdminTab === 'database') {
           body.innerHTML='<div class="info-callout"><strong>حساب‌های جدید مشتریان</strong><br>نام کاربری هر مشتری در کارت او دیده می‌شود. این فهرست فقط‌خواندنی است؛ برای امنیت، ورود مدیر با رمزساز لازم است. تب «ثبت‌نام مشتریان» فهرست قدیمی دریافتی‌ها را نگه می‌دارد.</div>';
-          mountCustomerDirectory(body);
+          if(reuseDirectory)body.prepend(reuseDirectory);else mountCustomerDirectory(body);
 
         } else if (currentAdminTab === 'prices') {
           // Category filter state
@@ -4671,9 +4680,9 @@ function mountCustomerDirectory(body){
               <div id="catsEditor2">
                 ${state.categories.map((c,ci)=>`
                   <div class="cat-row" style="display:grid; grid-template-columns:1fr 1fr 1.4fr auto; gap:8px; margin-bottom:8px; align-items:center">
-                    <input class="cat-id" value="${escapeHtml(c.id)}" placeholder="id">
-                    <input class="cat-title" value="${escapeHtml(c.title)}" placeholder="عنوان">
-                    <input class="cat-sub" value="${escapeHtml(c.subtitle)}" placeholder="زیرعنوان">
+                    <input autocomplete="off" class="cat-id" value="${escapeHtml(c.id)}" placeholder="id">
+                    <input autocomplete="off" class="cat-title" value="${escapeHtml(c.title)}" placeholder="عنوان">
+                    <input autocomplete="off" class="cat-sub" value="${escapeHtml(c.subtitle)}" placeholder="زیرعنوان">
                     <button type="button" class="icon-btn btn-danger cat-del" data-ci="${ci}" style="height:32px">حذف</button>
                   </div>`).join('')}
               </div>
@@ -4703,15 +4712,15 @@ function mountCustomerDirectory(body){
                   </div>
                   <div class="field">
                     <label>نام محصول</label>
-                    <input class="ei-name" value="${escapeHtml(it.name)}">
+                    <input autocomplete="off" class="ei-name" value="${escapeHtml(it.name)}">
                   </div>
                   <div class="field">
                     <label>قیمت (تومان)</label>
-                    <input class="ei-price" value="${escapeHtml(it.price)}">
+                    <input autocomplete="off" class="ei-price" value="${escapeHtml(it.price)}">
                   </div>
                   <div class="field">
                     <label>اسلایس / سایز</label>
-                    <input class="ei-serv" value="${escapeHtml(it.serving)}">
+                    <input autocomplete="off" class="ei-serv" value="${escapeHtml(it.serving)}">
                   </div>
                   <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding-top:12px">
                     <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;cursor:pointer">
@@ -4721,7 +4730,7 @@ function mountCustomerDirectory(body){
                   </div>
                   <div class="field" style="grid-column:2/4">
                     <label>دسته و توضیح ترکیبات</label>
-                    <input class="ei-desc" value="${escapeHtml(it.desc)}" placeholder="توضیح ترکیبات کیک...">
+                    <input autocomplete="off" class="ei-desc" value="${escapeHtml(it.desc)}" placeholder="توضیح ترکیبات کیک...">
                   </div>
                   <div class="field" style="grid-column:4/-1">
                     <label>دسته‌بندی</label>
@@ -4731,11 +4740,11 @@ function mountCustomerDirectory(body){
                   </div>
                   <div class="field" style="grid-column:1/3">
                     <label>نشان روی عکس (مثلاً پرفروش کافه‌ها — خالی = بدون نشان)</label>
-                    <input class="ei-badge" data-bidx="${idx}" value="${escapeHtml(it.badge||'')}" placeholder="مثلاً امضای سرآشپز">
+                    <input autocomplete="off" class="ei-badge" data-bidx="${idx}" value="${escapeHtml(it.badge||'')}" placeholder="مثلاً امضای سرآشپز">
                   </div>
                   <div class="field" style="grid-column:3/-1">
                     <label>ماندگاری / نکته نگهداری</label>
-                    <input class="ei-shelf" data-sidx="${idx}" value="${escapeHtml(it.shelfLife||'')}" placeholder="ماندگاری در یخچال: ۴ روز">
+                    <input autocomplete="off" class="ei-shelf" data-sidx="${idx}" value="${escapeHtml(it.shelfLife||'')}" placeholder="ماندگاری در یخچال: ۴ روز">
                   </div>
                   <div class="product-gallery-editor">
                     <span>عکس‌های اسلاید (عکس اول، تصویر اصلی است):</span>
@@ -4744,7 +4753,7 @@ function mountCustomerDirectory(body){
                   </div>
                   <div class="field" style="grid-column:1/-1;padding:8px 10px;border:1px dashed var(--border-strong);border-radius:10px;background:var(--surface-soft)">
                     <label>🔒 هزینهٔ تمام‌شدهٔ یک قالب کامل — فقط مدیر (تومان)</label>
-                    <input class="ei-cost" data-product-cost="${escapeHtml(it.id)}" inputmode="numeric" value="${currentProductCost(it.id)==null?'':formatPriceFa(currentProductCost(it.id))}" placeholder="ذخیره در دفتر رمزگذاری‌شده">
+                    <input autocomplete="off" class="ei-cost" data-product-cost="${escapeHtml(it.id)}" inputmode="numeric" value="${currentProductCost(it.id)==null?'':formatPriceFa(currentProductCost(it.id))}" placeholder="ذخیره در دفتر رمزگذاری‌شده">
                   </div>
                 </div>
               `).join('')}
@@ -4944,10 +4953,10 @@ function mountCustomerDirectory(body){
                   return `
                   <div style="padding:14px;border-radius:14px;background:var(--surface-soft);border:1px solid var(--border);margin-bottom:12px" class="vip-row" data-vidx="${vi}">
                     <div class="form-grid">
-                      <div class="field"><label>نام مشتری یا کافه</label><input class="vr-name" value="${escapeHtml(v.name)}"></div>
-                      <div class="field"><label>کد انگلیسی لینک (بدون فاصله، مثلاً lamiz)</label><input dir="ltr" class="vr-slug" value="${escapeHtml(v.slug)}"></div>
-                      <div class="field"><label>تخفیف اختصاصی همکاری (٪ — عدد ۰ یعنی قیمت عادی)</label><input dir="ltr" type="number" min="0" max="70" class="vr-disc" value="${v.discount || 0}"></div>
-                      <div class="field"><label>یادداشت بالای صفحه این مشتری (اختیاری)</label><input class="vr-note" value="${escapeHtml(v.note || '')}" placeholder="مثلاً ارسال رایگان دوشنبه‌ها"></div>
+                      <div class="field"><label>نام مشتری یا کافه</label><input autocomplete="off" class="vr-name" value="${escapeHtml(v.name)}"></div>
+                      <div class="field"><label>کد انگلیسی لینک (بدون فاصله، مثلاً lamiz)</label><input autocomplete="off" dir="ltr" class="vr-slug" value="${escapeHtml(v.slug)}"></div>
+                      <div class="field"><label>تخفیف اختصاصی همکاری (٪ — عدد ۰ یعنی قیمت عادی)</label><input autocomplete="off" dir="ltr" type="number" min="0" max="70" class="vr-disc" value="${v.discount || 0}"></div>
+                      <div class="field"><label>یادداشت بالای صفحه این مشتری (اختیاری)</label><input autocomplete="off" class="vr-note" value="${escapeHtml(v.note || '')}" placeholder="مثلاً ارسال رایگان دوشنبه‌ها"></div>
                     </div>
                     <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
                       <code dir="ltr" style="font-size:12px;color:var(--accent);word-break:break-all">${link}</code>
@@ -4999,23 +5008,23 @@ function mountCustomerDirectory(body){
           const b = state.brand;
           body.innerHTML = `
             <div class="form-grid">
-              <div class="field"><label>نام برند / قنادی</label><input id="f_name" value="${escapeHtml(b.name)}"></div>
-              <div class="field"><label>نشان بالای عنوان</label><input id="f_badge" value="${escapeHtml(b.standardBadge)}"></div>
-              <div class="field" style="grid-column:1/-1"><label>توضیح کوتاه زیر نام برند</label><input id="f_tagline" value="${escapeHtml(b.tagline)}"></div>
-              <div class="field"><label>شماره تماس (برای دکمه تماس)</label><input dir="ltr" id="f_phone" value="${escapeHtml(b.phone)}"></div>
-              <div class="field"><label>آیدی پیج اینستاگرام</label><input dir="ltr" id="f_ig" value="${escapeHtml(b.instagram||'')}"></div>
-              <div class="field"><label>آیدی تلگرام</label><input dir="ltr" id="f_tg" value="${escapeHtml(b.telegram||'')}"></div>
-              <div class="field"><label>آیدی بله</label><input dir="ltr" id="f_bale" value="${escapeHtml(b.bale||'')}"></div>
+              <div class="field"><label>نام برند / قنادی</label><input autocomplete="off" id="f_name" value="${escapeHtml(b.name)}"></div>
+              <div class="field"><label>نشان بالای عنوان</label><input autocomplete="off" id="f_badge" value="${escapeHtml(b.standardBadge)}"></div>
+              <div class="field" style="grid-column:1/-1"><label>توضیح کوتاه زیر نام برند</label><input autocomplete="off" id="f_tagline" value="${escapeHtml(b.tagline)}"></div>
+              <div class="field"><label>شماره تماس (برای دکمه تماس)</label><input autocomplete="off" dir="ltr" id="f_phone" value="${escapeHtml(b.phone)}"></div>
+              <div class="field"><label>آیدی پیج اینستاگرام</label><input autocomplete="off" dir="ltr" id="f_ig" value="${escapeHtml(b.instagram||'')}"></div>
+              <div class="field"><label>آیدی تلگرام</label><input autocomplete="off" dir="ltr" id="f_tg" value="${escapeHtml(b.telegram||'')}"></div>
+              <div class="field"><label>آیدی بله</label><input autocomplete="off" dir="ltr" id="f_bale" value="${escapeHtml(b.bale||'')}"></div>
               <div class="field">
                 <label>ایمیل دریافت آنی سفارشات (اختیاری — جیمیل خودتان)</label>
-                <input dir="ltr" type="email" id="f_notifyEmail" value="${escapeHtml((state.orderConfig && state.orderConfig.notifyEmail) || '')}" placeholder="example@gmail.com">
+                <input autocomplete="off" dir="ltr" type="email" id="f_notifyEmail" value="${escapeHtml((state.orderConfig && state.orderConfig.notifyEmail) || '')}" placeholder="example@gmail.com">
               </div>
-              <div class="field" style="grid-column:1/-1"><label>توضیح شرایط ثبت سفارش در پایین صفحه</label><input id="f_note" value="${escapeHtml(b.orderNote)}"></div>
+              <div class="field" style="grid-column:1/-1"><label>توضیح شرایط ثبت سفارش در پایین صفحه</label><input autocomplete="off" id="f_note" value="${escapeHtml(b.orderNote)}"></div>
               <div class="field" style="grid-column:1/-1;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-soft)">
                 <label style="font-weight:800">💳 اطلاعات کارت برای پیش‌پرداخت سفارش</label>
                 <div class="form-grid">
-                  <div class="field"><label>نام صاحب کارت (نمایش به مشتری)</label><input id="f_paymentCardHolder" value="${escapeHtml(b.paymentCardHolder||'')}" placeholder="مثلاً نام صاحب حساب"></div>
-                  <div class="field"><label>شماره کارت ۱۶ رقمی (نمایش به مشتری)</label><input dir="ltr" inputmode="numeric" maxlength="23" id="f_paymentCardNumber" value="${escapeHtml(b.paymentCardNumber||'')}" placeholder="0000 0000 0000 0000"></div>
+                  <div class="field"><label>نام صاحب کارت (نمایش به مشتری)</label><input autocomplete="off" id="f_paymentCardHolder" value="${escapeHtml(b.paymentCardHolder||'')}" placeholder="مثلاً نام صاحب حساب"></div>
+                  <div class="field"><label>شماره کارت ۱۶ رقمی (نمایش به مشتری)</label><input autocomplete="off" dir="ltr" inputmode="numeric" maxlength="23" id="f_paymentCardNumber" value="${escapeHtml(b.paymentCardNumber||'')}" placeholder="0000 0000 0000 0000"></div>
                 </div>
                 <div style="font-size:11px;color:var(--text-muted)">شماره کارت و نام صاحب کارت در دادهٔ عمومی سایت نگهداری می‌شوند تا مشتری بتواند پرداخت کند؛ رمز و اطلاعات حسابداری در این بخش ذخیره نمی‌شوند. برای ذخیرهٔ دائمی، «ذخیره و انتشار» را بزنید.</div><button type="button" class="icon-btn" id="btnSavePaymentSettings">ذخیره اطلاعات کارت</button>
               </div>
@@ -5023,7 +5032,7 @@ function mountCustomerDirectory(body){
               <div class="field" style="grid-column:1/-1;padding-top:10px;border-top:1px solid var(--border)">
                 <label>تغییر رمز ورود به پنل مدیریت (برای حسابداری: حداقل ۱۰ نویسه، شامل حرف لاتین و عدد؛ رمز پیش‌فرض 1234 را فوراً عوض کنید)</label>
                 <div style="display:flex;gap:8px;max-width:420px">
-                  <input dir="ltr" type="password" id="f_newAdminPass" placeholder="رمز جدید دلخواه...">
+                  <input autocomplete="new-password" dir="ltr" type="password" id="f_newAdminPass" placeholder="رمز جدید دلخواه...">
                   <button type="button" class="icon-btn admin-trigger" id="btnSetNewPass">ثبت رمز جدید</button>
                 </div>
               </div>
@@ -5070,7 +5079,7 @@ function mountCustomerDirectory(body){
             <div style="max-width:560px;margin:0 auto">
               <div class="field">
                 <label>آدرس دائمی و بدون فیلتر منوی شما (برای ساخت کد QR):</label>
-                <input dir="ltr" id="f_publicUrl" value="${escapeHtml(urlVal)}" placeholder="https://lotuscake777.github.io">
+                <input autocomplete="off" dir="ltr" id="f_publicUrl" value="${escapeHtml(urlVal)}" placeholder="https://lotuscake777.github.io">
               </div>
               <div class="qr-preview-box">
                 <div id="qrCanvasWrap">${makeQrSvgString(urlVal, 200)}</div>
@@ -5142,12 +5151,12 @@ function mountCustomerDirectory(body){
                 </div>
                 <div style="display:flex; gap:8px; align-items:center">
                   <img id="logoPreviewImg" src="${d.logoImage||''}" style="height:44px; border-radius:8px; border:1px solid var(--border); display:${d.logoImage?'block':'none'}; object-fit:contain; background:#fff; padding:2px">
-                  <input id="f_logoImage" value="${escapeHtml(d.logoImage||'')}" placeholder="یا لینک مستقیم لوگو را اینجا پیست کنید" style="flex:1">
+                  <input autocomplete="off" id="f_logoImage" value="${escapeHtml(d.logoImage||'')}" placeholder="یا لینک مستقیم لوگو را اینجا پیست کنید" style="flex:1">
                   <button type="button" class="icon-btn btn-danger" id="btnRemoveLogo" style="height:32px">حذف لوگو</button>
                 </div>
                 <div style="font-size:11px; color:var(--text-muted); margin-top:6px">جایگاه به انتخاب شما: راست/چپ/وسط یا محو در پشت هدر — شفافیت و بلر هم قابل تنظیمه</div>
                 <label style="font-size:11px; display:flex; align-items:center; gap:6px; margin-top:8px"><input type="checkbox" id="f_showMonogram" ${d.showMonogram?'checked':''}> نمایش مونوگرام متنی (LC) وقتی لوگو ندارید</label>
-                <input id="f_monogramText" value="${escapeHtml(d.monogramText||'LC')}" placeholder="LC" style="width:80px; margin-top:6px; display:${d.showMonogram?'block':'none'}">
+                <input autocomplete="off" id="f_monogramText" value="${escapeHtml(d.monogramText||'LC')}" placeholder="LC" style="width:80px; margin-top:6px; display:${d.showMonogram?'block':'none'}">
               </div>
               <div class="field" style="grid-column:1/-1; padding:12px; background:var(--bg); border-radius:10px; border:1px solid var(--border)">
                 <label style="font-weight:800;display:block;margin-bottom:8px">🌸 نشان گل لوتوس روی عکس محصولات</label>
@@ -5164,32 +5173,32 @@ function mountCustomerDirectory(body){
               </div>
               <div class="field" style="grid-column:1/-1; display:flex; gap:10px; align-items:center; padding:10px; background:var(--bg); border-radius:10px; border:1px solid var(--border)">
                 <label style="flex:1"><input type="checkbox" id="f_showBake" ${d.showBakeStatus?'checked':''}> نمایش نوار وضعیت پخت روزانه</label>
-                <input id="f_bakeText" value="${escapeHtml(d.bakeStatusText||'')}" style="flex:2">
+                <input autocomplete="off" id="f_bakeText" value="${escapeHtml(d.bakeStatusText||'')}" style="flex:2">
                 <input type="color" id="f_bakeDot" value="${d.bakeStatusDot||'#1F6F4A'}" style="width:44px;height:36px">
               </div>
               <div class="field" style="grid-column:1/-1; padding:10px; background:var(--bg); border-radius:10px; border:1px solid var(--border)">
                 <label><input type="checkbox" id="f_showTrust" ${d.showTrustBar?'checked':''}> نمایش نوار اعتماد زیر هدر (۳ مورد)</label>
                 <div style="display:flex; gap:6px; margin-top:8px">
-                  <input id="f_trust1" value="${escapeHtml((d.trustItems||[])[0]||'')}" placeholder="مورد ۱" style="flex:1">
-                  <input id="f_trust2" value="${escapeHtml((d.trustItems||[])[1]||'')}" placeholder="مورد ۲" style="flex:1">
-                  <input id="f_trust3" value="${escapeHtml((d.trustItems||[])[2]||'')}" placeholder="مورد ۳" style="flex:1">
+                  <input autocomplete="off" id="f_trust1" value="${escapeHtml((d.trustItems||[])[0]||'')}" placeholder="مورد ۱" style="flex:1">
+                  <input autocomplete="off" id="f_trust2" value="${escapeHtml((d.trustItems||[])[1]||'')}" placeholder="مورد ۲" style="flex:1">
+                  <input autocomplete="off" id="f_trust3" value="${escapeHtml((d.trustItems||[])[2]||'')}" placeholder="مورد ۳" style="flex:1">
                 </div>
               </div>
               <div class="field"><label><input type="checkbox" id="f_showPerSlice" ${d.showPerSlicePrice?'checked':''}> نمایش قیمت هر اسلایس زیر قیمت اصلی</label></div>
               <div class="field"><label><input type="checkbox" id="f_showInfoBox" ${d.showInfoBox!==false?'checked':''}> نمایش باکس همکاری ویژه</label></div>
-              <div class="field" style="grid-column:1/-1"><label>عنوان باکس همکاری</label><input id="f_infoBoxTitle" value="${escapeHtml(d.infoBoxTitle||'')}" ></div>
+              <div class="field" style="grid-column:1/-1"><label>عنوان باکس همکاری</label><input autocomplete="off" id="f_infoBoxTitle" value="${escapeHtml(d.infoBoxTitle||'')}" ></div>
               <div class="field" style="grid-column:1/-1; padding:10px; background:var(--bg); border-radius:10px; border:1px solid var(--border)">
                 <label><input type="checkbox" id="f_showSocial" ${d.showSocialSection!==false?'checked':''}> نمایش بخش شبکه‌های اجتماعی با آیکون‌های رسمی</label>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px">
-                  <input id="f_socialCta" value="${escapeHtml(d.socialCtaText||'')}" placeholder="متن دعوت">
-                  <input dir="ltr" id="f_socialHandle" value="${escapeHtml(d.socialDisplayHandle||'')}" placeholder="@handle">
-                  <input dir="ltr" id="f_socialIgUrl" value="${escapeHtml(d.instagramUrl||'')}" placeholder="https://instagram.com/...">
-                  <input dir="ltr" id="f_socialTgUrl" value="${escapeHtml(d.telegramUrl||'')}" placeholder="https://t.me/...">
-                  <input dir="ltr" id="f_socialBaleUrl" value="${escapeHtml(d.baleUrl||'')}" placeholder="https://ble.ir/...">
+                  <input autocomplete="off" id="f_socialCta" value="${escapeHtml(d.socialCtaText||'')}" placeholder="متن دعوت">
+                  <input autocomplete="off" dir="ltr" id="f_socialHandle" value="${escapeHtml(d.socialDisplayHandle||'')}" placeholder="@handle">
+                  <input autocomplete="off" dir="ltr" id="f_socialIgUrl" value="${escapeHtml(d.instagramUrl||'')}" placeholder="https://instagram.com/...">
+                  <input autocomplete="off" dir="ltr" id="f_socialTgUrl" value="${escapeHtml(d.telegramUrl||'')}" placeholder="https://t.me/...">
+                  <input autocomplete="off" dir="ltr" id="f_socialBaleUrl" value="${escapeHtml(d.baleUrl||'')}" placeholder="https://ble.ir/...">
                 </div>
               </div>
-              <div class="field" style="grid-column:1/-1"><label>بازه‌های تحویل (با کاما جدا کنید)</label><input id="f_deliverySlots" value="${escapeHtml((d.deliverySlots||[]).join(' ، '))}" placeholder="مثلاً صبح، عصر"></div>
-              <div class="field" style="grid-column:1/-1"><label>گزینه‌های برش (با کاما جدا کنید)</label><input id="f_cutOptions" value="${escapeHtml((d.cutOptions||[]).join(' ، '))}" placeholder="برش‌خورده، قالب کامل"></div>
+              <div class="field" style="grid-column:1/-1"><label>بازه‌های تحویل (با کاما جدا کنید)</label><input autocomplete="off" id="f_deliverySlots" value="${escapeHtml((d.deliverySlots||[]).join(' ، '))}" placeholder="مثلاً صبح، عصر"></div>
+              <div class="field" style="grid-column:1/-1"><label>گزینه‌های برش (با کاما جدا کنید)</label><input autocomplete="off" id="f_cutOptions" value="${escapeHtml((d.cutOptions||[]).join(' ، '))}" placeholder="برش‌خورده، قالب کامل"></div>
             </div>
             <div style="margin-top:14px; padding:12px; background:var(--ok-soft); border-radius:10px; border:1px solid var(--border); font-size:12px; line-height:1.8">
               <strong>💡 چه چیزهایی را بدون کدنویسی می‌توانید تغییر دهید؟</strong><br>
@@ -5267,7 +5276,7 @@ function mountCustomerDirectory(body){
               <div class="field" style="grid-column:1/-1">
                 <label>کلید دسترسی گیت‌هاب (Personal Access Token — فقط در مرورگر خودتان ذخیره می‌شود و هرگز به سرور ارسال عمومی نمی‌شود)</label>
                 <div style="display:flex; gap:8px; align-items:center">
-                  <input dir="ltr" type="password" id="f_ghToken" value="${escapeHtml(cfg.token)}" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="flex:1">
+                  <input autocomplete="new-password" dir="ltr" type="password" id="f_ghToken" value="${escapeHtml(cfg.token)}" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="flex:1">
                   <button type="button" class="icon-btn" id="btnToggleGhToken" style="height:36px">👁️</button>
                   <button type="button" class="icon-btn btn-green" id="btnSaveGhToken" style="height:36px">💾 ذخیره کلید</button>
                 </div>
@@ -5275,11 +5284,11 @@ function mountCustomerDirectory(body){
               </div>
               <div class="field">
                 <label>نام اکانت یا سازمان گیت‌هاب (اختیاری — مثلاً <code>lotuscake777-menu</code>)</label>
-                <input dir="ltr" id="f_ghOwner" value="${escapeHtml(cfg.ghOwner)}" placeholder="خالی = اکانت فعلی شما">
+                <input autocomplete="off" dir="ltr" id="f_ghOwner" value="${escapeHtml(cfg.ghOwner)}" placeholder="خالی = اکانت فعلی شما">
               </div>
               <div class="field">
                 <label>نام دلخواه مخزن سایت (مثلاً <code>lotuscake777_menu</code> یا خالی برای ریشه)</label>
-                <input dir="ltr" id="f_ghRepo" value="${escapeHtml(cfg.ghRepo)}" placeholder="مثلاً lotuscake777_menu">
+                <input autocomplete="off" dir="ltr" id="f_ghRepo" value="${escapeHtml(cfg.ghRepo)}" placeholder="مثلاً lotuscake777_menu">
               </div>
               <input type="hidden" id="f_ghBranch" value="${escapeHtml(cfg.ghBranch || 'main')}">
             </div>
