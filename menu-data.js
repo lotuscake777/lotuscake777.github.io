@@ -44,7 +44,7 @@ window.MENU_DATA = {
       "name": "کیک اسنیکرز",
       "desc": "خامه شکلاتی شیری، دریپ سس کارامل دست‌ساز و بادام‌زمینی کاراملی",
       "serving": "۸ اسلایس",
-      "price": "۷۸۰,۰۰۰",
+      "price": "۱,۷۳۰,۰۰۰",
       "image": "assets/images/k01-snickers.jpg",
       "available": true,
       "badge": "",
