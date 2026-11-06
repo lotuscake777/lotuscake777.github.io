@@ -729,7 +729,11 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     .gallery-nav { position:absolute; z-index:6; top:50%; transform:translateY(-50%); border:0; border-radius:50%; width:40px; height:40px; background:rgba(0,0,0,.6); color:white; font-size:24px; cursor:pointer; }
     .gallery-prev { right:10px; } .gallery-next { left:10px; }
     .gallery-count { position:absolute; z-index:6; bottom:10px; left:50%; transform:translateX(-50%); color:white; background:rgba(0,0,0,.65); padding:3px 10px; border-radius:20px; font-size:12px; }
-    .product-gallery-editor { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .card-img-wrap .card-gallery-nav { width:30px; height:30px; font-size:20px; }
+    .card-img-wrap .gallery-prev { right:5px; } .card-img-wrap .gallery-next { left:5px; }
+    .card-img-wrap .gallery-count { bottom:5px; font-size:10px; padding:2px 7px; }
+    .items-list .card-img-wrap .card-gallery-nav { width:27px; height:27px; }
+    .product-gallery-editor { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:8px; background:var(--surface); border:1px solid var(--border); border-radius:10px; }
     .product-gallery-editor figure { margin:0; display:grid; gap:4px; width:78px; text-align:center; font-size:11px; }
     .product-gallery-editor img { width:78px; height:62px; object-fit:cover; border-radius:8px; }
     .product-gallery-editor button { font-size:11px; }
@@ -1471,24 +1475,22 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         return toFa(n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','));
       }
 
-      // === ROBUST SLICE MATH CORE - 100% accurate everywhere ===
+      // Only a number tied to a serving unit is a slice count, not the pan diameter.
       function parseSliceCount(servingStr){
-        const s = toEnDigits(String(servingStr||'')).trim();
-        // Extract first Persian/English number - handles "۸ اسلایس", "12 slices", "۶ تکه" etc
-        const m = s.match(/(\d+)/);
-        if(m){
-          const n = parseInt(m[1],10);
-          // Valid slice counts are 2..32 (covers 2,4,6,8,10,12,16 etc) - excludes years/prices
-          if(n>=2 && n<=32) return n;
-        }
-        return 0; // 0 = single serving / non-slice product
+        const s=toEnDigits(String(servingStr||'')).replace(/[\u200c\u200d]/g,' ').trim();
+        const unit='(?:اسلایس|اسلايس|برش|تکه|تكه|slice(?:s)?|pieces?|نفر(?:ه)?)';
+        const before=s.match(new RegExp('(?:^|[^\\d])(\\d+)\\s*'+unit,'i'));
+        const after=s.match(new RegExp(unit+'\\s*[:：]?\\s*(\\d+)','i'));
+        const bare=s.match(/^\d+$/);
+        const n=Number(before?before[1]:after?after[1]:bare?bare[0]:0);
+        return Number.isInteger(n)&&n>=2&&n<=32?n:0;
       }
       function getPerSlicePrice(item){
         const cnt = parseSliceCount(item.serving);
         if(cnt>=2){
           const eff = getEffectivePriceNum(item);
-          // Banker's rounding to nearest rial, prevents floating errors
-          return Math.round((eff / cnt) * 100) / 100 | 0; // integer rial
+          // Round to the nearest toman, consistently with the cart and receipt.
+          return Math.round(eff / cnt); // nearest toman
         }
         return 0;
       }
@@ -2445,9 +2447,14 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           const rLocal = await fetch('menu-data.js?v=' + Date.now(), { cache: 'no-store' });
           if (rLocal.ok) {
             const parsedLocal = parseMenuJs(await rLocal.text());
-            if (parsedLocal && (!state.updatedAt || (parsedLocal.updatedAt || 0) >= (state.updatedAt || 0))) {
-              state = ensureOrderConfig(parsedLocal);
-              renderAll();
+            if (parsedLocal) {
+              if (!state.updatedAt || (parsedLocal.updatedAt || 0) >= (state.updatedAt || 0)) {
+                state = ensureOrderConfig(parsedLocal);
+                renderAll();
+              }
+              // Keep menu and image paths on the same Pages deployment. GitHub's
+              // repository can be ahead of Pages while newly uploaded photos build.
+              return;
             }
           }
         } catch (_) {}
@@ -2710,12 +2717,14 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
                   const perSliceText = getPerSliceText(item);
                   const perSliceHtml = perSliceText ? `<div class="per-slice-price">${perSliceText}</div>` : '';
                   const watermarkHtml = getLotusWatermarkHtml();
+                  const photos=productImages(item);
                   return `
                   <article class="card" data-id="${item.id}">
                     <div class="card-img-wrap">
-                      <img src="${escapeHtml(productImagePreview(item.image))}" alt="${escapeHtml(item.name)}" loading="lazy">
+                      <img class="card-product-image" src="${escapeHtml(productImagePreview(photos[0]||item.image))}" alt="${escapeHtml(item.name)}" loading="lazy">
                       ${item.available === false ? '<div class="soldout-overlay"><span>اتمام موجودی روز</span></div>' : ''}
                       ${watermarkHtml}
+                      ${photos.length>1?`<button type="button" class="gallery-nav gallery-prev card-gallery-nav" data-gallery-step="-1" data-stop="1" aria-label="عکس قبلی">‹</button><button type="button" class="gallery-nav gallery-next card-gallery-nav" data-gallery-step="1" data-stop="1" aria-label="عکس بعدی">›</button><span class="gallery-count card-gallery-count" aria-live="polite">${toFa(1)} / ${toFa(photos.length)}</span>`:''}
                     </div>
                     <div class="card-body">
                       <div>
@@ -2762,8 +2771,22 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           });
         });
         container.querySelectorAll('.card').forEach(card => {
+          const item=state.items.find(x=>String(x.id)===card.dataset.id), photos=item?productImages(item):[];
+          let photoIndex=0, touchX=null, touchY=null, lastSwipe=0;
+          const wrap=card.querySelector('.card-img-wrap'), image=card.querySelector('.card-product-image'), count=card.querySelector('.card-gallery-count');
+          const movePhoto=step=>{
+            if(photos.length<2)return;
+            photoIndex=(photoIndex+step+photos.length)%photos.length;
+            image.src=productImagePreview(photos[photoIndex]);
+            count.textContent=toFa(photoIndex+1)+' / '+toFa(photos.length);
+          };
+          card.querySelectorAll('[data-gallery-step]').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();movePhoto(Number(btn.dataset.galleryStep));}));
+          if(photos.length>1){
+            wrap.addEventListener('touchstart',e=>{if(e.touches.length===1){touchX=e.touches[0].clientX;touchY=e.touches[0].clientY;}},{passive:true});
+            wrap.addEventListener('touchend',e=>{if(touchX!==null&&e.changedTouches.length){const dx=e.changedTouches[0].clientX-touchX,dy=e.changedTouches[0].clientY-touchY;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)){movePhoto(dx<0?1:-1);lastSwipe=Date.now();}}touchX=null;touchY=null;},{passive:true});
+          }
           card.addEventListener('click', e => {
-            if (e.target.closest('[data-stop]')) return;
+            if (e.target.closest('[data-stop]') || Date.now()-lastSwipe<500) return;
             openDetail(card.dataset.id);
           });
         });
@@ -4869,7 +4892,7 @@ function mountCustomerDirectory(body){
             </div>
             <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px">
               <div style="font-size:12.5px;color:var(--text-muted)">
-                برای تغییر عکس هر کیک روی <strong>«📷 تغییر عکس»</strong> بزنید و در پایان دکمه سبز پایین را بزنید:
+                همهٔ عکس‌های هر محصول را در یک بخش مدیریت کنید؛ عکس اول تصویر اصلی است. پس از تغییرات دکمه سبز پایین را بزنید:
               </div>
               <button type="button" class="icon-btn admin-trigger" id="btnAddNewCake">➕ افزودن محصول جدید</button>
             </div>
@@ -4883,12 +4906,11 @@ function mountCustomerDirectory(body){
             <div id="adminItemsList">
               ${state.items.map((it, idx) => `
                 <div class="edit-item-row" data-idx="${idx}">
-                  <div class="photo-box">
-                    <img src="${escapeHtml(it._previewDataUrl || productImagePreview(it.image))}" alt="" class="ei-preview">
-                    <label class="change-photo-lbl">
-                      📷 تغییر عکس
-                      <input type="file" accept="image/*" class="ei-file hidden" data-fidx="${idx}">
-                    </label>
+                  <div class="product-gallery-editor">
+                    <span>📷 عکس‌های محصول و اسلاید:</span>
+                    ${productImages(it).map((src,photoIndex)=>`<figure><img src="${escapeHtml(productImagePreview(src))}" alt="عکس ${toFa(photoIndex+1)}"><span>${photoIndex===0?'تصویر اصلی':toFa(photoIndex+1)}</span>${photoIndex>0?`<button type="button" class="icon-btn" data-primary-photo="${idx}" data-photo-index="${photoIndex}">تصویر اصلی</button>`:''}${productImages(it).length>1?`<button type="button" class="icon-btn btn-danger" data-remove-photo="${idx}" data-photo-index="${photoIndex}">حذف عکس</button>`:''}</figure>`).join('')}
+                    <label class="icon-btn" style="cursor:pointer">➕ افزودن عکس‌ها<input type="file" accept="image/*" multiple class="ei-gallery-file hidden" data-fidx="${idx}"></label>
+                    <small>عکس اول در منو دیده می‌شود؛ برای تغییر تصویر اصلی، ابتدا عکس جدید را اضافه و «تصویر اصلی» را انتخاب کنید.</small>
                   </div>
                   <div class="field">
                     <label>نام محصول</label>
@@ -4925,11 +4947,6 @@ function mountCustomerDirectory(body){
                   <div class="field" style="grid-column:3/-1">
                     <label>ماندگاری / نکته نگهداری</label>
                     <input autocomplete="off" class="ei-shelf" data-sidx="${idx}" value="${escapeHtml(it.shelfLife||'')}" placeholder="ماندگاری در یخچال: ۴ روز">
-                  </div>
-                  <div class="product-gallery-editor">
-                    <span>عکس‌های اسلاید (عکس اول، تصویر اصلی است):</span>
-                    ${productImages(it).map((src,photoIndex)=>`<figure><img src="${escapeHtml(productImagePreview(src))}" alt="عکس ${toFa(photoIndex+1)}"><span>${photoIndex===0?'اصلی':toFa(photoIndex+1)}</span>${productImages(it).length>1?`<button type="button" class="icon-btn btn-danger" data-remove-photo="${idx}" data-photo-index="${photoIndex}">حذف عکس</button>`:''}</figure>`).join('')}
-                    <label class="icon-btn" style="cursor:pointer">➕ افزودن عکس‌ها<input type="file" accept="image/*" multiple class="ei-gallery-file hidden" data-fidx="${idx}"></label>
                   </div>
                   <div class="field" style="grid-column:1/-1;padding:8px 10px;border:1px dashed var(--border-strong);border-radius:10px;background:var(--surface-soft)">
                     <label>🔒 هزینهٔ تمام‌شدهٔ یک قالب کامل — فقط مدیر (تومان)</label>
@@ -5009,10 +5026,17 @@ function mountCustomerDirectory(body){
             inp.addEventListener('change',()=>{ collectAdminInputs(); const idx=+inp.dataset.sidx; if(state.items[idx]) state.items[idx].shelfLife=inp.value.trim(); });
           });
 
+          body.querySelectorAll('[data-primary-photo]').forEach(btn=>btn.addEventListener('click',()=>{
+            collectAdminInputs();const it=state.items[+btn.dataset.primaryPhoto];if(!it)return;
+            const images=productImages(it), index=Number(btn.dataset.photoIndex);if(index<1||index>=images.length)return;
+            images.unshift(images.splice(index,1)[0]);it.image=images[0];it.images=images;delete it._previewDataUrl;
+            renderAdminTab();renderAll();document.getElementById('adminToast').textContent='تصویر اصلی تغییر کرد؛ برای انتشار دکمه سبز را بزنید.';
+          }));
           body.querySelectorAll('[data-remove-photo]').forEach(btn=>btn.addEventListener('click',()=>{
             collectAdminInputs(); const it=state.items[+btn.dataset.removePhoto]; if(!it)return;
             const images=productImages(it); if(images.length<2)return;
-            images.splice(+btn.dataset.photoIndex,1); it.image=images[0]; it.images=images; delete it._previewDataUrl;
+            const removed=images.splice(+btn.dataset.photoIndex,1)[0]; it.image=images[0]; it.images=images; delete it._previewDataUrl;
+            if(removed&&!state.items.some(x=>productImages(x).includes(removed)))delete pendingImageUploads[removed];
             renderAdminTab(); renderAll(); document.getElementById('adminToast').textContent='عکس از اسلاید برداشته شد؛ برای انتشار دکمه سبز را بزنید.';
           }));
           body.querySelectorAll('.ei-gallery-file').forEach(inp=>inp.addEventListener('change',async()=>{
@@ -5029,39 +5053,6 @@ function mountCustomerDirectory(body){
             } catch(err) { toast.textContent=err.message==='لغو شد'?'انتخاب عکس متوقف شد؛ عکس‌های قبلی حفظ شدند.':'خطا در تصویر: '+err.message; }
             finally { renderAdminTab();renderAll(); }
           }));
-
-          body.querySelectorAll('.ei-file').forEach(inp => {
-            inp.addEventListener('change', async () => {
-              const file = inp.files && inp.files[0];
-              if (!file) return;
-              const idx = +inp.dataset.fidx;
-              const toast = document.getElementById('adminToast');
-              toast.textContent = 'باز کردن ویرایشگر قاب تصویر...';
-              try {
-                collectAdminInputs();
-                const rawDataUrl = await fileToDataUrl(file);
-                const { dataUrl, base64 } = await openImageCropEditor(rawDataUrl, file.name);
-                const newRelPath = `assets/images/custom_${state.items[idx].id}_${Date.now()}.jpg`;
-                pendingImageUploads[newRelPath] = base64;
-                const existingImages=productImages(state.items[idx]);
-                state.items[idx].image = newRelPath;
-                state.items[idx].images = [newRelPath,...existingImages.slice(1)];
-                state.items[idx]._previewDataUrl = dataUrl;
-                fetch('api/upload-image', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ path: newRelPath, base64 })
-                }).catch(() => {});
-                renderAdminTab();
-                renderAll();
-                toast.textContent = 'عکس جدید با قاب دلخواه آماده شد ✓ حالا دکمه سبز «ذخیره و انتشار آنی» را بزنید!';
-              } catch (err) {
-                if(err.message!=='لغو شد') toast.textContent = 'خطا در تصویر: ' + err.message;
-                else toast.textContent='ویرایش لغو شد';
-                inp.value='';
-              }
-            });
-          });
 
           // The logo control is optional in this tab.
           const logoUp=document.getElementById('f_logoUpload');
@@ -5877,6 +5868,7 @@ function mountCustomerDirectory(body){
                 })
               });
               if (!putImg.ok) throw new Error('خطا در آپلود تصویر جدید');
+              delete pendingImageUploads[imgPath]; // retries skip images already uploaded successfully
             }
             pendingImageUploads = {};
 
@@ -5899,7 +5891,7 @@ function mountCustomerDirectory(body){
               const errJson = await putRes.json().catch(() => ({}));
               throw new Error(errJson.message || ('کد خطا ' + putRes.status));
             }
-            toast.textContent = 'عالی! عکس‌ها، قیمت‌ها و صفحات مشتریان روی سرور منتشر شد و در همه گوشی‌ها فعال است ✓';
+            toast.textContent = 'عکس‌ها و تغییرات ثبت شدند؛ فعال‌شدن در سایت و همه گوشی‌ها ممکن است چند دقیقه طول بکشد ✓';
             return;
           } catch (err) {
             toast.textContent = 'خطا در اتصال گیت‌هاب: ' + err.message;
