@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1793989098779,
+  "updatedAt": 1794002937701,
   "cloud": {
     "ghOwner": "lotuscake777",
     "ghRepo": "lotuscake777.github.io",
@@ -44,7 +44,7 @@ window.MENU_DATA = {
       "name": "کیک اسنیکرز",
       "desc": "خامه شکلاتی شیری، دریپ سس کارامل دست‌ساز و بادام‌زمینی کاراملی",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
-      "price": "1600000",
+      "price": "1800000",
       "image": "assets/images/k01-snickers.jpg",
       "available": true,
       "badge": "",
@@ -56,7 +56,7 @@ window.MENU_DATA = {
       "name": "کیک پسته",
       "desc": "خامه کره‌پسته خالص، خلال پسته تازه و تزئین گل محمدی",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
-      "price": "۸۹۰,۰۰۰",
+      "price": "2.040.000",
       "image": "assets/images/custom_k02_1793751809831.jpg",
       "available": true,
       "badge": "",
@@ -120,7 +120,7 @@ window.MENU_DATA = {
       "name": "کیک خیس شکلاتی",
       "desc": "اسفنج شکلاتی آغشته به سس شکلاتی گرم با روکش گاناش براق",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
-      "price": "۷۲۰,۰۰۰",
+      "price": "1.300.000",
       "image": "assets/images/custom_k07_1793751853382.jpg",
       "available": true,
       "badge": "",
