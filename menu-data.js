@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1794004216747,
+  "updatedAt": 1794005522381,
   "cloud": {
     "ghOwner": "lotuscake777",
     "ghRepo": "lotuscake777.github.io",
@@ -63,7 +63,7 @@ window.MENU_DATA = {
       "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
       "images": [
         "assets/images/custom_k02_1793751809831.jpg",
-        "assets/images/custom_k02_1793985235435_a3ynpq.jpg"
+        "assets/images/custom_k02_1794005517771_u2rlkw.jpg"
       ]
     },
     {
