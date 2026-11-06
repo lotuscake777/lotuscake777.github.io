@@ -615,6 +615,39 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       border-color: var(--accent);
     }
 
+
+    .card-actions { display:flex; gap:6px; align-items:center; }
+    .favorite-button { width:32px;height:32px;border:1px solid var(--border-strong);border-radius:9px;background:var(--surface);color:var(--text-muted);font-size:21px;line-height:1;cursor:pointer;display:inline-grid;place-items:center; }
+    .favorite-button.is-favorite { color:#c83f63;background:#fff2f5;border-color:#e9bdc8; }
+    .favorite-button:disabled { opacity:.55;cursor:wait; }
+    #registerModal .account-modal-card { max-width:900px; }
+    .account-head { display:flex;justify-content:space-between;align-items:start;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--border); }
+    .account-head h3 { font-size:21px;margin:3px 0; }
+    .account-head p,.account-hint { font-size:12px;color:var(--text-muted);line-height:1.8; }
+    .account-kicker { color:var(--accent);font-size:11px;font-weight:800; }
+    .account-layout { display:grid;grid-template-columns:190px minmax(0,1fr);gap:18px;padding-top:16px; }
+    .account-nav { display:flex;flex-direction:column;gap:5px; }
+    .account-nav button { border:0;border-radius:10px;background:transparent;color:var(--text);text-align:right;padding:11px;font:inherit;font-size:13px;cursor:pointer; }
+    .account-nav button.active { color:var(--accent);background:var(--accent-soft);font-weight:800; }
+    .account-nav #btnLogoutInsideModal { color:#aa3746;margin-top:8px;border-top:1px solid var(--border); }
+    .account-panel { padding:18px;border-radius:14px;background:var(--surface-soft);min-width:0; }
+    .account-panel h4 { font-size:16px;margin:0 0 12px; }
+    .account-fields { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px; }
+    .account-field { display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:var(--text-muted); }
+    .account-field input,.account-field textarea { width:100%;min-width:0;border:1px solid var(--border-strong);border-radius:9px;background:var(--surface);color:var(--text);padding:10px;font:inherit;font-size:13px; }
+    .account-field input[readonly] { opacity:.7; }
+    .account-actions { display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px; }
+    .account-save { width:auto;padding:0 18px;min-height:42px; }
+    .account-status { color:var(--accent);font-size:12px; }
+    .account-order,.account-favorite { background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:12px;margin:9px 0;font-size:12px;line-height:1.9; }
+    .account-order-head,.account-invoice-lines > div { display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap; }
+    .account-invoice-lines { margin:8px 0;border-block:1px solid var(--border);padding:7px 0; }
+    .account-favorite { display:flex;align-items:center;gap:10px; }
+    .account-favorite img { width:56px;height:50px;object-fit:cover;border-radius:8px; }
+    .account-favorite > div { flex:1;min-width:0; }
+    .account-pages { display:flex;gap:10px;align-items:center;justify-content:center;margin-top:12px;font-size:12px; }
+    @media(max-width:650px) { .account-layout { grid-template-columns:1fr; } .account-nav { flex-direction:row;overflow-x:auto; } .account-nav button { white-space:nowrap; } .account-nav #btnLogoutInsideModal { margin:0;border:0; } .account-panel { padding:14px; } .account-fields { grid-template-columns:1fr; } }
+
     .qty-stepper {
       display: inline-flex;
       align-items: center;
@@ -2737,7 +2770,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
                           <span class="price-unit">تومان</span>
                           ${perSliceHtml}
                         </div>
-                        ${actionHtml}
+                        <div class="card-actions">${actionHtml}<button type="button" class="favorite-button ${favoriteIds.has(item.id)?'is-favorite':''}" data-favorite="${escapeHtml(item.id)}" data-stop="1" aria-pressed="${favoriteIds.has(item.id)}" aria-label="${favoriteIds.has(item.id)?'حذف از':'افزودن به'} علاقه‌مندی‌ها: ${escapeHtml(item.name)}" ${favoritePending.has(item.id)?'disabled':''}>${favoriteIds.has(item.id)?'♥':'♡'}</button></div>
                       </div>
                     </div>
                   </article>`;
@@ -2753,6 +2786,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         const container = document.getElementById('menuContainer');
         container.innerHTML = html;
 
+        container.querySelectorAll('[data-favorite]').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();void toggleFavorite(btn.dataset.favorite)}));
         container.querySelectorAll('[data-inc]').forEach(btn => {
           btn.addEventListener('click', e => {
             e.stopPropagation();
@@ -2894,7 +2928,7 @@ function createCustomerBrowserSession({enabled=false,projectUrl,publicKey,fetchI
   if(signal?.aborted)throw Error('cancelled');if(r.status===204)return {ok:r.ok,data:null};
   const reader=r.body?.getReader();if(!reader)throw Error('invalid');let chunks=[],size=0;
   const cancel=()=>{try{reader.cancel().catch(()=>{})}catch{}};signal?.addEventListener('abort',cancel,{once:true});
-  try{while(true){const x=await reader.read();if(signal?.aborted)throw Error('cancelled');if(x.done)break;size+=x.value.length;if(size>65536)throw Error('invalid');chunks.push(x.value)}const b=new Uint8Array(size);let at=0;for(const c of chunks){b.set(c,at);at+=c.length}return {ok:r.ok,data:JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(b))}}
+  try{while(true){const x=await reader.read();if(signal?.aborted)throw Error('cancelled');if(x.done)break;size+=x.value.length;if(size>262144)throw Error('invalid');chunks.push(x.value)}const b=new Uint8Array(size);let at=0;for(const c of chunks){b.set(c,at);at+=c.length}return {ok:r.ok,data:JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(b))}}
   finally{signal?.removeEventListener('abort',cancel);cancel();try{reader.releaseLock()}catch{}}
  }
  async function api(path,{method='POST',body,signal,token}={}){
@@ -2950,7 +2984,11 @@ function createCustomerBrowserSession({enabled=false,projectUrl,publicKey,fetchI
   login:input=>perform('login',input),signup:input=>perform('signup',input),cancelPending,restore,
   profile(){expire();return current?.profile||null},
   async createOrder(order){expire();if(!current)return {outcome:'signed_out'};try{const r=await api('/functions/v1/lotus-customer-orders',{method:'POST',body:order,signal:AbortSignal.timeout(timeoutMs),token:current.token});return r.ok&&['saved','already_saved'].includes(r.data?.outcome)?r.data:{outcome:'unavailable'}}catch{return {outcome:'unavailable'}}},
-  async listOrders(){expire();if(!current)return {outcome:'signed_out',orders:[]};try{const r=await api('/rest/v1/lotus_customer_orders?select=order_code,created_at,delivery_date,delivery_slot,total,payment_method,items&order=created_at.desc&limit=25',{method:'GET',signal:AbortSignal.timeout(timeoutMs),token:current.token});if(!r.ok||!Array.isArray(r.data)||r.data.length>25)throw Error('invalid');return {outcome:'ok',orders:r.data.map(validOrder)}}catch{return {outcome:'unavailable',orders:[]}}},
+  async listOrders(offset=0){expire();if(!current)return {outcome:'signed_out',orders:[]};if(!Number.isInteger(offset)||offset<0||offset>1000000)return {outcome:'unavailable',orders:[]};try{const r=await api('/rest/v1/lotus_customer_orders?select=order_code,created_at,delivery_date,delivery_slot,total,payment_method,items&order=created_at.desc,id.desc&limit=11&offset='+offset,{method:'GET',signal:AbortSignal.timeout(timeoutMs),token:current.token});if(!r.ok||!Array.isArray(r.data)||r.data.length>11)throw Error('invalid');return {outcome:'ok',orders:r.data.map(validOrder)}}catch{return {outcome:'unavailable',orders:[]}}},
+  async getAccountDetails(){expire();if(!current)return {outcome:'signed_out'};const token=current.token;try{const r=await api('/rest/v1/rpc/lotus_account_details_get',{method:'POST',body:{},signal:AbortSignal.timeout(timeoutMs),token});if(!current||current.token!==token||!r.ok||!Array.isArray(r.data)||r.data.length>1)throw Error('invalid');const d=r.data[0]||{first_name:'',last_name:'',contact_email:'',birthdate_jalali:''};for(const [k,n] of [['first_name',60],['last_name',60],['contact_email',254],['birthdate_jalali',10]])if(typeof d[k]!=='string'||d[k].length>n)throw Error('invalid');return {outcome:'ok',details:{first:d.first_name,last:d.last_name,email:d.contact_email,birth:d.birthdate_jalali}}}catch{return {outcome:'unavailable'}}},
+  async saveAccount(d){expire();if(!current)return {outcome:'signed_out'};const token=current.token;try{const r=await api('/rest/v1/rpc/lotus_account_profile_save',{method:'POST',body:{p_first_name:d.first,p_last_name:d.last,p_cafe_name:d.cafe,p_phone:d.phone,p_address:d.address,p_contact_email:d.email,p_birthdate_jalali:d.birth},signal:AbortSignal.timeout(timeoutMs),token});if(!current||current.token!==token||!r.ok||!Array.isArray(r.data)||r.data.length!==1)throw Error('invalid');const profile=profileFromRow(r.data[0]);if(profile.id!==current.profile.id||profile.username!==current.profile.username)throw Error('invalid');current.profile=profile;persist();onProfile(profile);return {outcome:'ok',profile}}catch{return {outcome:'unavailable'}}},
+  async listFavorites(){expire();if(!current)return {outcome:'signed_out',ids:[]};const token=current.token;try{const r=await api('/rest/v1/rpc/lotus_customer_favorites_get',{method:'POST',body:{},signal:AbortSignal.timeout(timeoutMs),token});if(!current||current.token!==token||!r.ok||!Array.isArray(r.data)||r.data.length>1000||r.data.some(x=>typeof x.product_id!=='string'||x.product_id.length<1||x.product_id.length>80))throw Error('invalid');return {outcome:'ok',ids:r.data.map(x=>x.product_id)}}catch{return {outcome:'unavailable',ids:[]}}},
+  async setFavorite(id,value){expire();if(!current)return {outcome:'signed_out'};const token=current.token;if(typeof id!=='string'||!id||id.length>80||typeof value!=='boolean')return {outcome:'unavailable'};try{const r=await api('/rest/v1/rpc/lotus_customer_favorite_set',{method:'POST',body:{p_product_id:id,p_favorite:value},signal:AbortSignal.timeout(timeoutMs),token});if(!current||current.token!==token||!r.ok||r.data!==value)throw Error('invalid');return {outcome:'ok'}}catch{return {outcome:'unavailable'}}},
   async logout(){const token=current?.token;cancelPending();forget();if(!token)return {serverLogout:'not_needed'};
    try{const r=await api('/auth/v1/logout?scope=local',{method:'POST',signal:AbortSignal.timeout(timeoutMs),token});return {serverLogout:r.ok?'accepted':'unknown'}}catch{return {serverLogout:'unknown'}}
   }
@@ -2995,7 +3033,7 @@ if(customerDbFormsEnabled&&customerProfile?.source!=='customer_database'){
 const customerBrowserSession=createCustomerBrowserSession({enabled:customerDbFormsEnabled,projectUrl:'https://pwmdixtmkqzutaaulozl.supabase.co',publicKey:'sb_publishable_CuJkFbCWZLqkiPUfL__fgA_3n67OUS7',onProfile(profile){
  if(profile){customerProfile={...profile,source:'customer_database',loggedIn:true,discount:0};try{localStorage.removeItem('lotus_active_user_v2');localStorage.removeItem('lotus_customer_profile_v1')}catch(_){}}
  else if(customerProfile?.source==='customer_database'){customerProfile={loggedIn:false,username:'',name:'',cafeName:'',phone:'',address:'',discount:0};document.getElementById('registerModal').classList.add('hidden');document.getElementById('registerModalBody').textContent='';}
- renderAll();
+ favoriteIds=new Set();favoriteStatus='idle';favoriteGeneration++;favoritePending.clear();renderAll();if(profile)void refreshFavorites();
 }});
 void customerBrowserSession.restore();
 function formatPersianDate(value,{time=false,dateOnly=false}={}){
@@ -3007,13 +3045,83 @@ function formatPersianDate(value,{time=false,dateOnly=false}={}){
   return new Intl.DateTimeFormat('fa-IR-u-ca-persian-nu-arabext',{year:'numeric',month:'long',day:'numeric',...(time?{hour:'2-digit',minute:'2-digit'}:{}),timeZone:dateOnly?'UTC':'Asia/Tehran'}).format(d);
  }catch{return '—'}
 }
+function normalizeJalaliBirthdate(value){
+ const input=toEnDigits(value).trim();if(!input)return '';
+ const m=input.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})$/);if(!m)return null;
+ const [year,month,day]=m.slice(1).map(Number);if(year<1200||year>1500||month<1||month>12||day<1||day>31)return null;
+ try{
+  const f=new Intl.DateTimeFormat('en-US-u-ca-persian-nu-latn',{year:'numeric',month:'numeric',day:'numeric',timeZone:'UTC'});
+  const target=year*10000+month*100+day;let lo=Math.floor(Date.UTC(1800,0,1,12)/86400000),hi=Math.floor(Date.UTC(2200,0,1,12)/86400000);
+  while(lo<=hi){const mid=Math.floor((lo+hi)/2),parts=f.formatToParts(new Date(mid*86400000+43200000));const num=type=>Number(parts.find(x=>x.type===type)?.value);const n=num('year')*10000+num('month')*100+num('day');if(n===target)return `${year}/${String(month).padStart(2,'0')}/${String(day).padStart(2,'0')}`;if(n<target)lo=mid+1;else hi=mid-1;}
+ }catch(_){}
+ return null;
+}
+let favoriteIds=new Set(),favoriteStatus='idle',favoriteGeneration=0;
+const favoritePending=new Set();
+async function refreshFavorites(){
+ const profile=customerBrowserSession.profile();const ticket=++favoriteGeneration;
+ if(!profile){favoriteIds=new Set();favoriteStatus='idle';renderAll();return;}
+ favoriteStatus='loading';renderAll();const result=await customerBrowserSession.listFavorites();
+ if(ticket!==favoriteGeneration||customerBrowserSession.profile()?.id!==profile.id)return;
+ if(result.outcome==='ok'){favoriteIds=new Set(result.ids);favoriteStatus='ready';}else favoriteStatus='error';renderAll();
+}
+async function toggleFavorite(id){
+ const profile=customerBrowserSession.profile();if(!profile){openRegisterModal('login');showLuxuryToast('برای ذخیرهٔ علاقه‌مندی ابتدا وارد حساب شوید.');return;}
+ if(favoriteStatus!=='ready'){await refreshFavorites();if(favoriteStatus!=='ready'){showLuxuryToast('دریافت علاقه‌مندی‌ها ناموفق بود؛ دوباره تلاش کنید.');return;}}
+ if(favoritePending.has(id))return;const value=!favoriteIds.has(id),ticket=favoriteGeneration;favoritePending.add(id);renderAll();
+ const result=await customerBrowserSession.setFavorite(id,value);
+ if(ticket!==favoriteGeneration||customerBrowserSession.profile()?.id!==profile.id)return;favoritePending.delete(id);
+ if(result.outcome==='ok'){if(value)favoriteIds.add(id);else favoriteIds.delete(id);showLuxuryToast(value?'به علاقه‌مندی‌ها اضافه شد.':'از علاقه‌مندی‌ها برداشته شد.');}
+ else showLuxuryToast('ذخیرهٔ علاقه‌مندی انجام نشد؛ دوباره تلاش کنید.');renderAll();
+}
 function renderDatabaseAccount(body,modal){
  const p=customerBrowserSession.profile();if(!p){openRegisterModal('login');return;}
- body.innerHTML=`<h3>حساب کاربری من</h3><p dir="ltr">@${escapeHtml(p.username)}</p><p>${escapeHtml(p.name)}</p><p>${escapeHtml(p.cafeName)}</p><p dir="ltr">${escapeHtml(p.phone)}</p><p>${escapeHtml(p.address)}</p><small>نشست این دستگاه حداکثر یک ساعت فعال می‌ماند؛ رمز عبور در مرورگر ذخیره نمی‌شود.</small><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button type="button" class="cta-secondary" id="btnCloseRegisterModal">بستن</button><button type="button" class="cta-secondary" id="btnLoadAccountOrders">سفارش‌های من</button></div><div style="margin-top:24px;padding-top:12px;border-top:1px solid var(--border)"><button type="button" class="cta-secondary" id="btnLogoutInsideModal" style="color:#b42318;border-color:#d92d20;background:#fff1f0">خروج از حساب</button></div><div id="accountOrdersResult" aria-live="polite" style="margin-top:14px"></div>`;
- body.querySelector('#btnCloseRegisterModal').addEventListener('click',()=>modal.classList.add('hidden'));
- body.querySelector('#btnLogoutInsideModal').addEventListener('click',()=>{modal.classList.add('hidden');logoutCustomerAccount()});
- body.querySelector('#btnLoadAccountOrders').addEventListener('click',async e=>{const b=e.currentTarget,r=body.querySelector('#accountOrdersResult');b.disabled=true;r.textContent='در حال دریافت سفارش‌ها…';try{const result=await customerBrowserSession.listOrders();if(result.outcome!=='ok'){r.textContent='دریافت سفارش‌ها انجام نشد؛ پس از ورود دوباره تلاش کنید.';return;}if(!result.orders.length){r.textContent='هنوز سفارشی برای این حساب ثبت نشده است.';return;}r.innerHTML=result.orders.map(o=>`<article class="order-card-admin" style="margin-bottom:8px"><strong>سفارش ${escapeHtml(o.orderCode)}</strong><div>${formatPersianDate(o.createdAt,{time:true})}</div><div>تحویل: ${o.deliveryDate?formatPersianDate(o.deliveryDate,{dateOnly:true}):'—'} ${escapeHtml(o.deliverySlot)}</div><div>${o.items.map(i=>escapeHtml(i.name)+' × '+toFa(i.qty)).join('، ')}</div><b>${formatPriceFa(o.total)} تومان</b></article>`).join('')}catch{r.textContent='دریافت سفارش‌ها انجام نشد.'}finally{if(b.isConnected)b.disabled=false}});
+ const card=modal.querySelector('.modal-card');card.classList.add('account-modal-card');
+ let tab='profile',details=null,draft={first:'',last:'',cafe:p.cafeName,phone:p.phone,address:p.address,email:'',birth:''},page=0,orders=null,hasMore=false,serial=0,busy=false;
+ const isActive=()=>body.isConnected&&body.contains(panel)&&!modal.classList.contains('hidden')&&customerBrowserSession.profile()?.id===p.id;
+ const paymentLabel=m=>({full:'تسویه کامل پیش از تحویل',half:'نصف اکنون، نصف هنگام تحویل',delivery:'تسویه کامل هنگام تحویل'}[m]||'—');
+ body.innerHTML=`<div class="account-head"><div><span class="account-kicker">حساب مشتری</span><h3>حساب کاربری من</h3><p>${escapeHtml(p.name)} · <span dir="ltr">${escapeHtml(p.phone)}</span></p></div><button type="button" class="icon-btn" id="btnCloseRegisterModal">بستن ×</button></div><div class="account-layout"><nav class="account-nav" aria-label="بخش‌های حساب"><button type="button" data-account-tab="profile">👤 اطلاعات حساب</button><button type="button" data-account-tab="orders">📦 سفارش‌های من</button><button type="button" data-account-tab="favorites">♡ علاقه‌مندی‌ها</button><button type="button" data-account-tab="address">⌖ آدرس</button><button type="button" data-account-tab="invoices">▤ صورت‌حساب سفارش‌ها</button><button type="button" id="btnLogoutInsideModal">خروج از حساب</button></nav><section id="accountPanel" class="account-panel" aria-live="polite"></section></div>`;
+ const panel=body.querySelector('#accountPanel');
+ body.querySelector('#btnCloseRegisterModal').onclick=()=>{modal.classList.add('hidden');card.classList.remove('account-modal-card')};
+ body.querySelector('#btnLogoutInsideModal').onclick=()=>{modal.classList.add('hidden');card.classList.remove('account-modal-card');logoutCustomerAccount()};
+ function capture(){panel.querySelectorAll('[data-account-field]').forEach(e=>{draft[e.dataset.accountField]=e.value});}
+ body.querySelectorAll('[data-account-tab]').forEach(b=>b.addEventListener('click',()=>{capture();tab=b.dataset.accountTab;page=0;orders=null;draw()}));
+ const field=(label,key,opts={})=>`<label class="account-field"><span>${label}</span><input data-account-field="${key}" value="${escapeHtml(key==='birth'?toFa(draft[key]):draft[key])}" ${opts.type?'type="'+opts.type+'"':''} ${opts.dir?'dir="ltr"':''} ${opts.placeholder?'placeholder="'+opts.placeholder+'"':''} autocomplete="off"></label>`;
+ function saveButton(){return `<div class="account-actions"><button type="button" class="cta-primary account-save" ${busy?'disabled':''}>ذخیره تغییرات</button><span class="account-status" role="status"></span></div>`;}
+ async function loadOrders(){const ticket=++serial;panel.innerHTML='<h4>'+ (tab==='orders'?'سفارش‌های من':'صورت‌حساب سفارش‌ها')+'</h4><p>در حال دریافت…</p>';const result=await customerBrowserSession.listOrders(page*10);if(!isActive()||ticket!==serial||!['orders','invoices'].includes(tab))return;if(result.outcome!=='ok'){panel.innerHTML='<p>دریافت سفارش‌ها ناموفق بود. دوباره تلاش کنید.</p><button type="button" class="icon-btn" id="accountRetry">تلاش مجدد</button>';panel.querySelector('#accountRetry').onclick=loadOrders;return;}orders=result.orders.slice(0,10);hasMore=result.orders.length>10;draw();}
+ function draw(){
+  if(!isActive())return;serial++;body.querySelectorAll('[data-account-tab]').forEach(b=>{const selected=b.dataset.accountTab===tab;b.classList.toggle('active',selected);b.setAttribute('aria-current',selected?'page':'false')});
+  if(!details){panel.innerHTML='<p>در حال دریافت اطلاعات حساب…</p>';return;}
+  if(tab==='profile'){
+   const savedName=customerBrowserSession.profile()?.name||p.name;
+   panel.innerHTML=`<h4>اطلاعات حساب</h4><p class="account-hint">نام ثبت‌شدهٔ فعلی: ${escapeHtml(savedName)}. اگر نام و نام خانوادگی را جدا وارد نکنید، نام قبلی حفظ می‌شود.</p><div class="account-fields">${field('نام','first',{placeholder:'اختیاری'})}${field('نام خانوادگی','last',{placeholder:'اختیاری'})}${field('نام کافه *','cafe')}${field('تلفن *','phone',{type:'tel',dir:true})}<label class="account-field"><span>نام کاربری</span><input value="${escapeHtml(p.username)}" dir="ltr" readonly></label>${field('ایمیل تماس (اختیاری)','email',{type:'email',dir:true})}${field('تاریخ تولد شمسی (اختیاری)','birth',{dir:true,placeholder:'۱۳۷۰/۰۱/۰۱'})}</div><p class="account-hint">ایمیل تماس برای ورود استفاده نمی‌شود.</p>${saveButton()}`;
+  }else if(tab==='address'){
+   panel.innerHTML=`<h4>آدرس تحویل</h4><p class="account-hint">این آدرس برای سفارش‌های بعدی استفاده می‌شود؛ آدرس سفارش‌های قبلی تغییر نمی‌کند.</p><label class="account-field"><span>آدرس *</span><textarea data-account-field="address" rows="4">${escapeHtml(draft.address)}</textarea></label>${saveButton()}`;
+  }else if(tab==='favorites'){
+   if(favoriteStatus!=='ready'){panel.innerHTML='<h4>علاقه‌مندی‌ها</h4><p>در حال دریافت علاقه‌مندی‌ها…</p>';refreshFavorites().then(()=>{if(isActive()&&tab==='favorites'){if(favoriteStatus==='ready')draw();else{panel.innerHTML='<p>دریافت علاقه‌مندی‌ها ناموفق بود.</p><button type="button" class="icon-btn" id="accountRetry">تلاش مجدد</button>';panel.querySelector('#accountRetry').onclick=draw;}}});return;}
+   const available=state.items.filter(i=>favoriteIds.has(i.id)),missing=[...favoriteIds].filter(id=>!state.items.some(i=>i.id===id));
+   panel.innerHTML=`<h4>علاقه‌مندی‌ها</h4>${available.length?available.map(i=>`<div class="account-favorite"><img src="${escapeHtml(productImagePreview(i.image))}" alt=""><div><strong>${escapeHtml(i.name)}</strong><div>${formatPriceFa(getEffectivePriceNum(i))} تومان</div></div><button type="button" class="favorite-button is-favorite" data-account-unfavorite="${escapeHtml(i.id)}" aria-label="حذف ${escapeHtml(i.name)} از علاقه‌مندی‌ها">♥</button>${i.available!==false?`<button type="button" class="icon-btn" data-account-add="${escapeHtml(i.id)}">+ سفارش</button>`:'<small>ناموجود</small>'}</div>`).join(''):'<p>هنوز محصولی به علاقه‌مندی‌ها اضافه نشده است.</p>'}${missing.length?'<p class="account-hint">برخی محصولات ذخیره‌شده دیگر در منو نیستند.</p>':''}`;
+   panel.querySelectorAll('[data-account-unfavorite]').forEach(b=>b.onclick=async()=>{b.disabled=true;await toggleFavorite(b.dataset.accountUnfavorite);if(isActive()&&tab==='favorites')draw()});
+   panel.querySelectorAll('[data-account-add]').forEach(b=>b.onclick=()=>{changeCartQty(b.dataset.accountAdd,1);showLuxuryToast('به سبد سفارش اضافه شد.')});
+  }else{
+   if(!orders){loadOrders();return;}
+   panel.innerHTML=`<h4>${tab==='orders'?'سفارش‌های من':'صورت‌حساب سفارش‌ها'}</h4>${orders.length?orders.map(o=>`<article class="account-order"><div class="account-order-head"><strong>سفارش ${escapeHtml(o.orderCode)}</strong><span>${formatPersianDate(o.createdAt,{time:true})}</span></div><div>تحویل: ${o.deliveryDate?formatPersianDate(o.deliveryDate,{dateOnly:true}):'—'} ${escapeHtml(o.deliverySlot)}</div>${tab==='invoices'?`<div class="account-invoice-lines">${o.items.map(i=>`<div><span>${escapeHtml(i.name)} × ${toFa(i.qty)}</span><span>${formatPriceFa(i.lineTotal)} تومان</span></div>`).join('')}</div>`:`<div>${o.items.map(i=>escapeHtml(i.name)+' × '+toFa(i.qty)).join('، ')}</div>`}<div><strong>جمع: ${formatPriceFa(o.total)} تومان</strong> · روش تسویه: ${paymentLabel(o.paymentMethod)}</div></article>`).join(''):'<p>هنوز سفارشی برای این حساب ثبت نشده است.</p>'}<div class="account-pages"><button type="button" class="icon-btn" id="accountPrev" ${page===0?'disabled':''}>صفحهٔ قبل</button><span>صفحهٔ ${toFa(page+1)}</span><button type="button" class="icon-btn" id="accountNext" ${!hasMore?'disabled':''}>صفحهٔ بعد</button></div>`;
+   panel.querySelector('#accountPrev').onclick=()=>{page--;orders=null;draw()};panel.querySelector('#accountNext').onclick=()=>{page++;orders=null;draw()};
+  }
+  const save=panel.querySelector('.account-save');if(save)save.onclick=async()=>{
+   capture();const status=panel.querySelector('.account-status'),fn=draft.first.trim(),ln=draft.last.trim(),cafe=draft.cafe.trim(),phone=toEnDigits(draft.phone).replace(/[\s()-]/g,''),address=draft.address.trim(),email=draft.email.trim(),birth=normalizeJalaliBirthdate(draft.birth);
+   if((!fn)!==(!ln)||fn.length>60||ln.length>60||(fn+' '+ln).length>120){status.textContent='نام و نام خانوادگی را هر دو وارد کنید یا هر دو را خالی بگذارید.';return;}
+   if(!cafe||cafe.length>120||!/^\+?\d{7,25}$/.test(phone)||!address||address.length>500){status.textContent='نام کافه، شماره تلفن معتبر و آدرس را کامل کنید.';return;}
+   if(email&&(email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))){status.textContent='ایمیل معتبر وارد کنید یا آن را خالی بگذارید.';return;}
+   if(birth===null){status.textContent='تاریخ تولد شمسی معتبر مانند ۱۳۷۰/۰۱/۰۱ وارد کنید.';return;}
+   busy=true;save.disabled=true;status.textContent='در حال ذخیره…';const result=await customerBrowserSession.saveAccount({first:fn,last:ln,cafe,phone,address,email,birth});busy=false;
+   if(!isActive())return;if(result.outcome!=='ok'){if(status.isConnected){status.textContent='ذخیره انجام نشد؛ دوباره تلاش کنید.';save.disabled=false}return;}
+   draft={first:fn,last:ln,cafe,phone,address,email,birth};body.querySelector('.account-head p').innerHTML=escapeHtml(result.profile.name)+' · <span dir="ltr">'+escapeHtml(result.profile.phone)+'</span>';draw();panel.querySelector('.account-status').textContent='تغییرات ذخیره شد.';
+  };
+ }
+ draw();customerBrowserSession.getAccountDetails().then(r=>{if(!isActive())return;if(r.outcome!=='ok'){panel.innerHTML='<p>دریافت اطلاعات حساب ناموفق بود.</p><button type="button" class="icon-btn" id="accountReload">تلاش مجدد</button>';panel.querySelector('#accountReload').onclick=()=>renderDatabaseAccount(body,modal);return;}details=r.details;Object.assign(draft,{first:details.first,last:details.last,email:details.email,birth:details.birth});draw()});
 }
+
 
       // ZERO-BUG CROSS-DEVICE CUSTOMER AUTHENTICATION MODAL (ورود / ثبت نام با یوزرنیم و پسورد + خروج از اکانت)
       function attachPasswordEyeToggles(rootEl) {
@@ -3031,6 +3139,7 @@ function renderDatabaseAccount(body,modal){
         if(customerDbFormsEnabled)customerBrowserSession.cancelPending();
         const modal = document.getElementById('registerModal');
         const body = document.getElementById('registerModalBody');
+        modal.querySelector('.modal-card').classList.remove('account-modal-card');
         const vip = getActiveVip();
         modal.classList.remove('hidden');
 
