@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1794071591904,
+  "updatedAt": 1794071619676,
   "cloud": {
     "ghOwner": "lotuscake777",
     "ghRepo": "lotuscake777.github.io",
@@ -46,7 +46,7 @@ window.MENU_DATA = {
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "1800000",
       "image": "assets/images/custom_k01_1794069525881_2psb2d.jpg",
-      "available": false,
+      "available": true,
       "badge": "",
       "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
       "images": [
