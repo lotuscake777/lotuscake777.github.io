@@ -793,6 +793,14 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       animation: popIn 0.2s ease;
     }
 
+    /* Keep the cart scrollbar inside the rounded dialog, not on its outer edge. */
+    #cartModal .modal-card { overflow: hidden; }
+    #cartModalBody { max-height: calc(90vh - 18px); margin: 8px 5px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+    @supports (height: 100dvh) { #cartModalBody { max-height: calc(90dvh - 18px); } }
+    #cartModalBody::-webkit-scrollbar { width: 10px; }
+    #cartModalBody::-webkit-scrollbar-track { background: transparent; }
+    #cartModalBody::-webkit-scrollbar-thumb { background: var(--border-strong); border: 3px solid transparent; background-clip: padding-box; border-radius: 999px; }
+
     @keyframes popIn {
       from { opacity: 0; transform: scale(0.96) translateY(8px); }
       to { opacity: 1; transform: scale(1) translateY(0); }
@@ -1956,10 +1964,12 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         return parseSliceCount(item.serving)>=2 || /قالب/.test(txt);
       }
       function carrierState(lines){
-        const rows=lines.filter(needsCakeCarrier).map(line=>({line,count:containerChoices[line.id]}));
-        const valid=rows.every(({line,count})=>Number.isInteger(count)&&count>=0&&count<=line.qty);
-        const purchased=rows.reduce((n,{line,count})=>n+(Number.isInteger(count)&&count>=0&&count<=line.qty?count:0),0);
-        return {rows,valid,purchased,total:purchased*200000};
+        const rows=lines.filter(needsCakeCarrier);
+        const quantity=rows.reduce((n,line)=>n+line.qty,0);
+        const count=containerChoices.total;
+        const valid=quantity===0 || (containerChoices.quantity===quantity && Number.isInteger(count) && count>=0 && count<=quantity);
+        const purchased=valid && quantity ? count : 0;
+        return {rows,quantity,valid,purchased,returned:valid && quantity ? quantity-purchased : 0,total:purchased*200000};
       }
       function getCartSummary() {
         let count = 0, total = 0;
@@ -3797,8 +3807,7 @@ function renderDatabaseAccount(body){
         const headerTabs = `
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
             <div style="display:flex;gap:6px">
-              <button type="button" class="tab-pill ${mode === 'checkout' ? 'active' : ''}" id="cTabCheckout">🛍️ سبد سفارش (${toFa(sum.count)})</button>
-              ${customerProfile && customerProfile.loggedIn ? '<button type="button" class="tab-pill '+(mode === 'history' ? 'active' : '')+'" id="cTabHistory">📋 سفارش‌های قبلی ('+toFa(myOrderHistory.length)+')</button>' : ''}
+              <button type="button" class="tab-pill ${mode === 'checkout' ? 'active' : ''}" id="cTabCheckout">🛍️ سبد خرید (${toFa(sum.count)})</button>
             </div>
             <button type="button" class="icon-btn" id="btnCloseCartModal" style="height:32px;padding:0 10px">&times;</button>
           </div>`;
@@ -3902,10 +3911,10 @@ function renderDatabaseAccount(body){
                   ${cuts.map(c=>`<button type="button" class="slot-pill ${selectedCutOption===c?'active':''}" data-cut="${escapeHtml(c)}" style="flex:1">${escapeHtml(c)}</button>`).join('')}
                 </div>
               </div>
-              ${carrierState(sum.lines).rows.length?`<section style="margin-bottom:14px;padding:12px;border:1px solid var(--border);border-radius:13px;background:var(--surface-soft)">
-                <strong>ظرف و زیرکیکی <span style="color:#DC2626">*</span></strong><p style="font-size:12px">خرید هر مجموعه ۲۰۰٬۰۰۰ تومان است؛ در صورت بازگرداندن، هزینه‌ای ندارد.</p>
-                ${carrierState(sum.lines).rows.map(({line,count})=>`<label style="display:block;margin:9px 0">${escapeHtml(line.name)} — تعداد خرید ظرف و زیرکیکی <select data-carrier="${escapeHtml(line.id)}" style="display:block;width:100%;padding:9px;margin-top:4px"><option value="">انتخاب کنید</option>${Array.from({length:Math.min(line.qty,50)+1},(_,n)=>`<option value="${n}" ${count===n?'selected':''}>${toFa(n)} خرید / ${toFa(line.qty-n)} بازگشت</option>`).join('')}</select></label>`).join('')}
-                <div>هزینهٔ ظرف و زیرکیکی: <b id="carrierTotal">${formatPriceFa(carrierState(sum.lines).total)}</b> تومان</div></section>`:''}
+              ${carrierState(sum.lines).quantity?`<section style="margin-bottom:14px;padding:12px;border:1px solid var(--border);border-radius:13px;background:var(--surface-soft)">
+                <strong>ظرف حمل کیک و زیر کیکی <span style="color:#DC2626">*</span></strong><p style="font-size:12px">خرید هر مجموعه ۲۰۰٬۰۰۰ تومان است؛ در صورت بازگرداندن، هزینه‌ای ندارد.</p>
+                <label style="display:block;margin:9px 0">تعداد خرید ظرف حمل کیک و زیر کیکی <select data-carrier="total" style="display:block;width:100%;padding:9px;margin-top:4px"><option value="">انتخاب کنید</option>${Array.from({length:carrierState(sum.lines).quantity+1},(_,n)=>`<option value="${n}" ${carrierState(sum.lines).valid&&carrierState(sum.lines).purchased===n?'selected':''}>${toFa(n)} خرید / ${toFa(carrierState(sum.lines).quantity-n)} بازگشت</option>`).join('')}</select></label>
+                <div>هزینهٔ ظرف حمل کیک و زیر کیکی: <b id="carrierTotal">${formatPriceFa(carrierState(sum.lines).total)}</b> تومان</div></section>`:''}
               <section class="field" style="margin-bottom:14px;padding:12px;border:1px solid var(--border);border-radius:13px;background:var(--surface-soft)">
                 <label style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:8px">💳 روش تسویهٔ فاکتور <span style="color:#DC2626">*</span></label>
                 <div id="checkoutPaymentOptions" style="display:grid;gap:7px">
@@ -3939,18 +3948,18 @@ function renderDatabaseAccount(body){
               </div>
               <div id="coError" class="hidden" style="color:#DC2626;font-size:12.2px;font-weight:700;margin-bottom:10px"></div>
               <button type="button" class="cta-primary" id="btnSubmitCustomerOrder" style="width:100%;height:48px;background:#1F6F4A;color:#fff;font-size:14px">
-                ثبت نهایی سفارش (ارسال مستقیم برای مدیریت) ✅
+                ثبت نهایی سفارش ✅
               </button>`;
 
             wrap.querySelectorAll('[data-cinc]').forEach(b => b.addEventListener('click', () => {
               selectedReceiptFile=null;
-              delete containerChoices[b.dataset.cinc];
+              containerChoices=Object.create(null);
               changeCartQty(b.dataset.cinc, 1);
               renderCartModalContent('checkout');
             }));
             wrap.querySelectorAll('[data-cdec]').forEach(b => b.addEventListener('click', () => {
               selectedReceiptFile=null;
-              delete containerChoices[b.dataset.cdec];
+              containerChoices=Object.create(null);
               changeCartQty(b.dataset.cdec, -1);
               renderCartModalContent('checkout');
             }));
@@ -3970,7 +3979,7 @@ function renderDatabaseAccount(body){
               const copy=document.getElementById('btnCopyPaymentCard');if(copy)copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(cardNum);copy.textContent='کپی شد ✓';}catch(_){copy.textContent=cardNum;}});
             }
             wrap.querySelectorAll('[data-carrier]').forEach(select=>select.addEventListener('change',()=>{
-              if(select.value==='')delete containerChoices[select.dataset.carrier];else containerChoices[select.dataset.carrier]=Number(select.value);
+              if(select.value==='')containerChoices=Object.create(null);else containerChoices={total:Number(select.value),quantity:carrierState(sum.lines).quantity};
               const cs=carrierState(sum.lines),total=getCheckoutTotal(),half=Math.ceil(total/2);
               document.getElementById('carrierTotal').textContent=formatPriceFa(cs.total);
               document.getElementById('checkoutTotal').textContent=formatPriceFa(total)+' تومان';
@@ -4013,8 +4022,8 @@ function renderDatabaseAccount(body){
               if (phoneDigits.length < 10) { elPhone.style.borderColor = '#DC2626'; missing.push('شماره تلفن معتبر'); }
               if (!address) { elAddr.style.borderColor = '#DC2626'; missing.push('آدرس'); }
               const carrierCheck=carrierState(sum.lines);
-              if (!carrierCheck.valid) missing.push('تعداد خرید یا بازگرداندن ظرف و زیرکیکی');
-              if (sum.lines.length+carrierCheck.rows.reduce((n,x)=>n+(x.count>0?1:0)+(x.count<x.line.qty?1:0),0)>40) missing.push('تعداد اقلام کمتر (حداکثر ۴۰ ردیف با ظرف‌ها)');
+              if (!carrierCheck.valid) missing.push('تعداد خرید یا بازگرداندن ظرف حمل کیک و زیر کیکی');
+              if (sum.lines.length+Math.ceil(carrierCheck.purchased/50)+Math.ceil(carrierCheck.returned/50)>40) missing.push('تعداد اقلام کمتر (حداکثر ۴۰ ردیف با ظرف‌ها)');
               if (!paymentOption) missing.push('روش تسویهٔ فاکتور');
               if (paymentOption && paymentOption!=='delivery'){
                 if(!String(state.brand.paymentCardHolder||'').trim()||cardDigits.length!==16) missing.push('تنظیم شماره کارت و نام صاحب کارت توسط مدیریت');
@@ -4036,10 +4045,14 @@ function renderDatabaseAccount(body){
               renderAll();
 
               const carrier=carrierState(sum.lines),orderTotal=getCheckoutTotal();
-              const carrierLines=carrier.rows.flatMap(({line,count},i)=>[
-                ...(count>0?[{id:'carrierbuy_'+i,name:('خرید ظرف و زیرکیکی — '+line.name).slice(0,120),serving:'مجموعه',qty:count,unitPrice:200000,lineTotal:count*200000}]:[]),
-                ...(line.qty-count>0?[{id:'carrierreturn_'+i,name:('بازگشت ظرف و زیرکیکی — '+line.name).slice(0,120),serving:'مجموعه',qty:line.qty-count,unitPrice:0,lineTotal:0}]:[])
-              ]);
+              const carrierLines=[];
+              for (const [kind,quantity,price,name] of [['buy',carrier.purchased,200000,'خرید ظرف حمل کیک و زیر کیکی'],['return',carrier.returned,0,'بازگرداندن ظرف حمل کیک و زیر کیکی']]) {
+                for(let remaining=quantity,part=0;remaining>0;part++){
+                  const qty=Math.min(remaining,50);
+                  carrierLines.push({id:'carrier'+kind+'_'+part,name,serving:'مجموعه',qty,unitPrice:price,lineTotal:qty*price});
+                  remaining-=qty;
+                }
+              }
               const orderObj = {
                 kind: 'order',
                 id: 'LC-' + Math.floor(1000 + Math.random() * 9000),
@@ -4056,7 +4069,7 @@ function renderDatabaseAccount(body){
                 cutOption,
                 note: address,
                 items: sum.lines.concat(carrierLines),
-                carrierSelections: carrier.rows.map(({line,count})=>({productId:line.id,productName:line.name,ordered:line.qty,purchased:count,returned:line.qty-count})),
+                carrierSelections: carrier.quantity ? [{ordered:carrier.quantity,purchased:carrier.purchased,returned:carrier.returned}] : [],
                 total: orderTotal,
                 status: 'new',
                 paymentMethod:paymentOption,
@@ -4131,7 +4144,7 @@ function renderDatabaseAccount(body){
           document.getElementById('cartModal').classList.add('hidden');
         });
         document.getElementById('cTabCheckout').addEventListener('click', () => renderCartModalContent('checkout'));
-        document.getElementById('cTabHistory').addEventListener('click', () => renderCartModalContent('history'));
+
       }
 
       // ADMIN AUTHENTICATION & UNLOCK
@@ -4894,7 +4907,7 @@ function mountCustomerDirectory(body){
                     </div>
                     <div style="padding:10px 12px;border-radius:10px;background:var(--bg);margin-bottom:10px;font-size:13px">
                       ${(ord.items || []).map(it => `<div>• <strong>${escapeHtml(it.name)}</strong> (${toFa(it.serving || '')}) × <strong>${toFa(it.qty)}</strong> — ${formatPriceFa(it.lineTotal)} تومان</div>`).join('')}
-                      ${(Array.isArray(ord.carrierSelections)?ord.carrierSelections:[]).map(c=>`<div style="font-size:12px">ظرف ${escapeHtml(c.productName)}: ${toFa(c.purchased)} خرید، ${toFa(c.returned)} بازگشت</div>`).join('')}
+                      ${(Array.isArray(ord.carrierSelections)?ord.carrierSelections:[]).map(c=>`<div style="font-size:12px">${c.productName?'ظرف '+escapeHtml(c.productName):'ظرف حمل کیک و زیر کیکی'}: ${toFa(c.purchased)} خرید، ${toFa(c.returned)} بازگشت</div>`).join('')}
                       <div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px;font-weight:800;color:var(--accent)">
                         جمع کل سفارش: ${formatPriceFa(ord.total)} تومان
                       </div>
