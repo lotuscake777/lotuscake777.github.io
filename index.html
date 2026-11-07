@@ -866,8 +866,17 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     /* Product details fit ordinary viewports; unusually long content can still scroll. */
     #detailModal { padding:12px; }
     #detailModal .modal-card { max-width:500px; max-height:calc(100vh - 24px); max-height:calc(100dvh - 24px); }
-    #detailModal .modal-img { aspect-ratio:auto; height:clamp(220px, 42vh, 380px); height:clamp(220px, 42dvh, 380px); overflow:hidden; }
-    #detailModal .modal-img img { object-fit:contain; }
+    #detailModal .modal-img { aspect-ratio:var(--detail-ratio, 1.25); height:auto; overflow:hidden; }
+    #detailModal .modal-img .modal-close { z-index:6; }
+    #detailModal .modal-img #mImg { position:absolute; inset:0; z-index:1; object-fit:contain; }
+    @media(min-width:701px) {
+      #detailModal .modal-card { display:grid; grid-template-columns:1fr 1fr; align-items:center; width:min(calc(100vw - 24px),860px); max-width:860px; }
+      #detailModal .modal-img { grid-column:2; grid-row:1; }
+      #detailModal .modal-content { grid-column:1; grid-row:1; padding:20px 24px; }
+    }
+    @media(max-width:700px) { #detailModal .modal-card { width:min(calc(100vw - 24px),var(--detail-mobile-width, 470px)); } }
+    #detailModal .modal-price-values { display:flex; flex-direction:column; align-items:flex-start; gap:4px; }
+    #detailModal #mPerSlice { font-size:11px; color:var(--text-muted); font-weight:600; }
     #detailModal .modal-content { padding:12px 16px 14px; }
     #detailModal .modal-meta { margin-bottom:3px; gap:7px; }
     #detailModal .modal-title { font-size:17px; line-height:1.4; }
@@ -877,7 +886,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     #detailModal #mAddCartBtn { min-width:0; height:44px; }
     #detailModal #mFavoriteBtn { width:44px; height:44px; }
     #detailModal #mFavoriteBtn .heart-icon { width:24px; height:24px; }
-    @media(max-height:600px) { #detailModal .modal-img { height:clamp(200px, 45vh, 270px); height:clamp(200px, 45dvh, 270px); } #detailModal .modal-content { padding:8px 12px 10px; } }
+    @media(max-height:600px) { #detailModal .modal-content { padding:8px 12px 10px; } }
 
     /* SPACIOUS TALL OWNER ADMIN PANEL — ZERO SQUISHING GUARANTEED */
     .admin-modal {
@@ -1318,6 +1327,32 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       .price-unit { font-size:10px; }
     }
     @media(max-width:340px) { .items-list { grid-template-columns:1fr; } }
+    .home-intro { max-width:var(--banner-width,1240px); }
+    .home-intro-card { min-height:var(--banner-height,380px); }
+    .home-intro-image { min-height:var(--banner-height,380px); }
+    .home-intro-stage { position:relative; overflow:hidden; border-radius:60px 18px 60px 18px; }
+    .home-intro-card { position:relative; }
+    .home-intro-card.slide-out { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:2; }
+    .home-intro-image-link { position:absolute; inset:0; display:block; }
+    .home-intro-card.home-intro-full { display:block; }
+    .home-intro-card.home-intro-full .home-intro-copy,.home-intro-card.home-intro-full .home-intro-caption { display:none !important; }
+    .home-intro-card.home-intro-full .home-intro-image { border-radius:0; }
+    @media(max-width:700px) { .home-intro-stage { border-radius:36px 10px 36px 10px; } }
+    .home-intro-controls { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:10px; }
+    .home-intro-controls button { cursor:pointer; border:1px solid #c9d7ca; background:#fffefa; color:#315945; border-radius:20px; padding:5px 12px; font:inherit; }
+    .home-intro-controls button:focus-visible { outline:3px solid #9ab7a1; }
+    .home-intro-controls .slide-dot { width:11px; height:11px; padding:0; border-radius:50%; }
+    .home-intro-controls .slide-dot[aria-current="true"] { background:#315945; }
+    .banner-editor { border:1px solid var(--border); border-radius:14px; padding:14px; margin:14px 0; background:var(--surface-soft); }
+    .banner-editor .field { margin-bottom:10px; }
+    .banner-editor-actions { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
+    .banner-editor .gallery-photos figure img { width:100%; height:100%; margin:0; object-fit:cover; }
+    .banner-editor img { display:block; width:160px; height:100px; object-fit:contain; background:#e9e4da; border-radius:8px; margin:8px 0; }
+    @media(max-width:700px) { .home-intro-card { min-height:0; } .home-intro-image { min-height:var(--banner-mobile-height,240px); } }
+    /* Full-image banners scale together with their frame, without empty bands. */
+    .home-intro-card.home-intro-full { min-height:0; }
+    .home-intro-card.home-intro-full .home-intro-image { min-height:0; aspect-ratio:var(--banner-full-ratio, 3.136842); }
+    .home-intro-card.home-intro-full .home-intro-image img { object-fit:cover; }
     @media(prefers-reduced-motion:reduce) { .card,.home-intro-link { transition:none; } }
 </style>
   <script>
@@ -1407,15 +1442,16 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
   <div class="trust-bar hidden" id="trustBar"></div>
 
   <section class="home-intro container" id="homeIntro" aria-label="معرفی لوتوس کیک">
-    <div class="home-intro-card">
+    <div class="home-intro-stage"><div class="home-intro-card">
       <div class="home-intro-copy">
-        <span class="home-intro-kicker" lang="en" dir="ltr">MADE WITH CARE · LOTUS CAKE</span>
-        <h2>از آشپزخانهٔ ما،<br>برای لحظه‌های شما</h2>
-        <p>طعم‌های دوست‌داشتنی، با دقت و حوصله آماده می‌شوند تا لحظه‌های شما شیرین‌تر باشند.</p>
-        <a class="home-intro-link" href="#menuContainer">دیدن منوی کیک‌ها <span aria-hidden="true">←</span></a>
+        <span class="home-intro-kicker" id="homeIntroKicker" dir="auto"></span>
+        <h2 id="homeIntroTitle"></h2>
+        <p id="homeIntroText"></p>
+        <a class="home-intro-link" id="homeIntroLink" href="#menuContainer"></a>
       </div>
-      <div class="home-intro-image"><img id="homeIntroImage" alt="" fetchpriority="high"><span class="home-intro-caption">دست‌ساز و با عشق <span aria-hidden="true">✳</span></span></div>
-    </div>
+      <div class="home-intro-image"><a id="homeIntroImageLink" class="home-intro-image-link" tabindex="-1"><img id="homeIntroImage" alt="" fetchpriority="high"></a><span class="home-intro-caption" id="homeIntroCaption"></span></div>
+    </div></div>
+    <div class="home-intro-controls hidden" id="homeIntroControls" aria-label="کنترل بنرها"></div>
   </section>
 
   <div class="sticky-controls">
@@ -1483,12 +1519,11 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         <p class="modal-desc" id="mDesc"></p>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
           <span class="hidden" id="mBadgeDetail" style="background:var(--accent-soft);color:var(--accent);padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700"></span>
-          <span class="hidden" id="mPerSlice" style="background:var(--surface-soft);border:1px solid var(--border);padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600"></span>
         </div>
         <div id="mShelfLife" class="hidden" style="font-size:11.5px;color:var(--text-muted);background:var(--surface-soft);padding:7px 10px;border-radius:8px;margin-bottom:10px;border:1px solid var(--border)"></div>
         <div class="modal-price-row">
           <span class="price-label">قیمت واحد</span>
-          <div><span class="price-val" id="mPrice"></span><span class="price-unit">تومان</span></div>
+          <div class="modal-price-values"><div><span class="price-val" id="mPrice"></span><span class="price-unit">تومان</span></div><span class="hidden" id="mPerSlice"></span></div>
         </div>
         <div class="modal-actions">
           <button type="button" id="mAddCartBtn" class="cta-primary" style="background:#1F6F4A;color:#fff">+ افزودن به سبد</button>
@@ -1564,6 +1599,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           <button type="button" class="admin-mobile-tab" data-atab="brand">🏪 ۵. مشخصات برند و رمز</button>
           <button type="button" class="admin-mobile-tab" data-atab="qr">🔳 ۶. ساخت QR Code</button>
           <button type="button" class="admin-mobile-tab" data-atab="design">🎨 ۷. طراحی و ظاهر</button>
+          <button type="button" class="admin-mobile-tab" data-atab="banners">🖼️ بنر صفحه اصلی</button>
           <button type="button" class="admin-mobile-tab" data-atab="sync">☁️ ۸. آپلود گیت‌هاب</button>
           <button type="button" class="admin-mobile-tab" data-atab="accounting">📊 ۹. حسابداری</button>
         </div>
@@ -1579,6 +1615,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         <button class="admin-tab" data-atab="brand" type="button">🏪 ۵. مشخصات برند و رمز</button>
         <button class="admin-tab" data-atab="qr" type="button">🔳 ۶. ساخت QR Code</button>
         <button class="admin-tab" data-atab="design" type="button">🎨 ۷. طراحی و ظاهر</button>
+        <button class="admin-tab" data-atab="banners" type="button">🖼️ بنر صفحه اصلی</button>
         <button class="admin-tab" data-atab="sync" type="button">☁️ ۸. آپلود گیت‌هاب</button>
         <button class="admin-tab" data-atab="accounting" type="button">📊 ۹. حسابداری</button>
       </div>
@@ -1614,7 +1651,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         <button type="button" class="icon-btn" id="btnCropReset" style="height:32px">↺ ریست</button>
         <button type="button" class="icon-btn admin-trigger" id="btnCropConfirm" style="height:32px">✅ تایید قاب</button>
       </div>
-      <div style="font-size:11px; color:var(--text-muted); margin-top:6px">تصویر رو با موس بکشید، با اسکرول موس یا اسلایدر زوم کنید — نسبت ۵:۴ ثابت می‌مونه</div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:6px">تصویر رو با موس بکشید، با اسکرول موس یا اسلایدر زوم کنید — <span id="cropRatioHint">نسبت قاب ۵:۴ است.</span></div>
       <div id="cropSourceInfo" class="hidden" style="font-size:11px;color:#815221;background:#fff5e4;border-radius:8px;padding:8px;margin-top:8px"></div>
     </div>
   </div>
@@ -1746,7 +1783,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         return [...new Set(images.concat(images.map(src=>productPhotoOriginal(item,src).path)))];
       }
       function discardUnreferencedPending(paths){
-        for(const path of paths)if(path && !state.items.some(item=>productPhotoAssets(item).includes(path)))delete pendingImageUploads[path];
+        for(const path of paths)if(path && !state.items.some(item=>productPhotoAssets(item).includes(path)) && !bannerAssetPaths(state).includes(path))delete pendingImageUploads[path];
       }
       async function readOriginalPhoto(file){
         const formats={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/avif':'avif','image/bmp':'bmp'};
@@ -2742,6 +2779,88 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         } catch (_) {}
       }
 
+      // The original introductory banner is the default until an administrator configures slides.
+      const defaultHomeSlide = () => ({enabled:true,kicker:'MADE WITH CARE · LOTUS CAKE',title:'از آشپزخانهٔ ما،\nبرای لحظه‌های شما',text:'طعم‌های دوست‌داشتنی، با دقت و حوصله آماده می‌شوند تا لحظه‌های شما شیرین‌تر باشند.',button:'دیدن منوی کیک‌ها',link:'#menuContainer',caption:'دست‌ساز و با عشق ✳',image:'',alt:''});
+      function homeBannerSettings() {
+        const b=state.design.homeBanner;
+        return b && Array.isArray(b.slides) ? b : {enabled:true,seconds:5,width:1240,height:380,mobileHeight:240,slides:[defaultHomeSlide()]};
+      }
+      function bannerBound(value,min,max,def){const n=Number(value);return Number.isFinite(n)&&n ? Math.max(min,Math.min(max,Math.round(n))) : def;}
+      function safeBannerLink(value){
+        const v=String(value||'').trim();
+        if(/^#[A-Za-z][\w:.-]*$/.test(v))return v;
+        try {const u=new URL(v,location.href);if((u.protocol==='https:'||u.protocol==='http:')&&!u.username&&!u.password)return u.href;}catch(_){}
+        return '';
+      }
+      function safeBannerImage(value){
+        const v=String(value||'').trim();
+        if(/^assets\/images\/[A-Za-z0-9_.\/-]+$/.test(v) && !v.includes('..'))return v;
+        try{const u=new URL(v);return u.protocol==='https:'&&!u.username&&!u.password?u.href:'';}catch(_){return '';}
+      }
+      let homeSlideIndex=0, homeSlideTimer=null, homeTimerSeconds=0, homeBannerPaused=false;
+      function scheduleHomeBanner(count,seconds){
+        if(homeSlideTimer && (count<2 || homeBannerPaused || document.hidden || homeTimerSeconds!==seconds)){clearTimeout(homeSlideTimer);homeSlideTimer=null;}
+        if(!homeSlideTimer && count>1 && !homeBannerPaused && !document.hidden && !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+          homeTimerSeconds=seconds;homeSlideTimer=setTimeout(()=>{homeSlideTimer=null;changeHomeSlide(homeSlideIndex+1,1);},seconds*1000);
+        }
+      }
+      function renderHomeBanner(){
+        const cfg=homeBannerSettings(), intro=document.getElementById('homeIntro');
+        const slides=cfg.slides.filter(x=>x && x.enabled!==false);
+        if(cfg.enabled===false || !slides.length){intro.classList.add('hidden');scheduleHomeBanner(0,5);return;}
+        homeSlideIndex=((homeSlideIndex%slides.length)+slides.length)%slides.length;
+        const slide=slides[homeSlideIndex],featured=state.items.find(item=>item.available!==false && productImages(item).length);
+        const src=safeBannerImage(slide.image) || (featured ? productImages(featured)[0] : '');
+        if(!src){intro.classList.add('hidden');scheduleHomeBanner(0,5);return;}
+        intro.classList.remove('hidden');
+        intro.querySelector('.home-intro-card:not(.slide-out)').classList.toggle('home-intro-full',slide.layout==='full');
+        const bannerWidth=bannerBound(cfg.width,600,1800,1240), bannerHeight=bannerBound(cfg.height,260,700,380);
+        intro.style.setProperty('--banner-width',bannerWidth+'px');
+        intro.style.setProperty('--banner-height',bannerHeight+'px');
+        intro.style.setProperty('--banner-full-ratio',String((bannerWidth-48)/bannerHeight));
+        intro.style.setProperty('--banner-mobile-height',bannerBound(cfg.mobileHeight,160,500,240)+'px');
+        const img=document.getElementById('homeIntroImage'), display=productImagePreview(src);
+        if(img.getAttribute('src')!==display)img.src=display;
+        img.alt=slide.alt || (featured && !slide.image ? featured.name : '') || 'بنر لوتوس کیک';
+        for(const [id,key] of [['homeIntroKicker','kicker'],['homeIntroTitle','title'],['homeIntroText','text'],['homeIntroCaption','caption']]){
+          const el=document.getElementById(id);el.textContent=String(slide[key]||'');el.classList.toggle('hidden',!slide[key]);
+        }
+        document.getElementById('homeIntroTitle').style.whiteSpace='pre-line';
+        const link=document.getElementById('homeIntroLink'),url=safeBannerLink(slide.link), imageLink=document.getElementById('homeIntroImageLink');
+        link.textContent=slide.button ? slide.button+' ←' : '';link.classList.toggle('hidden',!url || !slide.button);if(url)link.href=url;
+        if(slide.layout==='full' && url){imageLink.href=url;imageLink.removeAttribute('tabindex');imageLink.setAttribute('aria-label',slide.alt||slide.title||'مشاهدهٔ بنر');}
+        else {imageLink.removeAttribute('href');imageLink.setAttribute('tabindex','-1');imageLink.removeAttribute('aria-label');}
+        const controls=document.getElementById('homeIntroControls');controls.classList.toggle('hidden',slides.length<2);
+        if(Number(controls.dataset.slideCount)!==slides.length){
+          controls.dataset.slideCount=slides.length;
+          controls.innerHTML=slides.length<2?'':`<button type="button" data-slide-step="-1" aria-label="بنر قبلی">‹</button>${slides.map((_,i)=>`<button type="button" class="slide-dot" data-slide-index="${i}" aria-label="بنر ${toFa(i+1)}"></button>`).join('')}<button type="button" data-slide-step="1" aria-label="بنر بعدی">›</button>`;
+        }
+        controls.querySelectorAll('.slide-dot').forEach(dot=>dot.setAttribute('aria-current',String(Number(dot.dataset.slideIndex)===homeSlideIndex)));
+        scheduleHomeBanner(slides.length,bannerBound(cfg.seconds,2,60,5));
+      }
+      function changeHomeSlide(next,direction){
+        const stage=document.querySelector('#homeIntro .home-intro-stage'), card=stage.querySelector('.home-intro-card:not(.slide-out)');
+        const slides=homeBannerSettings().slides.filter(x=>x&&x.enabled!==false);if(slides.length<2)return;
+        const target=(next%slides.length+slides.length)%slides.length;if(target===homeSlideIndex)return;
+        stage.querySelectorAll('.slide-out').forEach(n=>n.remove());if(typeof card.getAnimations==='function')card.getAnimations().forEach(a=>a.cancel());
+        const animate=!window.matchMedia('(prefers-reduced-motion: reduce)').matches && typeof card.animate==='function';
+        let old=null;
+        if(animate){old=card.cloneNode(true);old.classList.add('slide-out');old.setAttribute('aria-hidden','true');old.inert=true;old.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));stage.append(old);}
+        homeSlideIndex=target;if(homeSlideTimer){clearTimeout(homeSlideTimer);homeSlideTimer=null;}renderHomeBanner();
+        if(old){
+          const shift=(direction||1)>0?1:-1;
+          const out=old.animate([{transform:'translateX(0)',opacity:1},{transform:`translateX(${shift*22}%)`,opacity:0}],{duration:650,easing:'ease-in-out'});
+          card.animate([{transform:`translateX(${-shift*22}%)`,opacity:.35},{transform:'translateX(0)',opacity:1}],{duration:650,easing:'ease-in-out'});
+          out.onfinish=()=>old.remove();out.oncancel=()=>old.remove();
+        }
+      }
+      document.getElementById('homeIntroControls').addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;const next=button.dataset.slideIndex!==undefined?Number(button.dataset.slideIndex):homeSlideIndex+Number(button.dataset.slideStep);changeHomeSlide(next,button.dataset.slideStep?Number(button.dataset.slideStep):next>homeSlideIndex?1:-1);});
+      document.addEventListener('visibilitychange',()=>renderHomeBanner());
+      document.getElementById('homeIntro').addEventListener('mouseenter',()=>{homeBannerPaused=true;renderHomeBanner();});
+      document.getElementById('homeIntro').addEventListener('mouseleave',e=>{homeBannerPaused=e.currentTarget.contains(document.activeElement);renderHomeBanner();});
+      document.getElementById('homeIntro').addEventListener('focusin',()=>{homeBannerPaused=true;scheduleHomeBanner(0,5);});
+      document.getElementById('homeIntro').addEventListener('focusout',e=>{if(!e.currentTarget.contains(e.relatedTarget)){homeBannerPaused=e.currentTarget.matches(':hover');renderHomeBanner();}});
+
       function renderAll() {
         ensureOrderConfig(state);
         const regLbl = document.getElementById('lblRegisterBtn');
@@ -2860,14 +2979,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           document.body.style.fontSize = state.design.fontScale==='large'?'15px':state.design.fontScale==='small'?'13px':'';
         }
 
-        const introImage=document.getElementById('homeIntroImage');
-        const featured=state.items.find(item=>item.available!==false && productImages(item).length);
-        const intro=document.getElementById('homeIntro');
-        if(featured){
-          const src=productImagePreview(productImages(featured)[0]);
-          if(introImage.getAttribute('src')!==src)introImage.src=src;
-          introImage.alt=featured.name||'کیک لوتوس';intro.classList.remove('hidden');
-        }else intro.classList.add('hidden');
+        renderHomeBanner();
         document.title = (vip ? `${vip.name} | ` : '') + state.brand.name;
         document.getElementById('elBrandName').textContent = state.brand.name;
         document.getElementById('elTagline').textContent = state.brand.tagline;
@@ -3080,11 +3192,20 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       });
 
       let detailGalleryIndex=0;
+      function sizeDetailImage(){
+        const img=document.getElementById('mImg');if(!img.naturalWidth || !img.naturalHeight)return;
+        const ratio=Math.max(.7,Math.min(3,img.naturalWidth/img.naturalHeight));
+        const modal=document.getElementById('detailModal');modal.style.setProperty('--detail-ratio',ratio);
+        modal.style.setProperty('--detail-mobile-width',Math.max(180,Math.min(500,innerWidth-24,innerHeight*.42*ratio))+'px');
+      }
+      document.getElementById('mImg').addEventListener('load',sizeDetailImage);
+      window.addEventListener('resize',sizeDetailImage);
       function showDetailGallery() {
         const item=state.items.find(x=>x.id===detailItemId); if(!item)return;
         const images=productImages(item); if(!images.length)return;
         detailGalleryIndex=(detailGalleryIndex+images.length)%images.length;
-        document.getElementById('mImg').src=productImagePreview(images[detailGalleryIndex]);
+        const gallerySrc=productImagePreview(images[detailGalleryIndex]);
+        document.getElementById('mImg').src=gallerySrc;
         for(const id of ['galleryPrev','galleryNext','galleryCount'])document.getElementById(id).classList.toggle('hidden',images.length<2);
         document.getElementById('galleryCount').textContent=toFa(detailGalleryIndex+1)+' / '+toFa(images.length);
       }
@@ -4445,11 +4566,13 @@ function renderDatabaseAccount(body){
 
       // === ADVANCED IMAGE CROP & POSITION EDITOR ===
       let cropState = null; // { img, posX, posY, zoom, baseZoom, resolve, reject, fileNameHint }
-      function openImageCropEditor(dataUrl, hintName, sourceInfo=''){
+      function openImageCropEditor(dataUrl, hintName, sourceInfo='', ratio=1.25){
         return new Promise((resolve,reject)=>{
           if(cropState){reject(new Error('ابتدا ویرایش عکس قبلی را تمام کنید.'));return;}
           const modal=document.getElementById('cropEditor');
           const viewport=document.getElementById('cropViewport');
+          ratio=Math.max(.7,Math.min(7,Number(ratio)||1.25));viewport.style.aspectRatio=String(ratio);viewport.style.width=`min(100%, ${Math.round(ratio*40)}dvh)`;viewport.style.height='auto';viewport.style.marginInline='auto';
+          document.getElementById('cropRatioHint').textContent=ratio===1.25?'نسبت قاب ۵:۴ است.':'نسبت قاب بر اساس تنظیمات بنر تعیین شده است.';
           const imgEl=document.getElementById('cropImage');
           const slider=document.getElementById('cropZoomSlider');
           const zoomVal=document.getElementById('cropZoomVal');
@@ -4533,7 +4656,7 @@ function renderDatabaseAccount(body){
           document.getElementById('btnCropConfirm').onclick = async ()=>{
             try {
             // render to canvas 900x720
-            const outW=900, outH=720; // 5:4
+            const outW=ratio===1.25?900:1600, outH=Math.round(outW/ratio);
             const canvas=document.createElement('canvas'); canvas.width=outW; canvas.height=outH;
             const ctx=canvas.getContext('2d');
             ctx.fillStyle='#FAF8F5'; ctx.fillRect(0,0,outW,outH);
@@ -5819,6 +5942,72 @@ function mountCustomerDirectory(body){
             img.src = u;
           });
 
+        } else if (currentAdminTab === 'banners') {
+          const cfg=homeBannerSettings();
+          const field=(name,label,value,extra='')=>`<div class="field"><label>${label}</label>${name==='title'?`<textarea class="banner-field" data-key="title" rows="2">${escapeHtml(value)}</textarea>`:`<input class="banner-field" data-key="${name}" value="${escapeHtml(value)}" ${extra}>`}</div>`;
+          body.innerHTML=`<div class="info-callout"><strong>🖼️ مدیریت بنر صفحه اصلی</strong><br>برای بنری که متن و تصویر آن را خودتان طراحی کرده‌اید، چیدمان «بنر طراحی‌شدهٔ تمام‌تصویر» را انتخاب کنید. فایل اصلی بدون تغییر و فایل نمایشی بهینه‌شده هر دو در مخزن عمومی ذخیره می‌شوند. تغییرات پس از دکمهٔ سبز منتشر می‌شوند.</div>
+            <div class="form-grid">
+              <div class="field"><label><input type="checkbox" id="bannerEnabled" ${cfg.enabled!==false?'checked':''}> نمایش بنر در صفحه اصلی</label></div>
+              <div class="field"><label>زمان تغییر خودکار (ثانیه، ۲ تا ۶۰)</label><input id="bannerSeconds" type="number" min="2" max="60" value="${bannerBound(cfg.seconds,2,60,5)}"></div>
+              <div class="field"><label>حداکثر عرض بنر (پیکسل، ۶۰۰ تا ۱۸۰۰)</label><input id="bannerWidth" type="number" min="600" max="1800" value="${bannerBound(cfg.width,600,1800,1240)}"></div>
+              <div class="field"><label>ارتفاع مرجع بنر در دسکتاپ (پیکسل، ۲۶۰ تا ۷۰۰)</label><input id="bannerHeight" type="number" min="260" max="700" value="${bannerBound(cfg.height,260,700,380)}"></div>
+              <div class="field"><label>ارتفاع تصویر موبایل برای چیدمان تصویر کنار متن (پیکسل، ۱۶۰ تا ۵۰۰)</label><input id="bannerMobileHeight" type="number" min="160" max="500" value="${bannerBound(cfg.mobileHeight,160,500,240)}"></div>
+            </div>
+            <p id="bannerSizeHint" class="gallery-hint" style="margin:8px 0 14px"></p>
+            ${cfg.slides.map((slide,i)=>`<div class="banner-editor" data-banner-index="${i}">
+              <strong>بنر ${toFa(i+1)}</strong><div class="banner-editor-actions"><label><input class="banner-active" type="checkbox" ${slide.enabled!==false?'checked':''}> فعال</label><button type="button" class="icon-btn" data-banner-move="-1" ${i===0?'disabled':''}>↑ بالاتر</button><button type="button" class="icon-btn" data-banner-move="1" ${i===cfg.slides.length-1?'disabled':''}>↓ پایین‌تر</button><button type="button" class="icon-btn btn-danger" data-banner-remove>حذف</button></div>
+              <div class="form-grid">${field('kicker','متن کوچک بالای عنوان',slide.kicker||'')}${field('title','عنوان بنر',slide.title||'')}${field('text','توضیح بنر',slide.text||'')}${field('caption','نوشتهٔ روی عکس',slide.caption||'')}${field('button','متن دکمه',slide.button||'')}${field('link','لینک دکمه (آدرس یا #menuContainer)',slide.link||'','dir="ltr"')}${field('alt','توضیح تصویر برای دسترس‌پذیری',slide.alt||'')}<div class="field"><label>نوع چیدمان بنر</label><select class="banner-field" data-key="layout"><option value="split" ${slide.layout!=='full'?'selected':''}>تصویر کنار متن</option><option value="full" ${slide.layout==='full'?'selected':''}>بنر طراحی‌شدهٔ تمام‌تصویر</option></select></div></div>
+              <div class="product-gallery-editor"><div class="gallery-heading"><strong>عکس بنر</strong>${!slide.image?'<button type="button" class="icon-btn" data-banner-pick>＋ افزودن عکس</button>':''}</div>
+                <input type="file" class="banner-upload hidden" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,image/bmp">
+                ${slide.image?`<div class="gallery-photos"><figure><img src="${escapeHtml(productImagePreview(safeBannerImage(slide.image)))}" alt="پیش‌نمایش بنر"><details class="gallery-actions"><summary aria-label="گزینه‌های عکس بنر" title="گزینه‌های عکس">⋮</summary><div class="gallery-menu"><button type="button" data-banner-edit>ویرایش کادر</button><button type="button" data-banner-pick>جایگزینی عکس</button><button type="button" data-banner-clear-image class="gallery-delete">حذف عکس</button></div></details></figure></div>`:'<small>تا زمانی که عکس انتخاب نشود، عکس اولین محصول موجود نمایش داده می‌شود.</small>'}
+                <small class="gallery-hint">برای ویرایش کادر، جایگزینی یا حذف روی ⋮ بزنید. فایل اصلی بدون تغییر و عکس نمایشی در مخزن عمومی ذخیره می‌شوند.</small></div>
+            </div>`).join('')}
+            <button type="button" class="icon-btn" id="bannerAdd" ${cfg.slides.length>=10?'disabled':''}>＋ افزودن بنر (حداکثر ۱۰)</button>`;
+          const updateBannerSizeHint=()=>{const width=bannerBound(document.getElementById('bannerWidth').value,600,1800,1240)-48,height=bannerBound(document.getElementById('bannerHeight').value,260,700,380);document.getElementById('bannerSizeHint').textContent=`برای بنر تمام‌تصویر با این تنظیمات، تصویر ${toFa(width)} × ${toFa(height)} پیکسل طراحی کنید (عرض × ارتفاع). قاب متناسب با عرض صفحه کوچک می‌شود؛ اگر نسبت تصویر متفاوت باشد، کمی از اطراف بریده می‌شود. ارتفاع موبایل بالا فقط برای چیدمان تصویر کنار متن است.`;};
+          const refresh=()=>{collectAdminInputs();homeSlideIndex=0;renderHomeBanner();updateBannerSizeHint();};
+          updateBannerSizeHint();
+          body.querySelectorAll('input:not([type=file]),textarea,select').forEach(el=>el.addEventListener('change',refresh));
+          document.getElementById('bannerAdd').onclick=()=>{collectAdminInputs();state.design.homeBanner.slides.push({...defaultHomeSlide(),kicker:'',title:'بنر جدید',text:'',button:'',link:'',caption:''});renderAdminTab();renderHomeBanner();};
+          body.querySelectorAll('[data-banner-move],[data-banner-remove],[data-banner-clear-image]').forEach(btn=>btn.onclick=()=>{
+            collectAdminInputs();const row=btn.closest('[data-banner-index]'),i=Number(row.dataset.bannerIndex),slides=state.design.homeBanner.slides;
+            if(btn.hasAttribute('data-banner-remove')){const removed=slides.splice(i,1)[0];discardBannerPending(removed.image);discardBannerPending(removed.originalImage);}
+            else if(btn.hasAttribute('data-banner-clear-image')){const old=slides[i].image,original=slides[i].originalImage;slides[i].image='';delete slides[i].originalImage;delete slides[i].originalUploaded;discardBannerPending(old);discardBannerPending(original);}
+            else {const j=i+Number(btn.dataset.bannerMove);if(j>=0&&j<slides.length)[slides[i],slides[j]]=[slides[j],slides[i]];}
+            homeSlideIndex=0;renderAdminTab();renderHomeBanner();
+          });
+          body.querySelectorAll('[data-banner-pick]').forEach(btn=>btn.addEventListener('click',()=>btn.closest('.banner-editor').querySelector('.banner-upload').click()));
+          body.querySelectorAll('.gallery-actions').forEach(details=>{details.addEventListener('toggle',()=>{if(details.open)body.querySelectorAll('.gallery-actions[open]').forEach(other=>{if(other!==details)other.open=false;});});details.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{details.open=false;}));});
+          async function editBannerPhoto(index,file,editing){
+            const toast=document.getElementById('adminToast');if(productPhotoEditing){toast.textContent='ابتدا ویرایش عکس قبلی را تمام کنید.';return;}
+            collectAdminInputs();const slides=state.design.homeBanner.slides, slide=slides[index];if(!slide)return;
+            const source=slide.image||'', oldOriginal=slide.originalImage||source, oldUploaded=!!slide.originalUploaded;
+            const stillCurrent=()=>currentAdminTab==='banners'&&!document.getElementById('adminModal').classList.contains('hidden')&&state.design.homeBanner.slides[index]===slide&&slide.image===source;
+            productPhotoEditing=true;document.getElementById('btnPublishLive').disabled=true;
+            try{
+              let original, dataUrl;
+              if(file){original=await readOriginalPhoto(file);dataUrl=original.dataUrl;}
+              else if(pendingImageUploads[oldOriginal])dataUrl=productImagePreview(oldOriginal);
+              else {const response=await fetch(oldOriginal,{cache:'no-store'});if(!response.ok)throw new Error('دریافت عکس اصلی ممکن نشد.');const blob=await response.blob();if(blob.type&&!blob.type.startsWith('image/'))throw new Error('فایل تصویر نیست.');dataUrl=await fileToDataUrl(blob);}
+              if(!stillCurrent())throw new Error('پنل یا بنر تغییر کرده است؛ دوباره تلاش کنید.');
+              let base64;
+              if(editing){
+                const cfg=homeBannerSettings(), width=bannerBound(cfg.width,600,1800,1240), height=bannerBound(cfg.height,260,700,380);
+                const ratio=Math.max(.7,Math.min(7,(width-48)*(slide.layout==='full'?1:1.05/2.05)/height));
+                const info=!oldUploaded?'فایل اصلی این عکس قدیمی موجود نیست؛ برای ویرایش از فایل کامل، یک‌بار عکس را جایگزین کنید.':'';
+                ({base64}=await openImageCropEditor(dataUrl,'بنر',info,ratio));
+              }else{({base64}=await compressImageFile(file,1600,.88));}
+              if(!stillCurrent())throw new Error('پنل یا بنر تغییر کرده است؛ دوباره تلاش کنید.');
+              const path=`assets/images/banner_${Date.now()}_${Math.random().toString(36).slice(2,10)}.jpg`;
+              pendingImageUploads[path]=base64;slide.image=path;
+              if(original){const originalPath=originalPhotoPath('banner',original.ext);pendingImageUploads[originalPath]=original.base64;slide.originalImage=originalPath;slide.originalUploaded=true;}
+              else {slide.originalImage=oldOriginal;slide.originalUploaded=oldUploaded;}
+              discardBannerPending(source);discardBannerPending(oldOriginal);
+              homeSlideIndex=0;renderAdminTab();renderHomeBanner();toast.textContent='عکس بنر آماده شد؛ برای انتشار دکمهٔ سبز را بزنید.';
+            }catch(err){toast.textContent=err.message==='لغو شد'?'ویرایش لغو شد؛ عکس قبلی حفظ شد.':'تغییر عکس انجام نشد؛ عکس قبلی حفظ شد. '+(err.message||'');}
+            finally{productPhotoEditing=false;document.getElementById('btnPublishLive').disabled=false;}
+          }
+          body.querySelectorAll('[data-banner-edit]').forEach(btn=>btn.addEventListener('click',()=>{const i=Number(btn.closest('[data-banner-index]').dataset.bannerIndex);void editBannerPhoto(i,null,true);}));
+          body.querySelectorAll('.banner-upload').forEach(input=>input.addEventListener('change',()=>{const file=input.files&&input.files[0];if(!file)return;const i=Number(input.closest('[data-banner-index]').dataset.bannerIndex);input.value='';void editBannerPhoto(i,file,false);}));
         } else if (currentAdminTab === 'design') {
           const d = state.design || {};
           body.innerHTML = `
@@ -6056,6 +6245,14 @@ function mountCustomerDirectory(body){
             if(newCats.length) state.categories = newCats;
           }
         }
+        const bannerEnabled=document.getElementById('bannerEnabled');
+        if(bannerEnabled){
+          const prior=homeBannerSettings();
+          state.design.homeBanner={enabled:bannerEnabled.checked,seconds:bannerBound(document.getElementById('bannerSeconds').value,2,60,5),width:bannerBound(document.getElementById('bannerWidth').value,600,1800,1240),height:bannerBound(document.getElementById('bannerHeight').value,260,700,380),mobileHeight:bannerBound(document.getElementById('bannerMobileHeight').value,160,500,240),slides:[...document.querySelectorAll('.banner-editor')].map(row=>{
+            const slide={...(prior.slides[Number(row.dataset.bannerIndex)]||{}),enabled:row.querySelector('.banner-active').checked};
+            row.querySelectorAll('.banner-field').forEach(el=>{slide[el.dataset.key]=el.value.trim();});return slide;
+          })};
+        }
         // Design tab
         const accEl = document.getElementById('f_accentColor');
         if (accEl) {
@@ -6145,6 +6342,8 @@ function mountCustomerDirectory(body){
         if (pub) state.brand.publicUrl = pub.value.trim();
       }
 
+      function bannerAssetPaths(target){return ((target.design && target.design.homeBanner && target.design.homeBanner.slides)||[]).flatMap(s=>[safeBannerImage(s.image),safeBannerImage(s.originalImage)]).filter(p=>p && !/^https?:/i.test(p));}
+      function discardBannerPending(path){if(path && !bannerAssetPaths(state).includes(path) && !state.items.some(item=>productPhotoAssets(item).includes(path)))delete pendingImageUploads[path];}
       function getCleanMenuStateForSave() {
         const copy = JSON.parse(JSON.stringify(state));
         (copy.items || []).forEach(it => { delete it._previewDataUrl; });
@@ -6264,7 +6463,7 @@ function mountCustomerDirectory(body){
             'assets/fonts/Vazirmatn-Medium.woff2',
             'assets/fonts/Vazirmatn-Bold.woff2',
             'assets/fonts/Vazirmatn-ExtraBold.woff2'
-          ].concat(cleanState.items.flatMap(i => productPhotoAssets(i).filter(p=>!/^https?:|^data:/i.test(p))))));
+          ].concat(cleanState.items.flatMap(i => productPhotoAssets(i).filter(p=>!/^https?:|^data:/i.test(p))),bannerAssetPaths(cleanState))));
 
           for (const bp of uniqueAssetPaths) {
             if (pendingImageUploads[bp]) {
@@ -6455,7 +6654,7 @@ function mountCustomerDirectory(body){
             'assets/fonts/Vazirmatn-Medium.woff2',
             'assets/fonts/Vazirmatn-Bold.woff2',
             'assets/fonts/Vazirmatn-ExtraBold.woff2'
-          ].concat(cleanState.items.flatMap(i => productPhotoAssets(i).filter(p=>!/^https?:|^data:/i.test(p))))));
+          ].concat(cleanState.items.flatMap(i => productPhotoAssets(i).filter(p=>!/^https?:|^data:/i.test(p))),bannerAssetPaths(cleanState))));
 
           for (const rel of uniqueAssets) {
             if (pendingImageUploads[rel]) {
