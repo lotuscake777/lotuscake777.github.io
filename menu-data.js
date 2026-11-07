@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1794005522381,
+  "updatedAt": 1794009861020,
   "cloud": {
     "ghOwner": "lotuscake777",
     "ghRepo": "lotuscake777.github.io",
@@ -45,10 +45,13 @@ window.MENU_DATA = {
       "desc": "خامه شکلاتی شیری، دریپ سس کارامل دست‌ساز و بادام‌زمینی کاراملی",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "1800000",
-      "image": "assets/images/k01-snickers.jpg",
+      "image": "assets/images/custom_k01_1794009855786_94qlr3.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
+      "images": [
+        "assets/images/custom_k01_1794009855786_94qlr3.jpg"
+      ]
     },
     {
       "id": "k02",
