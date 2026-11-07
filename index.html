@@ -1520,6 +1520,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         <button type="button" class="icon-btn admin-trigger" id="btnCropConfirm" style="height:32px">✅ تایید قاب</button>
       </div>
       <div style="font-size:11px; color:var(--text-muted); margin-top:6px">تصویر رو با موس بکشید، با اسکرول موس یا اسلایدر زوم کنید — نسبت ۵:۴ ثابت می‌مونه</div>
+      <div id="cropSourceInfo" class="hidden" style="font-size:11px;color:#815221;background:#fff5e4;border-radius:8px;padding:8px;margin-top:8px"></div>
     </div>
   </div>
   <script src="assets/qrcode.min.js"></script>
@@ -1634,7 +1635,34 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         return [...new Set([item.image, ...(Array.isArray(item.images) ? item.images : [])].filter(x => typeof x === 'string' && x))];
       }
       function productImagePreview(path) {
-        return pendingImageUploads[path] ? 'data:image/jpeg;base64,' + pendingImageUploads[path] : path;
+        return pendingImageUploads[path] ? 'data:'+imageMimeForPath(path)+';base64,' + pendingImageUploads[path] : path;
+      }
+      function imageMimeForPath(path){
+        const ext=String(path).split('?')[0].split('.').pop().toLowerCase();
+        return {jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',avif:'image/avif',bmp:'image/bmp'}[ext]||'image/jpeg';
+      }
+      // Associate each displayed crop with its uncropped source without adding it to the gallery.
+      function productPhotoOriginal(item,display){
+        const entry=item.photoOriginals && item.photoOriginals[display];
+        return entry && typeof entry.path==='string' && entry.path ? {path:entry.path,uploaded:entry.uploaded===true} : {path:display,uploaded:false};
+      }
+      function productPhotoAssets(item){
+        const images=productImages(item);
+        return [...new Set(images.concat(images.map(src=>productPhotoOriginal(item,src).path)))];
+      }
+      function discardUnreferencedPending(paths){
+        for(const path of paths)if(path && !state.items.some(item=>productPhotoAssets(item).includes(path)))delete pendingImageUploads[path];
+      }
+      async function readOriginalPhoto(file){
+        const formats={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/avif':'avif','image/bmp':'bmp'};
+        const ext=formats[(file.type||'').toLowerCase()];
+        if(!ext)throw new Error('فرمت عکس پشتیبانی نمی‌شود؛ از JPG، PNG، WebP، GIF، AVIF یا BMP استفاده کنید.');
+        if(file.size>25*1024*1024)throw new Error('حجم فایل اصلی باید حداکثر ۲۵ مگابایت باشد.');
+        const dataUrl=await fileToDataUrl(file);
+        return {dataUrl,base64:dataUrl.slice(dataUrl.indexOf(',')+1),ext};
+      }
+      function originalPhotoPath(id,ext){
+        return `assets/images/original_${id}_${Date.now()}_${Math.random().toString(36).slice(2,10)}.${ext}`;
       }
 
       // Refresh only the built-in watermark URL; custom uploaded images keep their original paths.
@@ -4308,7 +4336,7 @@ function renderDatabaseAccount(body){
 
       // === ADVANCED IMAGE CROP & POSITION EDITOR ===
       let cropState = null; // { img, posX, posY, zoom, baseZoom, resolve, reject, fileNameHint }
-      function openImageCropEditor(dataUrl, hintName){
+      function openImageCropEditor(dataUrl, hintName, sourceInfo=''){
         return new Promise((resolve,reject)=>{
           if(cropState){reject(new Error('ابتدا ویرایش عکس قبلی را تمام کنید.'));return;}
           const modal=document.getElementById('cropEditor');
@@ -4316,6 +4344,8 @@ function renderDatabaseAccount(body){
           const imgEl=document.getElementById('cropImage');
           const slider=document.getElementById('cropZoomSlider');
           const zoomVal=document.getElementById('cropZoomVal');
+          const sourceInfoEl=document.getElementById('cropSourceInfo');
+          sourceInfoEl.textContent=sourceInfo;sourceInfoEl.classList.toggle('hidden',!sourceInfo);
           cropState={ posX:0, posY:0, zoom:1, baseZoom:1, resolve, reject };
           const confirmBtn=document.getElementById('btnCropConfirm');
           confirmBtn.disabled=true;
@@ -4507,7 +4537,9 @@ function renderDatabaseAccount(body){
           const button=document.getElementById('btnConfirmAddProd'); button.disabled=true;
           try {
             for(const file of files){
-              pickedImages.push(await openImageCropEditor(await fileToDataUrl(file),file.name));
+              const original=await readOriginalPhoto(file);
+              const cropped=await openImageCropEditor(original.dataUrl,file.name);
+              pickedImages.push({...cropped,original});
               document.getElementById('np_preview').src=pickedImages[0].dataUrl;
               document.getElementById('np_photo_count').textContent=toFa(pickedImages.length)+' عکس انتخاب شد';
             }
@@ -4531,10 +4563,13 @@ function renderDatabaseAccount(body){
           }
 
           const newId = 'item_' + Date.now();
+          const photoOriginals={};
           const imagePaths=pickedImages.map((image,n)=>{
             const path=`assets/images/custom_${newId}_${n}.jpg`;
+            const originalPath=originalPhotoPath(newId,image.original.ext);
             pendingImageUploads[path]=image.base64;
-            fetch('api/upload-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path,base64:image.base64})}).catch(()=>{});
+            pendingImageUploads[originalPath]=image.original.base64;
+            photoOriginals[path]={path:originalPath,uploaded:true};
             return path;
           });
           const imgPath=imagePaths[0]||fallbackImg;
@@ -4548,7 +4583,8 @@ function renderDatabaseAccount(body){
             price: formatPriceFa(parsePriceNumber(rawPrice)) || rawPrice,
             available: true,
             image: imgPath,
-            images: imagePaths.length ? imagePaths : [imgPath]
+            images: imagePaths.length ? imagePaths : [imgPath],
+            photoOriginals
           };
           if (pickedImages.length) newItem._previewDataUrl = pickedImages[0].dataUrl;
 
@@ -4954,7 +4990,7 @@ function mountCustomerDirectory(body){
                         جمع کل سفارش: ${formatPriceFa(ord.total)} تومان
                       </div>
                     </div>
-                    <div class="order-payment-admin"><div><b>روش تسویه:</b> ${escapeHtml(paymentLabel)}</div><div><b>وصول‌شده:</b> ${formatPriceFa(paymentReceived)} تومان · <b>باقی‌مانده:</b> ${formatPriceFa(paymentDue)} تومان</div><div><b>وضعیت:</b> ${ord.paymentStatus==='paid'?'تسویه کامل':ord.paymentStatus==='partially_paid'?'بخشی دریافت شده':ord.paymentMethod==='delivery'?'پرداخت هنگام تحویل':'در انتظار تأیید رسید'}</div><div class="order-payment-actions">${ord.receiptDeliveryMode==='manual_support'?'<small class="receipt-archive-hint">فیش را در گفت‌وگوی پشتیبانی بله یا تلگرام بررسی کنید؛ تصویری در سایت آپلود نشده است.</small>':''}${ord.receiptInfo?`<button type="button" class="icon-btn" data-open-receipt="${escapeHtml(ord.id)}">🧾 مشاهدهٔ رسید</button>${!(accountingVault.receiptBlobs&&accountingVault.receiptBlobs[ord.id])?'<small class="receipt-archive-hint">پیوست موقت است؛ رسید را برای آرشیو رمزگذاری‌شده باز کنید.</small>':''}`:''}${paymentBtn?`<button type="button" class="icon-btn btn-green" data-confirm-payment="${escapeHtml(ord.id)}">${paymentBtn}</button>`:''}</div></div>
+                    <div class="order-payment-admin"><div><b>روش تسویه:</b> ${escapeHtml(paymentLabel)}</div><div><b>وصول‌شده:</b> ${formatPriceFa(paymentReceived)} تومان · <b>باقی‌مانده:</b> ${formatPriceFa(paymentDue)} تومان</div><div><b>وضعیت:</b> ${ord.paymentStatus==='paid'?'تسویه کامل':ord.paymentStatus==='partially_paid'?'بخشی دریافت شده':ord.paymentMethod==='delivery'?'پرداخت هنگام تحویل':'در انتظار تأیید رسید'}</div><div class="order-payment-actions">${ord.receiptDeliveryMode==='manual_support'?'<small class="receipt-arc است.</small>':''}${ord.receiptInfo?`<button type="button" class="icon-btn" data-open-receipt="${escapeHtml(ord.id)}">🧾 مشاهدهٔ رسید</button>${!(accountingVault.receiptBlobs&&accountingVault.receiptBlobs[ord.id])?'<small class="receipt-archive-hint">پیوست موقت است؛ رسید را برای آرشیو رمزگذاری‌شده باز کنید.</small>':''}`:''}${paymentBtn?`<button type="button" class="icon-btn btn-green" data-confirm-payment="${escapeHtml(ord.id)}">${paymentBtn}</button>`:''}</div></div>
                     <div style="font-size:12.5px;color:var(--text);line-height:1.8;margin-bottom:10px;padding:8px 10px;border-radius:9px;background:var(--surface)">
                       <div>📍 <strong>آدرس دقیق تحویل:</strong> ${escapeHtml(ord.address || ord.note || '-')}</div>
                       <div>📅 <strong>روز تحویل:</strong> ${ord.deliveryDate ? escapeHtml(formatPersianDate(ord.deliveryDate,{dateOnly:true})) : 'ثبت نشده'}</div>
@@ -5310,7 +5346,9 @@ function mountCustomerDirectory(body){
               collectAdminInputs();
               const di = +btn.dataset.didx;
               const removedName = state.items[di] ? state.items[di].name : '';
+              const removedAssets=state.items[di]?productPhotoAssets(state.items[di]):[];
               state.items.splice(di, 1);
+              discardUnreferencedPending(removedAssets);
               renderAdminTab();
               renderAll();
               document.getElementById('adminToast').textContent = `محصول «${removedName}» حذف شد ✓ (دکمه سبز ذخیره را بزنید)`;
@@ -5341,30 +5379,37 @@ function mountCustomerDirectory(body){
             const toast=document.getElementById('adminToast');
             if(productPhotoEditing){toast.textContent='ابتدا ویرایش عکس قبلی را تمام کنید.';return;}
             productPhotoEditing=true;
+            const oldOriginal=productPhotoOriginal(item,source);
             try {
-              let dataUrl;
+              let dataUrl, originalFile;
               if(file){
-                if(!file.type.startsWith('image/'))throw new Error('لطفاً یک فایل تصویر انتخاب کنید.');
-                dataUrl=await fileToDataUrl(file);
-              }else if(pendingImageUploads[source]){
-                dataUrl='data:image/jpeg;base64,'+pendingImageUploads[source];
+                originalFile=await readOriginalPhoto(file);
+                dataUrl=originalFile.dataUrl;
+              }else if(pendingImageUploads[oldOriginal.path]){
+                dataUrl=productImagePreview(oldOriginal.path);
               }else{
                 let response;
-                try{response=await fetch(source,{cache:'no-store'});}catch(err){throw new Error('دریافت عکس فعلی ممکن نشد؛ اگر عکس روی سایت دیگری است ممکن است دسترسی آن محدود باشد.');}
-                if(!response.ok)throw new Error('دریافت عکس فعلی ممکن نشد.');
+                try{response=await fetch(oldOriginal.path,{cache:'no-store'});}catch(err){throw new Error('دریافت عکس اصلی ممکن نشد؛ اگر عکس روی سایت دیگری است ممکن است دسترسی آن محدود باشد.');}
+                if(!response.ok)throw new Error('دریافت عکس اصلی ممکن نشد؛ عکس قبلی حفظ شد.');
                 const imageBlob=await response.blob();
                 if(imageBlob.type&&!imageBlob.type.startsWith('image/'))throw new Error('فایل انتخاب‌شده تصویر نیست.');
                 dataUrl=await fileToDataUrl(imageBlob);
               }
-              if(currentAdminTab!=='prices'||document.getElementById('adminModal').classList.contains('hidden')||!state.items.includes(item)||productImages(item)[photoIndex]!==source)throw new Error('پنل، محصول یا جایگاه عکس تغییر کرده است؛ دوباره تلاش کنید.');
-              const {base64}=await openImageCropEditor(dataUrl,item.name);
-              if(currentAdminTab!=='prices'||document.getElementById('adminModal').classList.contains('hidden')||!state.items.includes(item)||productImages(item)[photoIndex]!==source)throw new Error('پنل، محصول یا جایگاه عکس تغییر کرده است؛ دوباره تلاش کنید.');
+              const stillCurrent=()=>currentAdminTab==='prices'&&!document.getElementById('adminModal').classList.contains('hidden')&&state.items.includes(item)&&productImages(item)[photoIndex]===source&&productPhotoOriginal(item,source).path===oldOriginal.path;
+              if(!stillCurrent())throw new Error('پنل، محصول یا جایگاه عکس تغییر کرده است؛ دوباره تلاش کنید.');
+              const info=!file&&!oldOriginal.uploaded?'نسخهٔ کامل اولیه برای این عکس قدیمی ذخیره نشده است. این ویرایش از نسخهٔ موجود شروع می‌شود؛ برای استفاده از عکس کامل، یک‌بار آن را جایگزین کنید.':'';
+              const {base64}=await openImageCropEditor(dataUrl,item.name,info);
+              if(!stillCurrent())throw new Error('پنل، محصول یا جایگاه عکس تغییر کرده است؛ دوباره تلاش کنید.');
               collectAdminInputs();
               const images=productImages(item);
               const path=`assets/images/custom_${item.id}_${Date.now()}_${Math.random().toString(36).slice(2,8)}.jpg`;
+              const originalPath=originalFile?originalPhotoPath(item.id,originalFile.ext):oldOriginal.path;
+              const originals={...(item.photoOriginals||{})};delete originals[source];
+              originals[path]={path:originalPath,uploaded:!!originalFile||oldOriginal.uploaded};
               pendingImageUploads[path]=base64;
-              images[photoIndex]=path;item.image=images[0];item.images=images;delete item._previewDataUrl;
-              if(source&&!state.items.some(x=>productImages(x).includes(source)))delete pendingImageUploads[source];
+              if(originalFile)pendingImageUploads[originalPath]=originalFile.base64;
+              images[photoIndex]=path;item.image=images[0];item.images=images;item.photoOriginals=originals;delete item._previewDataUrl;
+              discardUnreferencedPending([source,oldOriginal.path]);
               renderAdminTab();renderAll();toast.textContent='عکس آماده شد؛ برای انتشار دکمهٔ سبز پایین را بزنید.';
             }catch(err){
               toast.textContent=err.message==='لغو شد'?'ویرایش لغو شد؛ عکس قبلی حفظ شد.':'تغییر عکس انجام نشد؛ عکس قبلی حفظ شد. '+(err.message||'');
@@ -5397,8 +5442,9 @@ function mountCustomerDirectory(body){
           body.querySelectorAll('[data-remove-photo]').forEach(btn=>btn.addEventListener('click',()=>{
             collectAdminInputs(); const it=state.items[+btn.dataset.removePhoto]; if(!it)return;
             const images=productImages(it); if(images.length<2)return;
-            const removed=images.splice(+btn.dataset.photoIndex,1)[0]; it.image=images[0]; it.images=images; delete it._previewDataUrl;
-            if(removed&&!state.items.some(x=>productImages(x).includes(removed)))delete pendingImageUploads[removed];
+            const removed=images.splice(+btn.dataset.photoIndex,1)[0],original=productPhotoOriginal(it,removed); it.image=images[0]; it.images=images; delete it._previewDataUrl;
+            if(it.photoOriginals){it.photoOriginals={...it.photoOriginals};delete it.photoOriginals[removed];}
+            discardUnreferencedPending([removed,original.path]);
             renderAdminTab(); renderAll(); document.getElementById('adminToast').textContent='عکس از اسلاید برداشته شد؛ برای انتشار دکمه سبز را بزنید.';
           }));
           body.querySelectorAll('.ei-gallery-file').forEach(inp=>inp.addEventListener('change',async()=>{
@@ -5407,9 +5453,14 @@ function mountCustomerDirectory(body){
             if(!item)return; inp.disabled=true;
             try {
               for(const file of files){
-                const {base64}=await openImageCropEditor(await fileToDataUrl(file),file.name);
+                const original=await readOriginalPhoto(file);
+                const {base64}=await openImageCropEditor(original.dataUrl,file.name);
+                if(currentAdminTab!=='prices'||document.getElementById('adminModal').classList.contains('hidden')||!state.items.includes(item))throw new Error('پنل یا محصول تغییر کرده است؛ دوباره تلاش کنید.');
+                collectAdminInputs();
                 const path=`assets/images/custom_${item.id}_${Date.now()}_${Math.random().toString(36).slice(2,8)}.jpg`;
-                pendingImageUploads[path]=base64; item.images=[...productImages(item),path];
+                const originalPath=originalPhotoPath(item.id,original.ext);
+                pendingImageUploads[path]=base64;pendingImageUploads[originalPath]=original.base64;
+                item.images=[...productImages(item),path];item.photoOriginals={...(item.photoOriginals||{}),[path]:{path:originalPath,uploaded:true}};
               }
               toast.textContent='عکس‌ها آماده شدند؛ برای انتشار دکمه سبز را بزنید.';
             } catch(err) { toast.textContent=err.message==='لغو شد'?'انتخاب عکس متوقف شد؛ عکس‌های قبلی حفظ شدند.':'خطا در تصویر: '+err.message; }
@@ -6104,7 +6155,7 @@ function mountCustomerDirectory(body){
             'assets/fonts/Vazirmatn-Medium.woff2',
             'assets/fonts/Vazirmatn-Bold.woff2',
             'assets/fonts/Vazirmatn-ExtraBold.woff2'
-          ].concat(cleanState.items.flatMap(i => productImages(i)))));
+          ].concat(cleanState.items.flatMap(i => productPhotoAssets(i).filter(p=>!/^https?:|^data:/i.test(p))))));
 
           for (const bp of uniqueAssetPaths) {
             if (pendingImageUploads[bp]) {
@@ -6295,7 +6346,7 @@ function mountCustomerDirectory(body){
             'assets/fonts/Vazirmatn-Medium.woff2',
             'assets/fonts/Vazirmatn-Bold.woff2',
             'assets/fonts/Vazirmatn-ExtraBold.woff2'
-          ].concat(cleanState.items.flatMap(i => productImages(i)))));
+          ].concat(cleanState.items.flatMap(i => productPhotoAssets(i).filter(p=>!/^https?:|^data:/i.test(p))))));
 
           for (const rel of uniqueAssets) {
             if (pendingImageUploads[rel]) {
@@ -6327,4 +6378,6 @@ function mountCustomerDirectory(body){
     })();
   </script>
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5030d4849f7c5cf',t:'MTc5Mjk1MDUwMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5031732ead1c5cf',t:'MTc5Mjk1MDkwOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a50322cdcec31ac7',t:'MTc5Mjk1MTM4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+ction(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
