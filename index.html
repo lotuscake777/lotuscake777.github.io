@@ -1971,6 +1971,11 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         const purchased=valid && quantity ? count : 0;
         return {rows,quantity,valid,purchased,returned:valid && quantity ? quantity-purchased : 0,total:purchased*200000};
       }
+      function carrierOptionLabel(purchased, quantity){
+        if(purchased===0)return 'همه را برمی‌گردانم';
+        if(purchased===quantity)return 'همه را می‌خرم';
+        return `${toFa(purchased)} مجموعه می‌خرم؛ ${toFa(quantity-purchased)} مجموعه را برمی‌گردانم`;
+      }
       function getCartSummary() {
         let count = 0, total = 0;
         const lines = [];
@@ -3913,7 +3918,7 @@ function renderDatabaseAccount(body){
               </div>
               ${carrierState(sum.lines).quantity?`<section style="margin-bottom:14px;padding:12px;border:1px solid var(--border);border-radius:13px;background:var(--surface-soft)">
                 <strong>ظرف حمل کیک و زیر کیکی <span style="color:#DC2626">*</span></strong><p style="font-size:12px">خرید هر مجموعه ۲۰۰٬۰۰۰ تومان است؛ در صورت بازگرداندن، هزینه‌ای ندارد.</p>
-                <label style="display:block;margin:9px 0">تعداد خرید ظرف حمل کیک و زیر کیکی <select data-carrier="total" style="display:block;width:100%;padding:9px;margin-top:4px"><option value="">انتخاب کنید</option>${Array.from({length:carrierState(sum.lines).quantity+1},(_,n)=>`<option value="${n}" ${carrierState(sum.lines).valid&&carrierState(sum.lines).purchased===n?'selected':''}>${toFa(n)} خرید / ${toFa(carrierState(sum.lines).quantity-n)} بازگشت</option>`).join('')}</select></label>
+                <label style="display:block;margin:9px 0">تعداد خرید ظرف حمل کیک و زیر کیکی <select data-carrier="total" style="display:block;width:100%;padding:9px;margin-top:4px"><option value="">انتخاب کنید</option>${Array.from({length:carrierState(sum.lines).quantity+1},(_,n)=>`<option value="${n}" ${carrierState(sum.lines).valid&&carrierState(sum.lines).purchased===n?'selected':''}>${carrierOptionLabel(n,carrierState(sum.lines).quantity)}</option>`).join('')}</select></label>
                 <div>هزینهٔ ظرف حمل کیک و زیر کیکی: <b id="carrierTotal">${formatPriceFa(carrierState(sum.lines).total)}</b> تومان</div></section>`:''}
               <section class="field" style="margin-bottom:14px;padding:12px;border:1px solid var(--border);border-radius:13px;background:var(--surface-soft)">
                 <label style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:8px">💳 روش تسویهٔ فاکتور <span style="color:#DC2626">*</span></label>
