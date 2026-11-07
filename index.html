@@ -814,7 +814,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     .product-gallery-editor { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:8px; background:var(--surface); border:1px solid var(--border); border-radius:10px; }
     .product-gallery-editor figure { margin:0; display:grid; gap:4px; width:78px; text-align:center; font-size:11px; }
     .product-gallery-editor img { width:78px; height:62px; object-fit:cover; border-radius:8px; }
-    .product-gallery-editor button { font-size:11px; }
+    .product-gallery-editor button, .product-gallery-editor label { font-size:11px; }
 
     .modal-close {
       position: absolute;
@@ -2045,6 +2045,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       let pendingAccountOrderSignature='',pendingAccountOrderId='';
       let liveOrderEventSource = null;
       let pendingImageUploads = {}; // relPath -> base64 string (no prefix)
+      let productPhotoEditing = false;
 
       async function unlockPrivateKeyWithPassword(pass) {
         const wp = state.orderConfig && state.orderConfig.wrappedPrivateKey;
@@ -4289,13 +4290,15 @@ function renderDatabaseAccount(body){
       let cropState = null; // { img, posX, posY, zoom, baseZoom, resolve, reject, fileNameHint }
       function openImageCropEditor(dataUrl, hintName){
         return new Promise((resolve,reject)=>{
+          if(cropState){reject(new Error('ابتدا ویرایش عکس قبلی را تمام کنید.'));return;}
           const modal=document.getElementById('cropEditor');
           const viewport=document.getElementById('cropViewport');
           const imgEl=document.getElementById('cropImage');
           const slider=document.getElementById('cropZoomSlider');
           const zoomVal=document.getElementById('cropZoomVal');
           cropState={ posX:0, posY:0, zoom:1, baseZoom:1, resolve, reject };
-          imgEl.src=dataUrl;
+          const confirmBtn=document.getElementById('btnCropConfirm');
+          confirmBtn.disabled=true;
           imgEl.style.left='50%'; imgEl.style.top='50%';
           slider.value=100; zoomVal.textContent='100%';
           modal.classList.remove('hidden');
@@ -4306,6 +4309,12 @@ function renderDatabaseAccount(body){
             cropState.baseZoom = coverZoom;
             cropState.zoom = coverZoom;
             applyCropTransform();
+            confirmBtn.disabled=false;
+          };
+          imgEl.onerror=()=>{
+            modal.classList.add('hidden');
+            cropState.reject(new Error('تصویر قابل خواندن نیست'));
+            cleanup();
           };
           function applyCropTransform(){
             const s=cropState.zoom;
@@ -4363,6 +4372,7 @@ function renderDatabaseAccount(body){
             cleanup();
           };
           document.getElementById('btnCropConfirm').onclick = async ()=>{
+            try {
             // render to canvas 900x720
             const outW=900, outH=720; // 5:4
             const canvas=document.createElement('canvas'); canvas.width=outW; canvas.height=outH;
@@ -4381,12 +4391,19 @@ function renderDatabaseAccount(body){
             modal.classList.add('hidden');
             cropState.resolve({ dataUrl: dataUrlOut, base64 });
             cleanup();
+            } catch(err) {
+              modal.classList.add('hidden');
+              cropState.reject(new Error('پردازش تصویر ممکن نشد.'));
+              cleanup();
+            }
           };
           function cleanup(){
-            viewport.onpointerdown=null; viewport.onpointermove=null; viewport.onpointerup=null; viewport.onwheel=null;
+            viewport.onpointerdown=null; viewport.onpointermove=null; viewport.onpointerup=null; viewport.onpointercancel=null; viewport.onwheel=null;
+            imgEl.onload=null; imgEl.onerror=null; confirmBtn.disabled=false; cropState=null;
           }
           // close on backdrop
           modal.onclick=(e)=>{ if(e.target.id==='cropEditor') { modal.classList.add('hidden'); cropState.reject(new Error('لغو شد')); cleanup(); }};
+          imgEl.src=dataUrl;
         });
       }
 
@@ -5181,9 +5198,9 @@ function mountCustomerDirectory(body){
                 <div class="edit-item-row" data-idx="${idx}">
                   <div class="product-gallery-editor">
                     <span>📷 عکس‌های محصول و اسلاید:</span>
-                    ${productImages(it).map((src,photoIndex)=>`<figure><img src="${escapeHtml(productImagePreview(src))}" alt="عکس ${toFa(photoIndex+1)}"><span>${photoIndex===0?'تصویر اصلی':toFa(photoIndex+1)}</span>${photoIndex>0?`<button type="button" class="icon-btn" data-primary-photo="${idx}" data-photo-index="${photoIndex}">تصویر اصلی</button>`:''}${productImages(it).length>1?`<button type="button" class="icon-btn btn-danger" data-remove-photo="${idx}" data-photo-index="${photoIndex}">حذف عکس</button>`:''}</figure>`).join('')}
+                    ${productImages(it).map((src,photoIndex)=>`<figure><img src="${escapeHtml(productImagePreview(src))}" alt="عکس ${toFa(photoIndex+1)}"><span>${photoIndex===0?'تصویر اصلی':toFa(photoIndex+1)}</span><button type="button" class="icon-btn" data-edit-photo="${idx}" data-photo-index="${photoIndex}" aria-label="ویرایش عکس ${toFa(photoIndex+1)} ${escapeHtml(it.name)}">ویرایش</button><button type="button" class="icon-btn" data-replace-photo aria-label="جایگزینی عکس ${toFa(photoIndex+1)} ${escapeHtml(it.name)}">جایگزینی</button><input type="file" accept="image/*" class="ei-replace-photo hidden" data-fidx="${idx}" data-photo-index="${photoIndex}">${photoIndex>0?`<button type="button" class="icon-btn" data-primary-photo="${idx}" data-photo-index="${photoIndex}">تصویر اصلی</button>`:''}${productImages(it).length>1?`<button type="button" class="icon-btn btn-danger" data-remove-photo="${idx}" data-photo-index="${photoIndex}">حذف عکس</button>`:''}</figure>`).join('')}
                     <label class="icon-btn" style="cursor:pointer">➕ افزودن عکس‌ها<input type="file" accept="image/*" multiple class="ei-gallery-file hidden" data-fidx="${idx}"></label>
-                    <small>عکس اول در منو دیده می‌شود؛ برای تغییر تصویر اصلی، ابتدا عکس جدید را اضافه و «تصویر اصلی» را انتخاب کنید.</small>
+                    <small>«ویرایش» کادر عکس فعلی را تغییر می‌دهد؛ «جایگزینی» عکس جدید را در همان جایگاه می‌گذارد. عکس اول تصویر اصلی است. برای انتشار، دکمهٔ سبز پایین را بزنید.</small>
                   </div>
                   <div class="field">
                     <label>نام محصول</label>
@@ -5299,6 +5316,51 @@ function mountCustomerDirectory(body){
             inp.addEventListener('change',()=>{ collectAdminInputs(); const idx=+inp.dataset.sidx; if(state.items[idx]) state.items[idx].shelfLife=inp.value.trim(); });
           });
 
+          async function editProductPhoto(item,photoIndex,source,file){
+            const toast=document.getElementById('adminToast');
+            if(productPhotoEditing){toast.textContent='ابتدا ویرایش عکس قبلی را تمام کنید.';return;}
+            productPhotoEditing=true;
+            try {
+              let dataUrl;
+              if(file){
+                if(!file.type.startsWith('image/'))throw new Error('لطفاً یک فایل تصویر انتخاب کنید.');
+                dataUrl=await fileToDataUrl(file);
+              }else if(pendingImageUploads[source]){
+                dataUrl='data:image/jpeg;base64,'+pendingImageUploads[source];
+              }else{
+                let response;
+                try{response=await fetch(source,{cache:'no-store'});}catch(err){throw new Error('دریافت عکس فعلی ممکن نشد؛ اگر عکس روی سایت دیگری است ممکن است دسترسی آن محدود باشد.');}
+                if(!response.ok)throw new Error('دریافت عکس فعلی ممکن نشد.');
+                const imageBlob=await response.blob();
+                if(imageBlob.type&&!imageBlob.type.startsWith('image/'))throw new Error('فایل انتخاب‌شده تصویر نیست.');
+                dataUrl=await fileToDataUrl(imageBlob);
+              }
+              if(currentAdminTab!=='prices'||document.getElementById('adminModal').classList.contains('hidden')||!state.items.includes(item)||productImages(item)[photoIndex]!==source)throw new Error('پنل، محصول یا جایگاه عکس تغییر کرده است؛ دوباره تلاش کنید.');
+              const {base64}=await openImageCropEditor(dataUrl,item.name);
+              if(currentAdminTab!=='prices'||document.getElementById('adminModal').classList.contains('hidden')||!state.items.includes(item)||productImages(item)[photoIndex]!==source)throw new Error('پنل، محصول یا جایگاه عکس تغییر کرده است؛ دوباره تلاش کنید.');
+              collectAdminInputs();
+              const images=productImages(item);
+              const path=`assets/images/custom_${item.id}_${Date.now()}_${Math.random().toString(36).slice(2,8)}.jpg`;
+              pendingImageUploads[path]=base64;
+              images[photoIndex]=path;item.image=images[0];item.images=images;delete item._previewDataUrl;
+              if(source&&!state.items.some(x=>productImages(x).includes(source)))delete pendingImageUploads[source];
+              renderAdminTab();renderAll();toast.textContent='عکس آماده شد؛ برای انتشار دکمهٔ سبز پایین را بزنید.';
+            }catch(err){
+              toast.textContent=err.message==='لغو شد'?'ویرایش لغو شد؛ عکس قبلی حفظ شد.':'تغییر عکس انجام نشد؛ عکس قبلی حفظ شد. '+(err.message||'');
+            }finally{
+              productPhotoEditing=false;
+            }
+          }
+          body.querySelectorAll('[data-edit-photo]').forEach(btn=>btn.addEventListener('click',()=>{
+            collectAdminInputs();const item=state.items[+btn.dataset.editPhoto],photoIndex=Number(btn.dataset.photoIndex),source=item&&productImages(item)[photoIndex];
+            if(item&&source)void editProductPhoto(item,photoIndex,source,null);
+          }));
+          body.querySelectorAll('[data-replace-photo]').forEach(btn=>btn.addEventListener('click',()=>btn.parentElement.querySelector('.ei-replace-photo').click()));
+          body.querySelectorAll('.ei-replace-photo').forEach(inp=>inp.addEventListener('change',()=>{
+            const file=inp.files&&inp.files[0];if(!file)return;
+            collectAdminInputs();const item=state.items[+inp.dataset.fidx],photoIndex=Number(inp.dataset.photoIndex),source=item&&productImages(item)[photoIndex];
+            inp.value='';if(item&&source)void editProductPhoto(item,photoIndex,source,file);
+          }));
           body.querySelectorAll('[data-primary-photo]').forEach(btn=>btn.addEventListener('click',()=>{
             collectAdminInputs();const it=state.items[+btn.dataset.primaryPhoto];if(!it)return;
             const images=productImages(it), index=Number(btn.dataset.photoIndex);if(index<1||index>=images.length)return;
