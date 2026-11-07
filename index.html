@@ -1972,8 +1972,8 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         return {rows,quantity,valid,purchased,returned:valid && quantity ? quantity-purchased : 0,total:purchased*200000};
       }
       function carrierOptionLabel(purchased, quantity){
-        if(purchased===0)return 'همه را برمی‌گردانم';
-        if(purchased===quantity)return 'همه را می‌خرم';
+        if(purchased===0)return `همه را برمی‌گردانم (۰ خرید، ${toFa(quantity)} بازگشت)`;
+        if(purchased===quantity)return `همه را می‌خرم (${toFa(quantity)} خرید، ۰ بازگشت)`;
         return `${toFa(purchased)} مجموعه می‌خرم؛ ${toFa(quantity-purchased)} مجموعه را برمی‌گردانم`;
       }
       function getCartSummary() {
@@ -3918,8 +3918,8 @@ function renderDatabaseAccount(body){
               </div>
               ${carrierState(sum.lines).quantity?`<section style="margin-bottom:14px;padding:12px;border:1px solid var(--border);border-radius:13px;background:var(--surface-soft)">
                 <strong>ظرف حمل کیک و زیر کیکی <span style="color:#DC2626">*</span></strong><p style="font-size:12px">خرید هر مجموعه ۲۰۰٬۰۰۰ تومان است؛ در صورت بازگرداندن، هزینه‌ای ندارد.</p>
-                <label style="display:block;margin:9px 0">تعداد خرید ظرف حمل کیک و زیر کیکی <select data-carrier="total" style="display:block;width:100%;padding:9px;margin-top:4px"><option value="">انتخاب کنید</option>${Array.from({length:carrierState(sum.lines).quantity+1},(_,n)=>`<option value="${n}" ${carrierState(sum.lines).valid&&carrierState(sum.lines).purchased===n?'selected':''}>${carrierOptionLabel(n,carrierState(sum.lines).quantity)}</option>`).join('')}</select></label>
-                <div>هزینهٔ ظرف حمل کیک و زیر کیکی: <b id="carrierTotal">${formatPriceFa(carrierState(sum.lines).total)}</b> تومان</div></section>`:''}
+                <label style="display:block;margin:9px 0">تعداد خرید و بازگشت <select data-carrier="total" style="display:block;width:100%;padding:9px;margin-top:4px"><option value="">انتخاب کنید</option>${Array.from({length:carrierState(sum.lines).quantity+1},(_,n)=>`<option value="${n}" ${carrierState(sum.lines).valid&&carrierState(sum.lines).purchased===n?'selected':''}>${carrierOptionLabel(n,carrierState(sum.lines).quantity)}</option>`).join('')}</select></label>
+                <div>هزینهٔ خرید: <b id="carrierTotal">${formatPriceFa(carrierState(sum.lines).total)}</b> تومان</div></section>`:''}
               <section class="field" style="margin-bottom:14px;padding:12px;border:1px solid var(--border);border-radius:13px;background:var(--surface-soft)">
                 <label style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:8px">💳 روش تسویهٔ فاکتور <span style="color:#DC2626">*</span></label>
                 <div id="checkoutPaymentOptions" style="display:grid;gap:7px">
@@ -4920,7 +4920,9 @@ function mountCustomerDirectory(body){
                     <div class="order-payment-admin"><div><b>روش تسویه:</b> ${escapeHtml(paymentLabel)}</div><div><b>وصول‌شده:</b> ${formatPriceFa(paymentReceived)} تومان · <b>باقی‌مانده:</b> ${formatPriceFa(paymentDue)} تومان</div><div><b>وضعیت:</b> ${ord.paymentStatus==='paid'?'تسویه کامل':ord.paymentStatus==='partially_paid'?'بخشی دریافت شده':ord.paymentMethod==='delivery'?'پرداخت هنگام تحویل':'در انتظار تأیید رسید'}</div><div class="order-payment-actions">${ord.receiptDeliveryMode==='manual_support'?'<small class="receipt-archive-hint">فیش را در گفت‌وگوی پشتیبانی بله یا تلگرام بررسی کنید؛ تصویری در سایت آپلود نشده است.</small>':''}${ord.receiptInfo?`<button type="button" class="icon-btn" data-open-receipt="${escapeHtml(ord.id)}">🧾 مشاهدهٔ رسید</button>${!(accountingVault.receiptBlobs&&accountingVault.receiptBlobs[ord.id])?'<small class="receipt-archive-hint">پیوست موقت است؛ رسید را برای آرشیو رمزگذاری‌شده باز کنید.</small>':''}`:''}${paymentBtn?`<button type="button" class="icon-btn btn-green" data-confirm-payment="${escapeHtml(ord.id)}">${paymentBtn}</button>`:''}</div></div>
                     <div style="font-size:12.5px;color:var(--text);line-height:1.8;margin-bottom:10px;padding:8px 10px;border-radius:9px;background:var(--surface)">
                       <div>📍 <strong>آدرس دقیق تحویل:</strong> ${escapeHtml(ord.address || ord.note || '-')}</div>
-                      ${ord.deliveryWhen ? `<div>🕒 <strong>زمان تحویل / توضیحات:</strong> ${escapeHtml(ord.deliveryWhen)}</div>` : ''}
+                      <div>📅 <strong>روز تحویل:</strong> ${ord.deliveryDate ? escapeHtml(formatPersianDate(ord.deliveryDate,{dateOnly:true})) : 'ثبت نشده'}</div>
+                      <div>🕒 <strong>بازهٔ زمانی تحویل:</strong> ${ord.deliverySlot ? escapeHtml(ord.deliverySlot) : 'ثبت نشده'}</div>
+                      ${ord.deliveryWhen ? `<div>📝 <strong>${ord.deliveryDate || ord.deliverySlot ? 'توضیحات سفارش' : 'توضیحات / زمان ثبت‌شده در سفارش قدیمی'}:</strong> ${escapeHtml(ord.deliveryWhen)}</div>` : ''}
                     </div>
                     <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px">
                       <div style="display:flex;gap:8px;flex-wrap:wrap">
