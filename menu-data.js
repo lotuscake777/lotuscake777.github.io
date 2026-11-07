@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1794069532597,
+  "updatedAt": 1794071591904,
   "cloud": {
     "ghOwner": "lotuscake777",
     "ghRepo": "lotuscake777.github.io",
@@ -46,7 +46,7 @@ window.MENU_DATA = {
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "1800000",
       "image": "assets/images/custom_k01_1794069525881_2psb2d.jpg",
-      "available": true,
+      "available": false,
       "badge": "",
       "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
       "images": [
@@ -353,8 +353,8 @@ window.MENU_DATA = {
   "vipCustomers": [],
   "design": {
     "palette": "espresso",
-    "accentColor": "#008a86",
-    "bgColor": "#faf8f5",
+    "accentColor": "#315945",
+    "bgColor": "#f8f7f1",
     "gridColumns": 3,
     "fontScale": "normal",
     "showMonogram": false,
@@ -397,7 +397,8 @@ window.MENU_DATA = {
     "lotusWatermarkSize": 16,
     "lotusWatermarkOpacity": 84,
     "lotusWatermarkPosition": "bottom-left",
-    "baleUrl": "https://ble.ir/lotuscake777"
+    "baleUrl": "https://ble.ir/lotuscake777",
+    "visualThemeVersion": "handmade-boutique-v1"
   },
   "encryptedAccounts": {},
   "accountingCostSnapshotEnvelope": ""
