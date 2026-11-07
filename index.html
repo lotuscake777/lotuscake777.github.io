@@ -811,10 +811,24 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     .gallery-nav { position:absolute; z-index:6; top:50%; transform:translateY(-50%); border:0; border-radius:50%; width:40px; height:40px; background:rgba(0,0,0,.6); color:white; font-size:24px; cursor:pointer; }
     .gallery-prev { right:10px; } .gallery-next { left:10px; }
     .gallery-count { position:absolute; z-index:6; bottom:10px; left:50%; transform:translateX(-50%); color:white; background:rgba(0,0,0,.65); padding:3px 10px; border-radius:20px; font-size:12px; }
-    .product-gallery-editor { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:8px; background:var(--surface); border:1px solid var(--border); border-radius:10px; }
-    .product-gallery-editor figure { margin:0; display:grid; gap:4px; width:78px; text-align:center; font-size:11px; }
-    .product-gallery-editor img { width:78px; height:62px; object-fit:cover; border-radius:8px; }
-    .product-gallery-editor button, .product-gallery-editor label { font-size:11px; }
+    .product-gallery-editor { grid-column:1/-1; padding:14px; background:var(--surface); border:1px solid var(--border); border-radius:14px; }
+    .gallery-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+    .gallery-heading strong { font-size:13px; color:var(--text); }
+    .gallery-add { font-size:12px; min-height:34px; }
+    .gallery-photos { display:flex; flex-wrap:wrap; gap:10px; align-items:flex-start; }
+    .product-gallery-editor figure { position:relative; margin:0; width:104px; height:84px; border-radius:10px; background:var(--surface-soft); }
+    .product-gallery-editor figure:has(details[open]) { z-index:5; }
+    .product-gallery-editor figure img { display:block; width:100%; height:100%; object-fit:cover; border-radius:10px; }
+    .gallery-badge { position:absolute; bottom:5px; inset-inline-start:5px; padding:2px 7px; border-radius:6px; background:rgba(38,32,27,.78); color:#fff; font-size:10px; line-height:1.6; }
+    .gallery-actions { position:absolute; top:5px; inset-inline-start:5px; }
+    .gallery-actions summary { display:grid; place-items:center; width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,.94); color:#42362d; cursor:pointer; font-size:21px; line-height:1; list-style:none; box-shadow:0 2px 8px rgba(0,0,0,.13); }
+    .gallery-actions summary::-webkit-details-marker { display:none; }
+    .gallery-actions summary:focus-visible, .gallery-menu button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+    .gallery-menu { position:absolute; top:33px; inset-inline-start:0; width:154px; padding:5px; border:1px solid var(--border); border-radius:10px; background:var(--surface); box-shadow:0 8px 24px rgba(40,29,19,.16); }
+    .gallery-menu button { display:block; width:100%; border:0; background:transparent; color:var(--text); text-align:start; font:inherit; font-size:12px; padding:8px; border-radius:6px; cursor:pointer; }
+    .gallery-menu button:hover, .gallery-menu button:focus-visible { background:var(--surface-soft); }
+    .gallery-menu .gallery-delete { color:#b33b35; }
+    .gallery-hint { display:block; margin-top:10px; color:var(--text-muted); font-size:11px; }
 
     .modal-close {
       position: absolute;
@@ -1415,7 +1429,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     <div class="modal-card" style="max-width:390px" role="dialog" aria-modal="true">
       <div class="modal-content">
         <h3 style="font-size:17px;font-weight:800;margin-bottom:6px">ورود به پنل مدیریت</h3>
-        <p style="font-size:12.2px;color:var(--text-muted);margin-bottom:14px">رمز عبور مدیریت را وارد کنید (رمز اولیه پیش‌فرض: <code>1234</code> — از داخل تب ۵ قابل تغییر است):</p>
+        <p style="font-size:12.2px;color:var(--text-muted);margin-bottom:14px">رمز عبور مدیریت را وارد کنید:</p>
         <div class="field" style="margin-bottom:12px">
           <input autocomplete="new-password" type="password" dir="ltr" id="adminPassInput" name="panel_admin_password" placeholder="رمز مدیریت..." style="text-align:center;font-size:16px;font-weight:700">
         </div>
@@ -2026,7 +2040,8 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         });
       }
 
-      let unlockedAdminPassword = safeStorageRead('sessionStorage','lotus_admin_pass_session','');
+      let unlockedAdminPassword = '';
+      try{sessionStorage.removeItem('lotus_admin_pass_session');}catch(_){}
       let unlockedPrivateKey = null;
       let adminOrders = safeStorageJSON('localStorage','lotus_admin_orders_cache_v1',[],Array.isArray);
       let accountingVault = { version:1, updatedAt:0, productCostHistory:{}, entries:[], receiptBlobs:{} };
@@ -2084,7 +2099,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         };
         state.orderConfig.adminPassHash = await sha256Hex(newPass);
         unlockedAdminPassword = newPass;
-        sessionStorage.setItem('lotus_admin_pass_session', newPass);
+
       }
 
       async function decryptEnvelope(envJsonStr) {
@@ -2145,48 +2160,49 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         }
       }
 
-      // Encrypt/Decrypt permanent order archive on GitHub repo (orders-vault.enc.json) so orders NEVER expire after 12h!
+      // Read and merge a verified archive before any write; never replace one we cannot decrypt.
+      async function mergeOrdersVaultEnvelope(payload) {
+        const baseKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(unlockedAdminPassword), 'PBKDF2', false, ['deriveKey']);
+        const aesKey = await crypto.subtle.deriveKey(
+          { name: 'PBKDF2', salt: base64ToUint8(payload.salt), iterations: 100000, hash: 'SHA-256' },
+          baseKey, { name: 'AES-GCM', length: 256 }, false, ['decrypt']
+        );
+        const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: base64ToUint8(payload.iv) }, aesKey, base64ToUint8(payload.ct));
+        const vaultOrders = JSON.parse(new TextDecoder().decode(plain));
+        if(!Array.isArray(vaultOrders))throw new Error('Invalid order archive');
+        for (const vo of vaultOrders) {
+          const idx = adminOrders.findIndex(x => x.id === vo.id);
+          if (vo.deleted === true && (vo.kind === 'registration' || vo.kind === 'order')) {
+            const tombstone = {kind:vo.kind,id:vo.id,deleted:true,deletedAt:Number(vo.deletedAt)||Date.now(),status:'done'};
+            if (idx === -1) adminOrders.push(tombstone); else adminOrders[idx] = tombstone;
+          } else if (idx === -1) adminOrders.push(vo);
+          else {
+            if ((vo.updatedStatusAt || 0) > (adminOrders[idx].updatedStatusAt || 0)) {
+              adminOrders[idx].status = vo.status; adminOrders[idx].updatedStatusAt = vo.updatedStatusAt;
+            }
+            if ((vo.paymentUpdatedAt || 0) > (adminOrders[idx].paymentUpdatedAt || 0)) {
+              ['paymentReceived','paymentStatus','paymentEvents','receiptReviewedAt','cogsRecognized','costMissing','paymentUpdatedAt'].forEach(k=>{if(k in vo)adminOrders[idx][k]=vo[k];});
+            }
+          }
+        }
+        adminOrders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        localStorage.setItem('lotus_admin_orders_cache_v1', JSON.stringify(adminOrders));
+        updateOrderBadges();
+      }
       async function syncOrdersVaultFromGithub() {
-        if (!unlockedAdminPassword) return;
+        if (!unlockedAdminPassword) return false;
         const cfg = detectCloudRepo();
-        if (!cfg.ghOwner || !cfg.ghRepo) return;
+        if (!cfg.ghOwner || !cfg.ghRepo) return false;
         try {
           const url = `https://api.github.com/repos/${encodeURIComponent(cfg.ghOwner)}/${encodeURIComponent(cfg.ghRepo)}/contents/orders-vault.enc.json?ref=${encodeURIComponent(cfg.ghBranch)}&t=${Date.now()}`;
           const headers = cfg.token ? { 'Authorization': 'Bearer ' + cfg.token } : {};
           const res = await fetch(url, { headers, cache: 'no-store' });
-          if (!res.ok) return;
-          const fileMeta = await res.json();
-          const payload = JSON.parse(base64ToUtf8(fileMeta.content));
-          const baseKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(unlockedAdminPassword), 'PBKDF2', false, ['deriveKey']);
-          const aesKey = await crypto.subtle.deriveKey(
-            { name: 'PBKDF2', salt: base64ToUint8(payload.salt), iterations: 100000, hash: 'SHA-256' },
-            baseKey,
-            { name: 'AES-GCM', length: 256 },
-            false,
-            ['decrypt']
-          );
-          const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: base64ToUint8(payload.iv) }, aesKey, base64ToUint8(payload.ct));
-          const vaultOrders = JSON.parse(new TextDecoder().decode(plain));
-          for (const vo of vaultOrders) {
-            const idx = adminOrders.findIndex(x => x.id === vo.id);
-            if (vo.deleted === true && (vo.kind === 'registration' || vo.kind === 'order')) {
-              const tombstone = {kind:vo.kind,id:vo.id,deleted:true,deletedAt:Number(vo.deletedAt)||Date.now(),status:'done'};
-              if (idx === -1) adminOrders.push(tombstone); else adminOrders[idx] = tombstone;
-            } else if (idx === -1) adminOrders.push(vo);
-            else {
-              if ((vo.updatedStatusAt || 0) > (adminOrders[idx].updatedStatusAt || 0)) {
-                adminOrders[idx].status = vo.status;
-                adminOrders[idx].updatedStatusAt = vo.updatedStatusAt;
-              }
-              if ((vo.paymentUpdatedAt || 0) > (adminOrders[idx].paymentUpdatedAt || 0)) {
-                ['paymentReceived','paymentStatus','paymentEvents','receiptReviewedAt','cogsRecognized','costMissing','paymentUpdatedAt'].forEach(k=>{if(k in vo)adminOrders[idx][k]=vo[k];});
-              }
-            }
-          }
-          adminOrders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-          localStorage.setItem('lotus_admin_orders_cache_v1', JSON.stringify(adminOrders));
-          updateOrderBadges();
-        } catch (_) {}
+          if(res.status===404)return true;
+          if(!res.ok)return false;
+          const meta = await res.json();
+          await mergeOrdersVaultEnvelope(JSON.parse(base64ToUtf8(meta.content)));
+          return true;
+        } catch (_) { return false; }
       }
 
       // Remove only the selected order in a freshly read, decryptable archive.
@@ -2233,6 +2249,16 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         const cfg = detectCloudRepo();
         if (!cfg.token || !cfg.ghOwner || !cfg.ghRepo || !unlockedAdminPassword) return false;
         try {
+          const apiUrl = `https://api.github.com/repos/${encodeURIComponent(cfg.ghOwner)}/${encodeURIComponent(cfg.ghRepo)}/contents/orders-vault.enc.json`;
+          const headers = {'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json','Content-Type':'application/json'};
+          const g = await fetch(apiUrl + '?ref=' + encodeURIComponent(cfg.ghBranch) + '&t=' + Date.now(), { headers, cache:'no-store' });
+          let sha;
+          if(g.ok){
+            const meta=await g.json();
+            if(!meta.sha||!meta.content)throw new Error('archive metadata missing');
+            await mergeOrdersVaultEnvelope(JSON.parse(base64ToUtf8(meta.content)));
+            sha=meta.sha;
+          }else if(g.status!==404)throw new Error('archive unavailable');
           const salt = crypto.getRandomValues(new Uint8Array(16));
           const iv = crypto.getRandomValues(new Uint8Array(12));
           const baseKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(unlockedAdminPassword), 'PBKDF2', false, ['deriveKey']);
@@ -2249,20 +2275,15 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
             iv: arrayBufferToBase64(iv.buffer),
             ct: arrayBufferToBase64(ct)
           });
-          const apiUrl = `https://api.github.com/repos/${encodeURIComponent(cfg.ghOwner)}/${encodeURIComponent(cfg.ghRepo)}/contents/orders-vault.enc.json`;
-          const headers = {
-            'Authorization': 'Bearer ' + cfg.token,
-            'Accept': 'application/vnd.github+json',
-            'Content-Type': 'application/json'
-          };
-          let sha;
-          const g = await fetch(apiUrl + '?ref=' + encodeURIComponent(cfg.ghBranch) + '&t=' + Date.now(), { headers });
-          if (g.ok) sha = (await g.json()).sha;
           const payload = { message: 'Sync encrypted customer orders vault', content: utf8ToBase64(encObj), branch: cfg.ghBranch };
           if (sha) payload.sha = sha;
           const put = await fetch(apiUrl, { method: 'PUT', headers, body: JSON.stringify(payload) });
           return put.ok;
-        } catch (_) { return false; }
+        } catch (_) {
+          const toast=document.getElementById('adminToast');
+          if(toast)toast.textContent='آرشیو سفارش‌ها خوانده نشد؛ برای جلوگیری از حذف اطلاعات، ذخیرهٔ آرشیو متوقف شد. اتصال و رمز آرشیو را بررسی کنید.';
+          return false;
+        }
       }
 
       function emptyAccountingVault(){return {version:1,updatedAt:0,productCostHistory:{},entries:[],receiptBlobs:{}};}
@@ -2441,7 +2462,9 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       async function fetchLiveOrdersFromRelay() {
         const topic = state.orderConfig && state.orderConfig.inboxTopic;
         if (!topic || !unlockedPrivateKey) return;
-        await syncOrdersVaultFromGithub();
+        if(!passwordChangePendingDeploy && !await syncOrdersVaultFromGithub()){
+          document.getElementById('adminToast').textContent='آرشیو سفارش‌ها خوانده نشد؛ اطلاعات قدیمی ممکن است نمایش داده نشوند. اتصال و رمز آرشیو را بررسی کنید.';
+        }
         await loadAccountingVaultFromGithub();
         for(const oldOrder of adminOrders){try{await hydrateOrderAccountingData(oldOrder);}catch(_){}}
         try {
@@ -4153,6 +4176,11 @@ function renderDatabaseAccount(body){
 
       }
 
+      // Close the compact photo menu when clicking elsewhere in the panel.
+      document.addEventListener('click',e=>{
+        if(!e.target.closest('.gallery-actions'))document.querySelectorAll('.gallery-actions[open]').forEach(menu=>{menu.open=false;});
+      });
+
       // ADMIN AUTHENTICATION & UNLOCK
       async function tryUnlockWithPassword(pass) {
         const expectedHash = state.orderConfig && state.orderConfig.adminPassHash;
@@ -4164,19 +4192,11 @@ function renderDatabaseAccount(body){
           unlockedPrivateKey = await unlockPrivateKeyWithPassword(pass);
         } catch (_) {}
         unlockedAdminPassword = pass;
-        sessionStorage.setItem('lotus_admin_pass_session', pass);
+
         return true;
       }
 
       async function requestOpenAdmin() {
-        if (unlockedAdminPassword && await tryUnlockWithPassword(unlockedAdminPassword)) {
-          openAdminModalNow();
-          return;
-        }
-        if (isLocalPreview && await tryUnlockWithPassword('1234')) {
-          openAdminModalNow();
-          return;
-        }
         document.getElementById('adminPassInput').value = '';
         document.getElementById('loginErrMsg').classList.add('hidden');
         document.getElementById('loginModal').classList.remove('hidden');
@@ -4209,7 +4229,7 @@ function renderDatabaseAccount(body){
 
       async function openAdminModalNow() {
         document.getElementById('adminModal').classList.remove('hidden');
-        await loadAccountingVaultFromGithub(true);
+        if(!passwordChangePendingDeploy)await loadAccountingVaultFromGithub(true);
         renderAdminTab();
         await fetchLiveOrdersFromRelay();
         reconcileOrdersWithAccounting();
@@ -5197,10 +5217,11 @@ function mountCustomerDirectory(body){
               ${state.items.map((it, idx) => `
                 <div class="edit-item-row" data-idx="${idx}">
                   <div class="product-gallery-editor">
-                    <span>📷 عکس‌های محصول و اسلاید:</span>
-                    ${productImages(it).map((src,photoIndex)=>`<figure><img src="${escapeHtml(productImagePreview(src))}" alt="عکس ${toFa(photoIndex+1)}"><span>${photoIndex===0?'تصویر اصلی':toFa(photoIndex+1)}</span><button type="button" class="icon-btn" data-edit-photo="${idx}" data-photo-index="${photoIndex}" aria-label="ویرایش عکس ${toFa(photoIndex+1)} ${escapeHtml(it.name)}">ویرایش</button><button type="button" class="icon-btn" data-replace-photo aria-label="جایگزینی عکس ${toFa(photoIndex+1)} ${escapeHtml(it.name)}">جایگزینی</button><input type="file" accept="image/*" class="ei-replace-photo hidden" data-fidx="${idx}" data-photo-index="${photoIndex}">${photoIndex>0?`<button type="button" class="icon-btn" data-primary-photo="${idx}" data-photo-index="${photoIndex}">تصویر اصلی</button>`:''}${productImages(it).length>1?`<button type="button" class="icon-btn btn-danger" data-remove-photo="${idx}" data-photo-index="${photoIndex}">حذف عکس</button>`:''}</figure>`).join('')}
-                    <label class="icon-btn" style="cursor:pointer">➕ افزودن عکس‌ها<input type="file" accept="image/*" multiple class="ei-gallery-file hidden" data-fidx="${idx}"></label>
-                    <small>«ویرایش» کادر عکس فعلی را تغییر می‌دهد؛ «جایگزینی» عکس جدید را در همان جایگاه می‌گذارد. عکس اول تصویر اصلی است. برای انتشار، دکمهٔ سبز پایین را بزنید.</small>
+                    <div class="gallery-heading"><strong>عکس‌های محصول</strong><button type="button" class="icon-btn gallery-add" data-add-photo>＋ افزودن عکس</button><input type="file" accept="image/*" multiple class="ei-gallery-file hidden" data-fidx="${idx}"></div>
+                    <div class="gallery-photos">
+                      ${productImages(it).map((src,photoIndex)=>`<figure><img src="${escapeHtml(productImagePreview(src))}" alt="عکس ${toFa(photoIndex+1)} ${escapeHtml(it.name)}"><span class="gallery-badge">${photoIndex===0?'اصلی':toFa(photoIndex+1)}</span><details class="gallery-actions"><summary aria-label="گزینه‌های عکس ${toFa(photoIndex+1)} ${escapeHtml(it.name)}" title="گزینه‌های عکس">⋮</summary><div class="gallery-menu"><button type="button" data-edit-photo="${idx}" data-photo-index="${photoIndex}">ویرایش کادر</button><button type="button" data-replace-photo>جایگزینی عکس</button>${photoIndex>0?`<button type="button" data-primary-photo="${idx}" data-photo-index="${photoIndex}">انتخاب به‌عنوان اصلی</button>`:''}${productImages(it).length>1?`<button type="button" class="gallery-delete" data-remove-photo="${idx}" data-photo-index="${photoIndex}">حذف عکس</button>`:''}</div></details><input type="file" accept="image/*" class="ei-replace-photo hidden" data-fidx="${idx}" data-photo-index="${photoIndex}"></figure>`).join('')}
+                    </div>
+                    <small class="gallery-hint">برای ویرایش هر عکس، روی ⋮ بزنید. تغییرات با دکمهٔ سبز پایین منتشر می‌شوند.</small>
                   </div>
                   <div class="field">
                     <label>نام محصول</label>
@@ -5355,7 +5376,13 @@ function mountCustomerDirectory(body){
             collectAdminInputs();const item=state.items[+btn.dataset.editPhoto],photoIndex=Number(btn.dataset.photoIndex),source=item&&productImages(item)[photoIndex];
             if(item&&source)void editProductPhoto(item,photoIndex,source,null);
           }));
-          body.querySelectorAll('[data-replace-photo]').forEach(btn=>btn.addEventListener('click',()=>btn.parentElement.querySelector('.ei-replace-photo').click()));
+          body.querySelectorAll('[data-replace-photo]').forEach(btn=>btn.addEventListener('click',()=>btn.closest('figure').querySelector('.ei-replace-photo').click()));
+          body.querySelectorAll('[data-add-photo]').forEach(btn=>btn.addEventListener('click',()=>btn.parentElement.querySelector('.ei-gallery-file').click()));
+          body.querySelectorAll('.gallery-actions').forEach(details=>{
+            details.addEventListener('toggle',()=>{if(details.open)body.querySelectorAll('.gallery-actions[open]').forEach(other=>{if(other!==details)other.open=false;});});
+            details.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{details.open=false;}));
+            details.addEventListener('keydown',e=>{if(e.key==='Escape'&&details.open){details.open=false;details.querySelector('summary').focus();}});
+          });
           body.querySelectorAll('.ei-replace-photo').forEach(inp=>inp.addEventListener('change',()=>{
             const file=inp.files&&inp.files[0];if(!file)return;
             collectAdminInputs();const item=state.items[+inp.dataset.fidx],photoIndex=Number(inp.dataset.photoIndex),source=item&&productImages(item)[photoIndex];
@@ -5569,6 +5596,7 @@ function mountCustomerDirectory(body){
               return;
             }
             try {
+              if(!await syncOrdersVaultFromGithub())throw new Error('آرشیو سفارش‌ها با رمز فعلی خوانده نشد؛ ابتدا مشکل آرشیو را بررسی کنید.');
               await loadAccountingVaultFromGithub(true);
               if(accountingVaultLoadError)throw new Error(accountingVaultLoadError);
               await rewrapPrivateKeyWithNewPassword(np);
@@ -6164,6 +6192,7 @@ function mountCustomerDirectory(body){
       // Live Instant Save & Publish (uploads any changed photos + menu-data.js across all devices!)
       document.getElementById('btnPublishLive').addEventListener('click', async () => {
         const toast = document.getElementById('adminToast');
+        if(passwordChangePendingDeploy){toast.textContent='رمز جدید هنوز منتشر نشده است؛ برای حفظ دفترها ابتدا از تب همگام‌سازی انتشار کامل را انجام دهید.';return;}
         collectAdminInputs();
         state.updatedAt = Date.now();
         applyTheme();
