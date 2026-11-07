@@ -1236,6 +1236,89 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       .card-img-wrap img.lotus-watermark{width:14px!important;max-height:18%!important}
       .modal-img img.lotus-watermark{width:14px!important;max-height:18%!important}
     }
+    /* Handmade forms, boutique greens: presentation only, existing controls remain intact. */
+    :root {
+      --surface:#fffefa; --surface-soft:#edf2e9; --border:#e1e8de; --border-strong:#cbd7ca;
+      --text:#243a2f; --text-muted:#697b6d; --text-subtle:#889589;
+      --accent:#315945; --accent-soft:rgba(49,89,69,.10); --accent-contrast:#fff;
+      --ok:#315945; --badge-bg:#edf2e9; --badge-text:#315945;
+      --nav-bg:rgba(248,247,241,.95); --shadow-sm:0 4px 18px rgba(47,67,51,.045);
+      --shadow-md:0 16px 38px rgba(47,67,51,.09);
+    }
+    html,body { background:var(--bg); }
+    .container { max-width:1240px; padding-left:24px; padding-right:24px; }
+    .top-bar { background:#fffefa; border-bottom:1px solid #e8ece3; }
+    .home-intro { padding-top:28px; padding-bottom:28px; }
+    .home-intro-card { display:grid; grid-template-columns:1fr 1.05fr; min-height:380px; background:#ecf1e6; border-radius:60px 18px 60px 18px; overflow:hidden; }
+    .home-intro-copy { display:flex; flex-direction:column; justify-content:center; align-items:flex-start; padding:48px clamp(32px,5vw,72px); }
+    .home-intro-kicker { color:#567862; font-size:10px; letter-spacing:.14em; font-weight:800; }
+    .home-intro h2 { color:#213c2c; font-size:clamp(28px,3.2vw,43px); font-weight:800; line-height:1.55; margin:14px 0 12px; }
+    .home-intro p { max-width:430px; color:#617767; font-size:13.5px; line-height:2.15; }
+    .home-intro-link { display:inline-flex; align-items:center; gap:18px; margin-top:25px; padding:12px 21px; background:var(--accent); color:#fff; border-radius:24px; font-size:12px; font-weight:700; text-decoration:none; }
+    .home-intro-link:hover { filter:brightness(.92); }
+    .home-intro-image { position:relative; min-height:380px; background:#e9e4da; overflow:hidden; border-radius:60px 0 0 0; }
+    .home-intro-image img { display:block; width:100%; height:100%; position:absolute; inset:0; object-fit:contain; }
+    .home-intro-caption { position:absolute; bottom:18px; left:20px; display:flex; align-items:center; gap:8px; padding:7px 12px; border-radius:20px; background:rgba(255,254,250,.92); color:#42634d; font-size:10px; font-weight:700; }
+    body.account-page-active > #homeIntro { display:none !important; }
+    .sticky-controls { padding:13px 0; }
+    .controls-inner { gap:12px; }
+    .tab-pill { border-radius:22px; padding:9px 16px; }
+    .tab-pill.active { color:#fff; background:var(--accent); border-color:var(--accent); }
+    .search-box input,.price-sort select { border-radius:12px; height:42px; }
+    .price-sort:after { top:16px; }
+    .menu-section { padding:36px 0 4px; }
+    .sec-header { border:0; margin-bottom:20px; padding:0; align-items:end; }
+    .sec-header h2 { font-size:clamp(20px,2.4vw,27px); color:#294333; }
+    .sec-header p { font-size:12px; }
+    .items-list { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; }
+    .items-list .card { display:flex; flex-direction:column; align-items:stretch; padding:0; gap:0; border-radius:26px 8px 26px 8px; border:1px solid #e6ebe2; box-shadow:0 8px 26px rgba(47,67,51,.045); }
+    .items-list .card:hover { transform:translateY(-3px); box-shadow:0 16px 34px rgba(47,67,51,.10); }
+    .items-list .card-img-wrap { width:100%; height:auto; aspect-ratio:5/4; flex-shrink:0; border-radius:0; background:#f0ebe4; }
+    .items-list .card-img-wrap .card-product-image { width:100%; height:100%; object-fit:contain; }
+    .items-list .card:hover .card-img-wrap .card-product-image { transform:none; }
+    .items-list .card-body { padding:16px; gap:14px; }
+    .card-top { align-items:flex-start; flex-wrap:wrap; gap:7px; }
+    .card-title { font-size:14px; line-height:1.6; }
+    .serving-tag { background:#eff3e9; color:#52715c; border-radius:16px; font-size:10px; }
+    .card-desc { margin-top:7px; font-size:11.8px; line-height:1.8; }
+    .items-list .card-footer { padding-top:13px; gap:10px; }
+    .card-actions { margin-inline-start:auto; }
+    .add-cart-btn { height:36px; background:var(--accent); color:#fff; border:1px solid var(--accent); border-radius:20px; padding:0 12px; }
+    .favorite-button { width:36px; height:36px; border-radius:50%; border-color:#dce5d9; }
+    .price-val { color:var(--accent); }
+    .order-info-box,.social-luxury { border-radius:24px 8px 24px 8px; }
+    .modal-card { border-radius:24px 8px 24px 8px; }
+    #detailModal .modal-img { background:#f2ede6; }
+    .cta-cart-bar { background:#315945; box-shadow:0 6px 20px rgba(49,89,69,.22); border-radius:24px; }
+    #accountPage .account-nav,#accountPage .account-panel { border-radius:24px 8px 24px 8px; }
+    #accountPage .account-topbar { background:#fffefa; }
+    .home-intro-link:focus-visible,.add-cart-btn:focus-visible,.favorite-button:focus-visible,.tab-pill:focus-visible { outline:3px solid #9ab7a1; outline-offset:3px; }
+    @media(max-width:1000px) { .items-list { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+    @media(max-width:700px) {
+      .container { padding-left:16px; padding-right:16px; }
+      .home-intro { padding-top:16px; padding-bottom:18px; }
+      .home-intro-card { grid-template-columns:1fr; min-height:0; border-radius:36px 10px 36px 10px; }
+      .home-intro-image { order:-1; min-height:240px; border-radius:36px 0 0 0; }
+      .home-intro-copy { padding:25px 25px 28px; }
+      .home-intro h2 { margin:9px 0; font-size:27px; }
+      .home-intro p { font-size:12px; }
+      .home-intro-link { margin-top:17px; }
+      .sticky-controls { padding:10px 0; }
+      .sec-header { display:block; }
+      .sec-header p { margin-top:3px; }
+      .menu-section { padding-top:27px; }
+      .items-list { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+      .items-list .card-body { padding:11px; gap:10px; }
+      .card-title { font-size:12.5px; }
+      .card-desc { font-size:11px; }
+      .items-list .card-footer { align-items:flex-end; }
+      .card-actions { width:100%; justify-content:space-between; margin:0; }
+      .add-cart-btn { flex:1; justify-content:center; }
+      .price-val { font-size:13px; }
+      .price-unit { font-size:10px; }
+    }
+    @media(max-width:340px) { .items-list { grid-template-columns:1fr; } }
+    @media(prefers-reduced-motion:reduce) { .card,.home-intro-link { transition:none; } }
 </style>
   <script>
     // Startup fail-safe: do not leave the page permanently covered or unscrollable
@@ -1322,6 +1405,18 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
   </header>
   <div class="bake-status-bar hidden" id="bakeStatusBar"><span class="bake-dot" id="bakeDot"></span><span id="bakeStatusText"></span></div>
   <div class="trust-bar hidden" id="trustBar"></div>
+
+  <section class="home-intro container" id="homeIntro" aria-label="معرفی لوتوس کیک">
+    <div class="home-intro-card">
+      <div class="home-intro-copy">
+        <span class="home-intro-kicker" lang="en" dir="ltr">MADE WITH CARE · LOTUS CAKE</span>
+        <h2>از آشپزخانهٔ ما،<br>برای لحظه‌های شما</h2>
+        <p>طعم‌های دوست‌داشتنی، با دقت و حوصله آماده می‌شوند تا لحظه‌های شما شیرین‌تر باشند.</p>
+        <a class="home-intro-link" href="#menuContainer">دیدن منوی کیک‌ها <span aria-hidden="true">←</span></a>
+      </div>
+      <div class="home-intro-image"><img id="homeIntroImage" alt="" fetchpriority="high"><span class="home-intro-caption">دست‌ساز و با عشق <span aria-hidden="true">✳</span></span></div>
+    </div>
+  </section>
 
   <div class="sticky-controls">
     <div class="container controls-inner">
@@ -1786,8 +1881,14 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
         // Default design values (editable without coding in Admin -> Design tab)
         const dd = targetState.design;
         dd.palette = dd.palette || 'espresso';
-        dd.accentColor = dd.accentColor || '#7A5435';
-        dd.bgColor = dd.bgColor || '#FAF8F5';
+        // Adopt the chosen green palette once, while keeping future colour controls editable.
+        if(!dd.visualThemeVersion){
+          if(!dd.accentColor || String(dd.accentColor).toLowerCase()==='#008a86')dd.accentColor='#315945';
+          if(!dd.bgColor || String(dd.bgColor).toLowerCase()==='#faf8f5')dd.bgColor='#f8f7f1';
+          dd.visualThemeVersion='handmade-boutique-v1';
+        }
+        dd.accentColor = dd.accentColor || '#315945';
+        dd.bgColor = dd.bgColor || '#f8f7f1';
         dd.fontScale = dd.fontScale || 'normal';
         dd.showMonogram = dd.showMonogram !== false;
         dd.monogramText = dd.monogramText || 'LC';
@@ -2759,6 +2860,14 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           document.body.style.fontSize = state.design.fontScale==='large'?'15px':state.design.fontScale==='small'?'13px':'';
         }
 
+        const introImage=document.getElementById('homeIntroImage');
+        const featured=state.items.find(item=>item.available!==false && productImages(item).length);
+        const intro=document.getElementById('homeIntro');
+        if(featured){
+          const src=productImagePreview(productImages(featured)[0]);
+          if(introImage.getAttribute('src')!==src)introImage.src=src;
+          introImage.alt=featured.name||'کیک لوتوس';intro.classList.remove('hidden');
+        }else intro.classList.add('hidden');
         document.title = (vip ? `${vip.name} | ` : '') + state.brand.name;
         document.getElementById('elBrandName').textContent = state.brand.name;
         document.getElementById('elTagline').textContent = state.brand.tagline;
@@ -6378,6 +6487,4 @@ function mountCustomerDirectory(body){
     })();
   </script>
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5030d4849f7c5cf',t:'MTc5Mjk1MDUwMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5031732ead1c5cf',t:'MTc5Mjk1MDkwOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a50322cdcec31ac7',t:'MTc5Mjk1MTM4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
-</html>
-ction(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
