@@ -1337,16 +1337,24 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       .sec-header p { margin-top:3px; }
       .menu-section { padding-top:27px; }
       .items-list { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-      .items-list .card-body { padding:11px; gap:10px; }
-      .card-title { font-size:12.5px; }
-      .card-desc { font-size:11px; }
-      .items-list .card-footer { align-items:flex-end; }
+      .items-list .card-body { padding:11px; gap:10px; min-width:0; }
+      .items-list .card-top { flex-direction:column; align-items:flex-start; gap:5px; }
+      .items-list .card-title { font-size:12.5px; overflow-wrap:anywhere; }
+      .items-list .serving-tag { max-width:100%; white-space:normal; line-height:1.5; }
+      /* Product description and badge remain in the existing detail view. */
+      .items-list .card-desc, .items-list .card-badge-row { display:none; }
+      .items-list .card-footer { align-items:flex-end; border-top:0; padding-top:0; }
+      .items-list .card-footer > div { min-width:0; }
       .card-actions { width:100%; justify-content:space-between; margin:0; }
-      .add-cart-btn { flex:1; justify-content:center; }
+      .add-cart-btn { flex:1; min-width:0; justify-content:center; }
       .price-val { font-size:13px; }
       .price-unit { font-size:10px; }
     }
-    @media(max-width:340px) { .items-list { grid-template-columns:1fr; } }
+    @media(max-width:340px) {
+      .items-list .card-body { padding:9px; }
+      .items-list .card-actions { gap:5px; }
+    }
+    @media(max-width:299px) { .items-list { grid-template-columns:1fr; } }
     .home-intro { max-width:var(--banner-width,1240px); }
     .home-intro-card { min-height:var(--banner-height,380px); }
     .home-intro-image { min-height:var(--banner-height,380px); }
