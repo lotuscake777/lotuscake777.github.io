@@ -1174,7 +1174,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     }
 
     /* Responsive mobile layout: same app state/data as desktop, adjusted presentation only. */
-    .mobile-logo-wrap, .admin-mobile-nav-menu { display:none; }
+    .mobile-logo-wrap, .admin-mobile-nav-menu, .admin-mobile-menu-toggle, .admin-mobile-heading { display:none; }
     .register-mobile-icon { display:block; width:16px; height:16px; flex:0 0 16px; }
     @media (max-width: 640px) {
       .top-bar { padding: 9px 0 11px; }
@@ -1195,23 +1195,43 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       .admin-modal { padding:7px; align-items:stretch; }
       .admin-panel { width:100%; height:100%; max-height:100%; border-radius:16px; }
       .admin-header { padding:10px 12px; gap:8px; }
-      .admin-header h2 { font-size:14px !important; line-height:1.5; }
-      .admin-header p { font-size:10.5px !important; line-height:1.55; margin-top:3px; }
+      .admin-header h2 { font-size:15px !important; line-height:1.5; }
+      .admin-desktop-heading, .admin-header p { display:none; }
+      .admin-mobile-heading { display:inline; }
       .admin-header > button { flex:0 0 auto; min-height:40px; padding:0 9px; font-size:11px; }
-      .admin-tabs { display:block; position:relative; padding:8px 10px; z-index:8; }
+      .admin-tabs { display:block; position:relative; padding:7px 10px; z-index:8; }
       .admin-tabs > .admin-tab { display:none !important; }
-      .admin-mobile-nav-menu { display:grid; position:static; max-height:none; overflow:visible; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; padding:9px 0; border:0; border-radius:0; background:transparent; box-shadow:none; }
-      .admin-mobile-tab { min-height:44px; padding:7px 8px; border:1px solid var(--border); border-radius:10px; background:var(--surface-soft); color:var(--text); font:inherit; font-size:11.5px; font-weight:700; cursor:pointer; }
+      .admin-mobile-menu-toggle { display:flex; align-items:center; gap:9px; width:100%; min-height:44px; padding:7px 11px; border:1px solid var(--border); border-radius:11px; background:var(--surface); color:var(--text); font:inherit; cursor:pointer; text-align:right; }
+      .admin-mobile-menu-toggle:focus-visible, .admin-mobile-tab:focus-visible { outline:3px solid #8eae9a; outline-offset:2px; }
+      .admin-mobile-menu-icon { display:flex; flex-direction:column; justify-content:center; gap:4px; width:20px; height:24px; flex:0 0 20px; }
+      .admin-mobile-menu-icon span { display:block; width:20px; height:2px; border-radius:2px; background:currentColor; }
+      .admin-mobile-menu-label { font-size:13px; font-weight:800; white-space:nowrap; }
+      .admin-mobile-current { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-muted); font-size:12px; }
+      .admin-mobile-chevron { font-size:14px; transition:transform .16s ease; }
+      .admin-mobile-menu-toggle[aria-expanded="true"] .admin-mobile-chevron { transform:rotate(180deg); }
+      .admin-mobile-nav-menu { display:grid; position:absolute; top:calc(100% + 3px); right:10px; left:10px; max-height:min(60vh, 420px); overflow-y:auto; overscroll-behavior:contain; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; padding:10px; border:1px solid var(--border); border-radius:14px; background:var(--surface); box-shadow:var(--shadow-modal); }
+      .admin-mobile-nav-menu[hidden] { display:none; }
+      .admin-mobile-tab { min-width:0; min-height:44px; padding:7px 8px; border:1px solid var(--border); border-radius:10px; background:var(--surface-soft); color:var(--text); font:inherit; font-size:12px; font-weight:700; line-height:1.5; overflow-wrap:anywhere; cursor:pointer; }
       .admin-mobile-tab.active { background:var(--accent); border-color:var(--accent); color:var(--accent-contrast); }
-      .admin-body { padding:12px; }
-      .admin-body input:not([type="checkbox"]):not([type="radio"]), .admin-body select, .admin-body textarea { min-height:48px; padding:10px 12px; font-size:16px; border-radius:11px; }
-      .admin-body button, .admin-body a.icon-btn { min-height:42px; }
+      .admin-body { padding:12px; min-width:0; font-size:13px; line-height:1.7; overflow-wrap:anywhere; }
+      .admin-body .field, .admin-body .form-grid, .admin-body .edit-item-row, .admin-body .order-card-admin { min-width:0; }
+      .admin-body .field label { font-size:12.5px; line-height:1.5; }
+      .admin-body input:not([type="checkbox"]):not([type="radio"]), .admin-body select, .admin-body textarea { box-sizing:border-box; max-width:100%; min-height:48px; padding:10px 12px; font-size:16px; border-radius:11px; }
+      .admin-body button, .admin-body a.icon-btn { max-width:100%; min-height:42px; line-height:1.5; white-space:normal; overflow-wrap:anywhere; }
+      .admin-body .order-card-admin { padding:13px 12px; }
+      .admin-body .serving-tag { white-space:normal; }
+      .admin-body #pricingFiles { width:100%; min-width:0; font-size:13px; }
+      .admin-body #pricingFiles::file-selector-button { max-width:55%; font:inherit; }
+      .admin-body .accounting-wrap { min-width:0; grid-template-columns:minmax(0,1fr); }
+      .admin-body .accounting-wrap > *, .admin-body .accounting-section, .admin-body .accounting-table-wrap { min-width:0; max-width:100%; }
+      .admin-body .accounting-periods, .admin-body .accounting-actions { flex-wrap:wrap; }
+      .admin-body .accounting-table-hint { display:block; margin-top:8px; color:var(--text-muted); font-size:11.5px; line-height:1.5; }
       .admin-body .cat-row { grid-template-columns:1fr !important; gap:7px !important; padding:9px; margin-bottom:10px !important; border:1px solid var(--border); border-radius:12px; background:var(--surface); }
       .admin-body .cat-row .cat-del { width:100%; min-height:42px !important; }
       .admin-footer { padding:8px 10px; gap:6px; justify-content:center; }
       .admin-footer > .status-toast { width:100%; text-align:center; font-size:11px; }
-      .admin-footer > div { width:100%; display:grid !important; grid-template-columns:minmax(105px,.85fr) minmax(155px,1.3fr); gap:7px !important; }
-      .admin-footer > div > button { min-height:46px; height:auto; padding:7px 6px; font-size:10.5px; line-height:1.35; }
+      .admin-footer > div { width:100%; display:grid !important; grid-template-columns:minmax(0,.85fr) minmax(0,1.3fr); gap:7px !important; }
+      .admin-footer > div > button { min-width:0; min-height:46px; height:auto; padding:7px 6px; font-size:11.5px; line-height:1.45; white-space:normal; overflow-wrap:anywhere; }
       .edit-item-row { grid-template-columns:1fr !important; gap:8px; padding:10px; }
       .edit-item-row > * { grid-column:1/-1 !important; }
       .edit-item-row .photo-box { flex-direction:row; justify-content:flex-start; }
@@ -1234,7 +1254,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       .accounting-wrap{display:grid;gap:14px}.accounting-privacy-note{display:grid;gap:3px;padding:13px;border-radius:12px;background:var(--ok-soft);border:1px solid var(--border);font-size:12px;line-height:1.75}.accounting-privacy-note b{font-size:13px}.accounting-privacy-note span,.accounting-toolbar span{color:var(--text-muted)}
       .accounting-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.accounting-toolbar h3{margin:0 0 3px;font-size:16px}.accounting-actions{display:flex;gap:7px}.accounting-actions button,.accounting-periods button{border:1px solid var(--border-strong);border-radius:9px;background:var(--surface);color:var(--text);padding:8px 11px;font:inherit;font-size:11.5px;cursor:pointer}.accounting-periods{display:flex;gap:7px}.accounting-periods button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
       .accounting-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.accounting-cards>div{padding:12px;border-radius:11px;border:1px solid var(--border);background:var(--surface-soft);display:grid;gap:6px}.accounting-cards small{font-size:10.5px;color:var(--text-muted)}.accounting-cards b{font-size:15px}.accounting-cards i{font-size:10px;font-style:normal;color:var(--text-muted)}.accounting-cards .positive b{color:#16734b}.accounting-cards .negative b{color:#b42318}.accounting-substats{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:11.5px;color:var(--text-muted)}.accounting-substats b{color:var(--text)}
-      .accounting-section{padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}.accounting-section summary{font-weight:800;font-size:13px;cursor:pointer}.accounting-section>p,.accounting-hint{font-size:11px;color:var(--text-muted);line-height:1.7}.accounting-cost-list{display:grid;gap:7px;margin:10px 0}.accounting-cost-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(170px,240px);align-items:center;gap:10px;padding:8px;border-radius:9px;background:var(--surface-soft)}.accounting-cost-row small,.accounting-cost-row label span{display:block;font-size:10px;color:var(--text-muted)}.accounting-cost-row input,.accounting-entry-form input,.accounting-entry-form select{width:100%;box-sizing:border-box;padding:9px;border:1px solid var(--border-strong);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:12px}.accounting-entry-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}.accounting-entry-form label{display:grid;gap:5px;font-size:11px;font-weight:700}.accounting-entry-form .wide{grid-column:1/-1}.accounting-entry-form button{grid-column:1/-1;justify-self:start}.accounting-table-wrap{overflow:auto;margin-top:10px}.accounting-table{width:100%;border-collapse:collapse;min-width:680px;font-size:11px}.accounting-table th,.accounting-table td{padding:8px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}.accounting-table th{color:var(--text-muted);font-weight:700}.accounting-table td:nth-child(4){white-space:normal;min-width:120px}
+      .accounting-section{padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}.accounting-section summary{font-weight:800;font-size:13px;cursor:pointer}.accounting-section>p,.accounting-hint{font-size:11px;color:var(--text-muted);line-height:1.7}.accounting-cost-list{display:grid;gap:7px;margin:10px 0}.accounting-cost-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(170px,240px);align-items:center;gap:10px;padding:8px;border-radius:9px;background:var(--surface-soft)}.accounting-cost-row small,.accounting-cost-row label span{display:block;font-size:10px;color:var(--text-muted)}.accounting-cost-row input,.accounting-entry-form input,.accounting-entry-form select{width:100%;box-sizing:border-box;padding:9px;border:1px solid var(--border-strong);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:12px}.accounting-entry-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}.accounting-entry-form label{display:grid;gap:5px;font-size:11px;font-weight:700}.accounting-entry-form .wide{grid-column:1/-1}.accounting-entry-form button{grid-column:1/-1;justify-self:start}.accounting-table-hint{display:none}.accounting-table-wrap{overflow:auto;margin-top:10px}.accounting-table{width:100%;border-collapse:collapse;min-width:680px;font-size:11px}.accounting-table th,.accounting-table td{padding:8px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}.accounting-table th{color:var(--text-muted);font-weight:700}.accounting-table td:nth-child(4){white-space:normal;min-width:120px}
       @media(max-width:650px){.accounting-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.accounting-cost-row{grid-template-columns:1fr}.accounting-entry-form{grid-template-columns:1fr}.accounting-entry-form .wide,.accounting-entry-form button{grid-column:1}.accounting-actions button{padding:7px 8px}.payment-choice{align-items:flex-start;flex-direction:column}}
 
       .order-payment-admin{display:grid;gap:5px;padding:10px 12px;margin-bottom:10px;border-radius:10px;background:var(--surface-soft);border:1px solid var(--border);font-size:11.8px;line-height:1.65}.order-payment-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px}.receipt-archive-hint{align-self:center;color:#9a3412;font-size:10.5px}
@@ -1583,16 +1603,23 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     <div class="admin-panel">
       <div class="admin-header">
         <div>
-          <h2 style="font-size:17px;font-weight:800">پنل مدیریت جامع سفارشات، ثبت‌نام‌ها، تصاویر و قیمت‌ها</h2>
+          <h2 style="font-size:17px;font-weight:800"><span class="admin-desktop-heading">پنل مدیریت جامع سفارشات، ثبت‌نام‌ها، تصاویر و قیمت‌ها</span><span class="admin-mobile-heading">پنل مدیریت</span></h2>
           <p style="font-size:12px;color:var(--text-muted)">هر تغییری بدهید با زدن دکمه سبز پایین در کسری از ثانیه روی گوشی تمام مشتریان آپدیت می‌شود</p>
         </div>
         <button class="icon-btn" type="button" id="btnCloseAdmin">بستن &times;</button>
       </div>
 
       <div class="admin-tabs">
-        <div class="admin-mobile-nav-menu" id="adminMobileNavMenu" aria-label="انتخاب بخش پنل مدیریت">
-          <button type="button" class="admin-mobile-tab" data-atab="orders">🔔 ۱. سفارشات</button>
-          <button type="button" class="admin-mobile-tab" data-atab="registrations">👥 ۲. ثبت‌نام مشتریان</button>
+        <button type="button" class="admin-mobile-menu-toggle" id="adminMobileMenuToggle" aria-expanded="false" aria-controls="adminMobileNavMenu">
+          <span class="admin-mobile-menu-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span class="admin-mobile-menu-label">منوی مدیریت</span>
+          <span class="admin-mobile-current" id="adminMobileCurrent">سفارشات</span>
+          <span class="badge-dot hidden" id="adminMobileUnreadBadge"></span>
+          <span class="admin-mobile-chevron" aria-hidden="true">⌄</span>
+        </button>
+        <div class="admin-mobile-nav-menu" id="adminMobileNavMenu" aria-label="انتخاب بخش پنل مدیریت" hidden>
+          <button type="button" class="admin-mobile-tab" data-atab="orders">🔔 ۱. سفارشات <span class="badge-dot hidden" id="mobileOrdersBadge"></span></button>
+          <button type="button" class="admin-mobile-tab" data-atab="registrations">👥 ۲. ثبت‌نام مشتریان <span class="badge-dot hidden" id="mobileRegsBadge"></span></button>
           <button type="button" class="admin-mobile-tab" data-atab="database">👤 مشتریان دیتابیس</button>
           <button type="button" class="admin-mobile-tab" data-atab="prices">📦 ۳. محصولات</button>
           <button type="button" class="admin-mobile-tab" data-atab="customers">⭐ ۴. صفحات اختصاصی</button>
@@ -2324,6 +2351,10 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           bReg.textContent = toFa(newRegsCnt);
           bReg.classList.toggle('hidden', newRegsCnt === 0);
         }
+        [['adminMobileUnreadBadge', totalUnread], ['mobileOrdersBadge', newOrdersCnt], ['mobileRegsBadge', newRegsCnt]].forEach(([id, count]) => {
+          const badge = document.getElementById(id);
+          if (badge) { badge.textContent = toFa(count); badge.classList.toggle('hidden', count === 0); }
+        });
       }
 
       // Read and merge a verified archive before any write; never replace one we cannot decrypt.
@@ -2577,7 +2608,7 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
           <div class="accounting-substats"><span>ماندهٔ دریافتنی سفارش‌ها: <b>${formatPriceFa(pending)} تومان</b></span><span>سفارش دارای بهای تمام‌شدهٔ نامشخص: <b>${toFa(missingCosts)}</b></span><span>گزارش: <b>${periodNames[accountingPeriod]}</b></span></div>
           <details class="accounting-section" open><summary>قیمت تمام‌شدهٔ محصولات — یک قالب کامل</summary><p>مقادیر فقط داخل دفتر رمزگذاری‌شده ذخیره می‌شوند؛ در منو یا منبع عمومی سایت منتشر نمی‌شوند. پس از ثبت هزینه‌ها، برای استفاده از snapshot رمزگذاری‌شده در سفارش‌های جدید، یک بار سایت را از تب همگام‌سازی منتشر کنید.</p><div class="accounting-cost-list">${costRows||'<div class="empty-state">محصولی ثبت نشده است.</div>'}</div><button type="button" id="btnSaveProductCosts" class="icon-btn btn-green" ${weak?'disabled':''}>ذخیره و ثبت تاریخچهٔ هزینه‌ها 🔒</button></details>
           <details class="accounting-section" open><summary>ثبت درآمد متفرقه یا هزینه</summary><form id="accountingEntryForm" class="accounting-entry-form"><label>نوع<select id="acctType"><option value="income">درآمد دریافتی</option><option value="expense">هزینهٔ پرداخت‌شده</option></select></label><label>مبلغ (تومان)<input autocomplete="off" id="acctAmount" inputmode="numeric" required placeholder="مثلاً ۲۵۰۰۰۰"></label><label>دسته‌بندی<select id="acctCategory"><option value="other">سایر درآمد</option><option value="sales">فروش متفرقه</option><option value="ingredients">مواد اولیه / موجودی</option><option value="packaging">بسته‌بندی</option><option value="delivery">ارسال</option><option value="rent">اجاره</option><option value="utilities">قبوض و خدمات</option><option value="payroll">دستمزد</option><option value="other-expense">سایر هزینه‌ها</option></select></label><label>تاریخ<input autocomplete="off" id="acctDate" type="date" value="${accountingDateInput()}"></label><label class="wide">شرح کوتاه<input autocomplete="off" id="acctNote" maxlength="180" placeholder="توضیح اختیاری"></label><button type="submit" class="icon-btn btn-green" ${weak?'disabled':''}>ثبت تراکنش در دفتر رمزگذاری‌شده</button></form><div class="accounting-hint">هزینهٔ «مواد اولیه / موجودی» از سود عملیاتی کم نمی‌شود تا با بهای تمام‌شدهٔ محصولات دوباره‌شماری نشود؛ ولی در خروجی نقدی ثبت خواهد شد.</div></details>
-          <details class="accounting-section" open><summary>دفتر تراکنش‌ها (${toFa(allEntries.length)})</summary><div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>تاریخ</th><th>نوع</th><th>دسته</th><th>شرح</th><th>سفارش</th><th>مبلغ · تومان</th></tr></thead><tbody>${tableRows||'<tr><td colspan="6" class="empty-state">هنوز تراکنشی ثبت نشده است.</td></tr>'}</tbody></table></div></details>
+          <details class="accounting-section" open><summary>دفتر تراکنش‌ها (${toFa(allEntries.length)})</summary><div class="accounting-table-hint">برای دیدن همهٔ ستون‌ها، جدول را به طرفین بکشید.</div><div class="accounting-table-wrap" tabindex="0" aria-label="جدول تراکنش‌ها؛ برای دیدن همهٔ ستون‌ها به طرفین حرکت کنید"><table class="accounting-table"><thead><tr><th>تاریخ</th><th>نوع</th><th>دسته</th><th>شرح</th><th>سفارش</th><th>مبلغ · تومان</th></tr></thead><tbody>${tableRows||'<tr><td colspan="6" class="empty-state">هنوز تراکنشی ثبت نشده است.</td></tr>'}</tbody></table></div></details>
         </div>`;
         body.querySelectorAll('[data-acct-period]').forEach(b=>b.addEventListener('click',()=>{accountingPeriod=b.dataset.acctPeriod;accountingPeriodOffset=0;renderAccountingTab(body);}));
         document.getElementById('btnAcctPrev').onclick=()=>{accountingPeriodOffset--;renderAccountingTab(body);};
@@ -4486,6 +4517,7 @@ function renderDatabaseAccount(body){
       });
 
       async function openAdminModalNow() {
+        setAdminMobileMenuOpen(false);
         document.getElementById('adminModal').classList.remove('hidden');
         if(!passwordChangePendingDeploy)await loadAccountingVaultFromGithub(true);
         renderAdminTab();
@@ -4501,20 +4533,56 @@ function renderDatabaseAccount(body){
         document.querySelector('#adminBody #customerDatabaseSection')?.remove();
         document.querySelector('#adminBody #publicRegistrationDirectory')?.remove();
         collectAdminInputs();
+        setAdminMobileMenuOpen(false);
         document.getElementById('adminModal').classList.add('hidden');
       });
 
-      function syncAdminMobileNavigation(){
-        document.querySelectorAll('.admin-tab,.admin-mobile-tab').forEach(b=>b.classList.toggle('active',b.dataset.atab===currentAdminTab));
+      const adminMobileMenuToggle = document.getElementById('adminMobileMenuToggle');
+      const adminMobileNavMenu = document.getElementById('adminMobileNavMenu');
+      function setAdminMobileMenuOpen(open, restoreFocus=false){
+        adminMobileNavMenu.hidden = !open;
+        adminMobileMenuToggle.setAttribute('aria-expanded', String(open));
+        if (restoreFocus) adminMobileMenuToggle.focus();
       }
-      function activateAdminTab(tab){
+      function syncAdminMobileNavigation(){
+        document.querySelectorAll('.admin-tab,.admin-mobile-tab').forEach(b=>{
+          const active = b.dataset.atab===currentAdminTab;
+          b.classList.toggle('active', active);
+          if (b.classList.contains('admin-mobile-tab')) {
+            if (active) b.setAttribute('aria-current', 'page');
+            else b.removeAttribute('aria-current');
+          }
+        });
+        const activeTab = adminMobileNavMenu.querySelector('.admin-mobile-tab.active');
+        if (activeTab) {
+          const label = activeTab.cloneNode(true);
+          label.querySelectorAll('.badge-dot').forEach(b=>b.remove());
+          document.getElementById('adminMobileCurrent').textContent = label.textContent.trim();
+        }
+      }
+      function activateAdminTab(tab, fromMobile=false){
         collectAdminInputs();
         if(tab!==currentAdminTab)clearCustomerDirectory();
         currentAdminTab=tab;
         syncAdminMobileNavigation();
+        setAdminMobileMenuOpen(false, fromMobile);
         renderAdminTab();
+        if (fromMobile) document.getElementById('adminBody').scrollTop = 0;
       }
-      document.querySelectorAll('.admin-tab,.admin-mobile-tab').forEach(btn=>btn.addEventListener('click',()=>activateAdminTab(btn.dataset.atab)));
+      adminMobileMenuToggle.addEventListener('click',()=>setAdminMobileMenuOpen(adminMobileNavMenu.hidden));
+      document.getElementById('adminModal').addEventListener('click',e=>{
+        if (!adminMobileNavMenu.hidden && !e.target.closest('.admin-tabs')) setAdminMobileMenuOpen(false);
+      });
+      document.addEventListener('keydown',e=>{
+        if (e.key==='Escape' && !adminMobileNavMenu.hidden && !document.getElementById('adminModal').classList.contains('hidden')) {
+          e.preventDefault();
+          setAdminMobileMenuOpen(false, true);
+        }
+      });
+      const adminMobileMedia = window.matchMedia('(max-width: 640px)');
+      if (adminMobileMedia.addEventListener) adminMobileMedia.addEventListener('change',()=>setAdminMobileMenuOpen(false));
+      else if (adminMobileMedia.addListener) adminMobileMedia.addListener(()=>setAdminMobileMenuOpen(false));
+      document.querySelectorAll('.admin-tab,.admin-mobile-tab').forEach(btn=>btn.addEventListener('click',()=>activateAdminTab(btn.dataset.atab, btn.classList.contains('admin-mobile-tab'))));
 
 
       function makeQrSvgString(url, sizePx) {
@@ -6232,18 +6300,18 @@ function mountCustomerDirectory(body){
           if(cardNumEl) state.brand.paymentCardNumber=toEnDigits(cardNumEl.value).replace(/[^0-9]/g,'').slice(0,16);
           const em = document.getElementById('f_notifyEmail');
           if (em && state.orderConfig) state.orderConfig.notifyEmail = em.value.trim();
-          // Categories editing if present
-          const catRows = document.querySelectorAll('.cat-row');
-          if (catRows.length) {
-            const newCats=[];
-            catRows.forEach(r=>{
-              const id=r.querySelector('.cat-id').value.trim().toLowerCase().replace(/\s+/g,'_');
-              const title=r.querySelector('.cat-title').value.trim();
-              const sub=r.querySelector('.cat-sub').value.trim();
-              if(id && title) newCats.push({id, title, subtitle:sub});
-            });
-            if(newCats.length) state.categories = newCats;
-          }
+        }
+        // Categories are edited on the products tab, independently of the brand fields.
+        const catRows = document.querySelectorAll('.cat-row');
+        if (catRows.length) {
+          const newCats=[];
+          catRows.forEach(r=>{
+            const id=r.querySelector('.cat-id').value.trim().toLowerCase().replace(/\s+/g,'_');
+            const title=r.querySelector('.cat-title').value.trim();
+            const sub=r.querySelector('.cat-sub').value.trim();
+            if(id && title) newCats.push({id, title, subtitle:sub});
+          });
+          if(newCats.length) state.categories = newCats;
         }
         const bannerEnabled=document.getElementById('bannerEnabled');
         if(bannerEnabled){
