@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1794259285747,
+  "updatedAt": 1794259375800,
   "cloud": {
     "ghOwner": "lotuscake777",
     "ghRepo": "lotuscake777.github.io",
@@ -45,16 +45,16 @@ window.MENU_DATA = {
       "desc": "خامه شکلاتی شیری، دریپ سس کارامل دست‌ساز و بادام‌زمینی کاراملی",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "1800000",
-      "image": "assets/images/custom_k01_1794259282430_qtgvc6.jpg",
+      "image": "assets/images/custom_k01_1794069525881_2psb2d.jpg",
       "available": true,
       "badge": "",
       "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
       "images": [
-        "assets/images/custom_k01_1794259282430_qtgvc6.jpg",
+        "assets/images/custom_k01_1794069525881_2psb2d.jpg",
         "assets/images/custom_k01_1794059859765_n0in8d.jpg"
       ],
       "photoOriginals": {
-        "assets/images/custom_k01_1794259282430_qtgvc6.jpg": {
+        "assets/images/custom_k01_1794069525881_2psb2d.jpg": {
           "path": "assets/images/original_k01_1794069525881_q62yfwqh.jpg",
           "uploaded": true
         }
@@ -67,14 +67,20 @@ window.MENU_DATA = {
       "desc": "خامه کره‌پسته خالص، خلال پسته تازه و تزئین گل محمدی",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "2.050.000",
-      "image": "assets/images/custom_k02_1793751809831.jpg",
+      "image": "assets/images/custom_k02_1794259373917_5pz4i3.jpg",
       "available": true,
       "badge": "",
       "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
       "images": [
-        "assets/images/custom_k02_1793751809831.jpg",
+        "assets/images/custom_k02_1794259373917_5pz4i3.jpg",
         "assets/images/custom_k02_1794005517771_u2rlkw.jpg"
-      ]
+      ],
+      "photoOriginals": {
+        "assets/images/custom_k02_1794259373917_5pz4i3.jpg": {
+          "path": "assets/images/original_k02_1794259373918_e2hipvrb.jpg",
+          "uploaded": true
+        }
+      }
     },
     {
       "id": "k03",
@@ -398,7 +404,28 @@ window.MENU_DATA = {
     "lotusWatermarkOpacity": 84,
     "lotusWatermarkPosition": "bottom-left",
     "baleUrl": "https://ble.ir/lotuscake777",
-    "visualThemeVersion": "handmade-boutique-v1"
+    "visualThemeVersion": "handmade-boutique-v1",
+    "homeBanner": {
+      "enabled": true,
+      "seconds": 5,
+      "width": 1240,
+      "height": 380,
+      "mobileHeight": 240,
+      "slides": [
+        {
+          "enabled": true,
+          "kicker": "MADE WITH CARE · LOTUS CAKE",
+          "title": "از آشپزخانهٔ ما،\nبرای لحظه‌های شما",
+          "text": "طعم‌های دوست‌داشتنی، با دقت و حوصله آماده می‌شوند تا لحظه‌های شما شیرین‌تر باشند.",
+          "button": "دیدن منوی کیک‌ها",
+          "link": "#menuContainer",
+          "caption": "دست‌ساز و با عشق ✳",
+          "image": "",
+          "alt": "",
+          "layout": "split"
+        }
+      ]
+    }
   },
   "encryptedAccounts": {},
   "accountingCostSnapshotEnvelope": ""
