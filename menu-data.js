@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1794260380241,
+  "updatedAt": 1794260515860,
   "cloud": {
     "ghOwner": "lotuscake777",
     "ghRepo": "lotuscake777.github.io",
@@ -45,16 +45,16 @@ window.MENU_DATA = {
       "desc": "خامه شکلاتی شیری، دریپ سس کارامل دست‌ساز و بادام‌زمینی کاراملی",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "1800000",
-      "image": "assets/images/custom_k01_1794260354200_2tyjvi.jpg",
+      "image": "assets/images/custom_k01_1794260482924_3dl0vk.jpg",
       "available": true,
       "badge": "",
       "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
       "images": [
-        "assets/images/custom_k01_1794260354200_2tyjvi.jpg",
+        "assets/images/custom_k01_1794260482924_3dl0vk.jpg",
         "assets/images/custom_k01_1794059859765_n0in8d.jpg"
       ],
       "photoOriginals": {
-        "assets/images/custom_k01_1794260354200_2tyjvi.jpg": {
+        "assets/images/custom_k01_1794260482924_3dl0vk.jpg": {
           "path": "assets/images/original_k01_1794069525881_q62yfwqh.jpg",
           "uploaded": true
         }
@@ -67,16 +67,16 @@ window.MENU_DATA = {
       "desc": "خامه کره‌پسته خالص، خلال پسته تازه و تزئین گل محمدی",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "2.050.000",
-      "image": "assets/images/custom_k02_1794260377820_gedzuu.jpg",
+      "image": "assets/images/custom_k02_1794260513550_1z61gn.jpg",
       "available": true,
       "badge": "",
       "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
       "images": [
-        "assets/images/custom_k02_1794260377820_gedzuu.jpg",
+        "assets/images/custom_k02_1794260513550_1z61gn.jpg",
         "assets/images/custom_k02_1794005517771_u2rlkw.jpg"
       ],
       "photoOriginals": {
-        "assets/images/custom_k02_1794260377820_gedzuu.jpg": {
+        "assets/images/custom_k02_1794260513550_1z61gn.jpg": {
           "path": "assets/images/original_k02_1794259373918_e2hipvrb.jpg",
           "uploaded": true
         }
