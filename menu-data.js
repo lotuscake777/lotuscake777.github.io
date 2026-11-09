@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1794260703685,
+  "updatedAt": 1794261166422,
   "cloud": {
     "ghOwner": "lotuscake777",
     "ghRepo": "lotuscake777.github.io",
@@ -45,16 +45,16 @@ window.MENU_DATA = {
       "desc": "خامه شکلاتی شیری، دریپ سس کارامل دست‌ساز و بادام‌زمینی کاراملی",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "1800000",
-      "image": "assets/images/custom_k01_1794260673909_476hq6.jpg",
+      "image": "assets/images/custom_k01_1794260986615_f83ulx.jpg",
       "available": true,
       "badge": "",
       "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
       "images": [
-        "assets/images/custom_k01_1794260673909_476hq6.jpg",
+        "assets/images/custom_k01_1794260986615_f83ulx.jpg",
         "assets/images/custom_k01_1794059859765_n0in8d.jpg"
       ],
       "photoOriginals": {
-        "assets/images/custom_k01_1794260673909_476hq6.jpg": {
+        "assets/images/custom_k01_1794260986615_f83ulx.jpg": {
           "path": "assets/images/original_k01_1794069525881_q62yfwqh.jpg",
           "uploaded": true
         }
@@ -67,16 +67,16 @@ window.MENU_DATA = {
       "desc": "خامه کره‌پسته خالص، خلال پسته تازه و تزئین گل محمدی",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "2.050.000",
-      "image": "assets/images/custom_k02_1794260702069_sqkluc.jpg",
+      "image": "assets/images/custom_k02_1794261004426_73pnt1.jpg",
       "available": true,
       "badge": "",
       "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
       "images": [
-        "assets/images/custom_k02_1794260702069_sqkluc.jpg",
+        "assets/images/custom_k02_1794261004426_73pnt1.jpg",
         "assets/images/custom_k02_1794005517771_u2rlkw.jpg"
       ],
       "photoOriginals": {
-        "assets/images/custom_k02_1794260702069_sqkluc.jpg": {
+        "assets/images/custom_k02_1794261004426_73pnt1.jpg": {
           "path": "assets/images/original_k02_1794259373918_e2hipvrb.jpg",
           "uploaded": true
         }
@@ -89,10 +89,19 @@ window.MENU_DATA = {
       "desc": "اسفنج شکلاتی، خامه کاکائو-نوتلا، گاناش چرخشی و شکلات سکه‌ای",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "1.800.00",
-      "image": "assets/images/k03-double-choc.jpg",
+      "image": "assets/images/custom_k03_1794261025645_nkfqyr.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
+      "images": [
+        "assets/images/custom_k03_1794261025645_nkfqyr.jpg"
+      ],
+      "photoOriginals": {
+        "assets/images/custom_k03_1794261025645_nkfqyr.jpg": {
+          "path": "assets/images/original_k03_1794261025645_l5nh3mnk.jpg",
+          "uploaded": true
+        }
+      }
     },
     {
       "id": "k04",
@@ -101,10 +110,19 @@ window.MENU_DATA = {
       "desc": "کرم و سس کرم‌بیسکویت لوتوس چرخشی با بیسکویت کاراملی",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "2.050.000",
-      "image": "assets/images/k04-lotus.jpg",
+      "image": "assets/images/custom_k04_1794261047098_38utxf.jpg",
       "available": true,
       "badge": "پرفروش کافه‌ها",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
+      "images": [
+        "assets/images/custom_k04_1794261047098_38utxf.jpg"
+      ],
+      "photoOriginals": {
+        "assets/images/custom_k04_1794261047098_38utxf.jpg": {
+          "path": "assets/images/original_k04_1794261047098_lyvqj5lv.jpg",
+          "uploaded": true
+        }
+      }
     },
     {
       "id": "k05",
@@ -113,10 +131,19 @@ window.MENU_DATA = {
       "desc": "لایه‌های اسفنج مخملی قرمز با کرم پنیری لطیف سفید",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "1.450.000",
-      "image": "assets/images/custom_k05_1793751830948.jpg",
+      "image": "assets/images/custom_k05_1794261069709_5x660b.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
+      "images": [
+        "assets/images/custom_k05_1794261069709_5x660b.jpg"
+      ],
+      "photoOriginals": {
+        "assets/images/custom_k05_1794261069709_5x660b.jpg": {
+          "path": "assets/images/original_k05_1794261069709_ra8mahkn.jpg",
+          "uploaded": true
+        }
+      }
     },
     {
       "id": "k06",
@@ -125,10 +152,19 @@ window.MENU_DATA = {
       "desc": "کاور پودر نارگیل، کرم لطیف سفید، ترافل رافائلو و شکلات بوئنو",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "2.200.000",
-      "image": "assets/images/k06-raffaello.jpg",
+      "image": "assets/images/custom_k06_1794261085558_ixbwqz.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
+      "images": [
+        "assets/images/custom_k06_1794261085558_ixbwqz.jpg"
+      ],
+      "photoOriginals": {
+        "assets/images/custom_k06_1794261085558_ixbwqz.jpg": {
+          "path": "assets/images/original_k06_1794261085558_547xqzx7.jpg",
+          "uploaded": true
+        }
+      }
     },
     {
       "id": "k07",
@@ -137,10 +173,19 @@ window.MENU_DATA = {
       "desc": "اسفنج شکلاتی آغشته به سس شکلاتی گرم با روکش گاناش براق",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "1.200.000",
-      "image": "assets/images/custom_k07_1793751853382.jpg",
+      "image": "assets/images/custom_k07_1794261100131_ft2pgr.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
+      "images": [
+        "assets/images/custom_k07_1794261100131_ft2pgr.jpg"
+      ],
+      "photoOriginals": {
+        "assets/images/custom_k07_1794261100131_ft2pgr.jpg": {
+          "path": "assets/images/original_k07_1794261100131_p4de0ly3.jpg",
+          "uploaded": true
+        }
+      }
     },
     {
       "id": "k08",
@@ -149,10 +194,19 @@ window.MENU_DATA = {
       "desc": "اسفنج شکلات-قهوه، خامه نسکافه، دریپ گاناش و شکوفه خامه",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "1.550.000",
-      "image": "assets/images/k08-mocha.jpg",
+      "image": "assets/images/custom_k08_1794261120279_f2s88u.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
+      "images": [
+        "assets/images/custom_k08_1794261120279_f2s88u.jpg"
+      ],
+      "photoOriginals": {
+        "assets/images/custom_k08_1794261120279_f2s88u.jpg": {
+          "path": "assets/images/original_k08_1794261120279_4cmpf2ur.jpg",
+          "uploaded": true
+        }
+      }
     },
     {
       "id": "k09",
@@ -161,10 +215,19 @@ window.MENU_DATA = {
       "desc": "بافت خانگی معطر به دارچین با گردوی تازه خردشده روی سطح",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "900.000",
-      "image": "assets/images/custom_k09_1793751871057.jpg",
+      "image": "assets/images/custom_k09_1794261134281_hndtij.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
+      "images": [
+        "assets/images/custom_k09_1794261134281_hndtij.jpg"
+      ],
+      "photoOriginals": {
+        "assets/images/custom_k09_1794261134281_hndtij.jpg": {
+          "path": "assets/images/original_k09_1794261134281_1r10623m.jpg",
+          "uploaded": true
+        }
+      }
     },
     {
       "id": "k10",
@@ -173,10 +236,19 @@ window.MENU_DATA = {
       "desc": "اسفنج خانگی دورنگ حلقه‌ای وانیلی و شکلاتی با بافت لطیف",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "650.000",
-      "image": "assets/images/k10-zebra.jpg",
+      "image": "assets/images/custom_k10_1794261149134_nj6hh8.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
+      "images": [
+        "assets/images/custom_k10_1794261149134_nj6hh8.jpg"
+      ],
+      "photoOriginals": {
+        "assets/images/custom_k10_1794261149134_nj6hh8.jpg": {
+          "path": "assets/images/original_k10_1794261149134_ari35qyh.jpg",
+          "uploaded": true
+        }
+      }
     },
     {
       "id": "k11",
@@ -185,10 +257,19 @@ window.MENU_DATA = {
       "desc": "لایه‌های اسفنج آغشته به اسپرسو، کرم ماسکارپونه و پودر کاکائو",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
       "price": "1.400.000",
-      "image": "assets/images/custom_k11_1793751887999.jpg",
+      "image": "assets/images/custom_k11_1794261160651_d4hlrh.jpg",
       "available": true,
       "badge": "",
-      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل"
+      "shelfLife": "ماندگاری تازه در یخچال ۴ درجه: ۷ روز • بسته‌بندی ایمن حمل",
+      "images": [
+        "assets/images/custom_k11_1794261160651_d4hlrh.jpg"
+      ],
+      "photoOriginals": {
+        "assets/images/custom_k11_1794261160651_d4hlrh.jpg": {
+          "path": "assets/images/original_k11_1794261160651_nohboqsi.jpg",
+          "uploaded": true
+        }
+      }
     },
     {
       "id": "k12",
