@@ -519,11 +519,27 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
     .modal-img .lotus-watermark { width:22%; max-width:var(--lotus-watermark-size,16px); max-height:24%; }
     /* Image crop editor */
     .crop-overlay { position: fixed; top:0; right:0; bottom:0; left:0; z-index:200; background: rgba(0,0,0,0.75); display:grid; place-items:center; padding:16px; }
-    .crop-card { background: var(--surface); border-radius:16px; padding:16px; width: 100%; max-width: 560px; box-shadow: var(--shadow-modal); }
+    .crop-card { background: var(--surface); border-radius:16px; padding:16px; width:100%; max-width:560px; max-height:calc(100dvh - 32px); overflow-y:auto; box-shadow:var(--shadow-modal); }
     .crop-viewport {
       width: 100%; height: 340px; overflow:hidden; position:relative; background:#111; border-radius:12px; cursor: grab; touch-action:none; user-select:none;
     }
+    .crop-viewport.is-product { background:#faf8f5; }
     .crop-viewport:active { cursor: grabbing; }
+    .crop-product-guide { position:absolute; inset:0; pointer-events:none; z-index:2; }
+    .crop-guide-safe { position:absolute; top:12%; bottom:28%; left:14%; right:14%; border:2px dashed rgba(255,255,255,.88); border-radius:8px; box-shadow:0 0 0 1px rgba(31,47,37,.35), inset 0 0 0 1px rgba(31,47,37,.25); }
+    .crop-guide-center { position:absolute; left:50%; top:0; bottom:0; border-left:1px dashed rgba(255,255,255,.9); filter:drop-shadow(0 0 1px #222); }
+    .crop-guide-base { position:absolute; top:72%; left:0; right:0; border-top:2px dashed rgba(255,255,255,.9); filter:drop-shadow(0 0 1px #222); }
+    .crop-guide-toolbar { display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; justify-content:space-between; margin:10px 0; }
+    .crop-guide-caption { flex:1 1 190px; color:var(--text-muted); font-size:11.5px; line-height:1.7; }
+    .crop-guide-toggle { min-height:36px; padding:5px 10px; font-size:11px; white-space:nowrap; }
+    .crop-preview { display:flex; gap:10px; align-items:center; margin:10px 0 0; padding:9px; background:var(--surface-soft); border:1px solid var(--border); border-radius:12px; }
+    .crop-preview-card { width:100px; max-width:36%; flex:0 0 auto; overflow:hidden; border:1px solid var(--border); border-radius:10px 4px 10px 4px; background:var(--surface); }
+    .crop-preview canvas { display:block; width:100%; height:auto; aspect-ratio:5/4; background:#eee9e3; }
+    .crop-preview-card-label { display:block; padding:5px 6px; font-size:9px; line-height:1.5; color:var(--text); overflow-wrap:anywhere; }
+    .crop-preview-card-label small { display:block; color:var(--text-muted); font-size:8px; }
+    .crop-preview-text { min-width:0; font-size:11px; line-height:1.65; color:var(--text-muted); }
+    .crop-preview-text strong { display:block; font-size:12px; color:var(--text); }
+    @media(max-width:480px) { .crop-overlay { padding:8px; } .crop-card { padding:12px; max-height:calc(100dvh - 16px); } .crop-preview-card { width:82px; } }
     /* Splash full-screen luxury intro */
     .splash-screen {
       position: fixed; top:0; right:0; bottom:0; left:0; z-index: 300; background: #fff; display: grid; place-items: center;
@@ -1677,16 +1693,24 @@ installCustomerRecovery({enabled:true,createClient:()=>createRecoveryClient(auth
       <div class="crop-viewport" id="cropViewport">
         <img id="cropImage" src="" alt="">
         <div style="position:absolute; top:0; right:0; bottom:0; left:0; border:1px dashed rgba(255,255,255,0.5); border-radius:12px; pointer-events:none"></div>
-        <div style="position:absolute; top:0; right:0; bottom:0; left:0; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; pointer-events:none; opacity:0.25">
+        <div id="cropLegacyGrid" style="position:absolute; top:0; right:0; bottom:0; left:0; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; pointer-events:none; opacity:0.25">
           <div style="border-right:1px solid #fff; border-bottom:1px solid #fff"></div><div style="border-bottom:1px solid #fff"></div><div style="border-right:1px solid #fff"></div><div></div>
         </div>
+        <div id="cropProductGuide" class="crop-product-guide hidden" aria-hidden="true"><span class="crop-guide-safe"></span><span class="crop-guide-center"></span><span class="crop-guide-base"></span></div>
+      </div>
+      <div id="cropGuideToolbar" class="crop-guide-toolbar hidden">
+        <div class="crop-guide-caption">ابتدا تمام عکس دیده می‌شود. کیک را وسط قاب و پایه را نزدیک خط پایین بگذارید؛ کادر اندازه تقریبی است.</div>
+        <button type="button" id="cropGuideToggle" class="icon-btn crop-guide-toggle" aria-controls="cropProductGuide" aria-pressed="true">پنهان کردن راهنما</button>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;width:100%"><button type="button" id="cropFitImage" class="icon-btn crop-guide-toggle">نمایش کامل عکس</button><button type="button" id="cropFillFrame" class="icon-btn crop-guide-toggle">پر کردن کادر</button></div>
+        <div class="crop-guide-caption">در حالت نمایش کامل ممکن است اطراف تصویر خالی بماند؛ برای پر شدن کادر، زوم کنید.</div>
       </div>
       <div style="display:flex; gap:8px; align-items:center; margin-top:10px; flex-wrap:wrap">
         <label style="font-size:11px; flex:1; display:flex; align-items:center; gap:6px">🔍 زوم <input type="range" id="cropZoomSlider" min="100" max="300" value="100" style="flex:1"> <span id="cropZoomVal">100%</span></label>
         <button type="button" class="icon-btn" id="btnCropReset" style="height:32px">↺ ریست</button>
         <button type="button" class="icon-btn admin-trigger" id="btnCropConfirm" style="height:32px">✅ تایید قاب</button>
       </div>
-      <div style="font-size:11px; color:var(--text-muted); margin-top:6px">تصویر رو با موس بکشید، با اسکرول موس یا اسلایدر زوم کنید — <span id="cropRatioHint">نسبت قاب ۵:۴ است.</span></div>
+      <div id="cropPreview" class="crop-preview hidden"><div class="crop-preview-card"><canvas id="cropPreviewCanvas" width="180" height="144" aria-label="پیش‌نمایش کادر تصویر محصول"></canvas><span class="crop-preview-card-label"><b id="cropPreviewName">نام محصول</b><small>قیمت محصول</small></span></div><div class="crop-preview-text"><strong>نمونهٔ کارت محصول</strong>خطوط راهنما روی عکس ذخیره نمی‌شوند.</div></div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:6px">تصویر را با انگشت یا موس بکشید و با نوار زوم تنظیم کنید — <span id="cropRatioHint">نسبت قاب ۵:۴ است.</span></div>
       <div id="cropSourceInfo" class="hidden" style="font-size:11px;color:#815221;background:#fff5e4;border-radius:8px;padding:8px;margin-top:8px"></div>
     </div>
   </div>
@@ -4642,7 +4666,7 @@ function renderDatabaseAccount(body){
 
       // === ADVANCED IMAGE CROP & POSITION EDITOR ===
       let cropState = null; // { img, posX, posY, zoom, baseZoom, resolve, reject, fileNameHint }
-      function openImageCropEditor(dataUrl, hintName, sourceInfo='', ratio=1.25){
+      function openImageCropEditor(dataUrl, hintName, sourceInfo='', ratio=1.25, mode='product'){
         return new Promise((resolve,reject)=>{
           if(cropState){reject(new Error('ابتدا ویرایش عکس قبلی را تمام کنید.'));return;}
           const modal=document.getElementById('cropEditor');
@@ -4653,19 +4677,45 @@ function renderDatabaseAccount(body){
           const slider=document.getElementById('cropZoomSlider');
           const zoomVal=document.getElementById('cropZoomVal');
           const sourceInfoEl=document.getElementById('cropSourceInfo');
+          const isProduct=mode==='product';
+          viewport.classList.toggle('is-product',isProduct);
+          const guide=document.getElementById('cropProductGuide'), guideToggle=document.getElementById('cropGuideToggle');
+          const preview=document.getElementById('cropPreview'), previewCanvas=document.getElementById('cropPreviewCanvas');
+          const previewItem=(state.items||[]).find(item=>item.name===hintName);
+          document.getElementById('cropPreviewName').textContent=previewItem ? previewItem.name : 'نام محصول';
+          document.getElementById('cropLegacyGrid').classList.toggle('hidden',isProduct);
+          document.getElementById('cropGuideToolbar').classList.toggle('hidden',!isProduct);
+          preview.classList.toggle('hidden',!isProduct);
+          guide.classList.toggle('hidden',!isProduct);
+          guideToggle.setAttribute('aria-pressed','true');
+          guideToggle.textContent='پنهان کردن راهنما';
+          guideToggle.onclick=()=>{
+            const visible=guide.classList.contains('hidden');
+            guide.classList.toggle('hidden',!visible);
+            guideToggle.setAttribute('aria-pressed',String(visible));
+            guideToggle.textContent=visible?'پنهان کردن راهنما':'نمایش راهنما';
+          };
           sourceInfoEl.textContent=sourceInfo;sourceInfoEl.classList.toggle('hidden',!sourceInfo);
           cropState={ posX:0, posY:0, zoom:1, baseZoom:1, resolve, reject };
           const confirmBtn=document.getElementById('btnCropConfirm');
           confirmBtn.disabled=true;
           imgEl.style.left='50%'; imgEl.style.top='50%';
-          slider.value=100; zoomVal.textContent='100%';
+          slider.value=100; slider.max=300; zoomVal.textContent='100%';
+          const fitButton=document.getElementById('cropFitImage'), fillButton=document.getElementById('cropFillFrame');
+          fitButton.disabled=true; fillButton.disabled=true;
           modal.classList.remove('hidden');
           imgEl.onload=()=>{
             const vw=viewport.clientWidth, vh=viewport.clientHeight;
-            // baseZoom to cover viewport
-            const coverZoom = Math.max(vw/imgEl.naturalWidth, vh/imgEl.naturalHeight);
-            cropState.baseZoom = coverZoom;
-            cropState.zoom = coverZoom;
+            const coverZoom=Math.max(vw/imgEl.naturalWidth, vh/imgEl.naturalHeight);
+            // Product editing starts with the whole uploaded source visible; banners retain cover mode.
+            const fitZoom=Math.min(vw/imgEl.naturalWidth, vh/imgEl.naturalHeight);
+            cropState.baseZoom=isProduct ? fitZoom : coverZoom;
+            cropState.zoom=cropState.baseZoom;
+            cropState.coverZoom=coverZoom;
+            slider.max=String(Math.max(300,Math.ceil(coverZoom/cropState.baseZoom*100)));
+            fitButton.disabled=false; fillButton.disabled=false;
+            fitButton.onclick=()=>{cropState.posX=0;cropState.posY=0;cropState.zoom=cropState.baseZoom;applyCropTransform();};
+            fillButton.onclick=()=>{cropState.posX=0;cropState.posY=0;cropState.zoom=cropState.coverZoom;applyCropTransform();};
             applyCropTransform();
             confirmBtn.disabled=false;
           };
@@ -4676,11 +4726,25 @@ function renderDatabaseAccount(body){
           };
           function applyCropTransform(){
             const s=cropState.zoom;
+            // Keep the image in view at fit size, or covering the frame when it is larger.
+            const maxX=Math.abs(imgEl.naturalWidth*s-viewport.clientWidth)/2;
+            const maxY=Math.abs(imgEl.naturalHeight*s-viewport.clientHeight)/2;
+            cropState.posX=Math.max(-maxX,Math.min(maxX,cropState.posX));
+            cropState.posY=Math.max(-maxY,Math.min(maxY,cropState.posY));
             imgEl.style.width = (imgEl.naturalWidth * s) + 'px';
             imgEl.style.height = (imgEl.naturalHeight * s) + 'px';
             imgEl.style.transform = `translate(-50%,-50%) translate(${cropState.posX}px,${cropState.posY}px)`;
             zoomVal.textContent = Math.round((cropState.zoom/cropState.baseZoom)*100)+'%';
             slider.value = Math.round((cropState.zoom/cropState.baseZoom)*100);
+            if(isProduct){
+              const ctx=previewCanvas.getContext('2d'), factor=previewCanvas.width/viewport.clientWidth;
+              ctx.fillStyle='#FAF8F5';ctx.fillRect(0,0,previewCanvas.width,previewCanvas.height);
+              ctx.save();
+              ctx.translate(previewCanvas.width/2 + cropState.posX*factor, previewCanvas.height/2 + cropState.posY*factor);
+              ctx.scale(s*factor,s*factor);
+              ctx.drawImage(imgEl,-imgEl.naturalWidth/2,-imgEl.naturalHeight/2);
+              ctx.restore();
+            }
           }
           // drag
           let dragging=false, startX=0,startY=0, origX=0,origY=0;
@@ -4693,12 +4757,6 @@ function renderDatabaseAccount(body){
             if(!dragging) return;
             cropState.posX = origX + (e.clientX - startX);
             cropState.posY = origY + (e.clientY - startY);
-            // clamp to keep image covering viewport
-            const vw=viewport.clientWidth, vh=viewport.clientHeight;
-            const imgW=imgEl.naturalWidth * cropState.zoom, imgH=imgEl.naturalHeight * cropState.zoom;
-            const maxX = (imgW - vw)/2, maxY = (imgH - vh)/2;
-            cropState.posX = Math.max(-maxX, Math.min(maxX, cropState.posX));
-            cropState.posY = Math.max(-maxY, Math.min(maxY, cropState.posY));
             applyCropTransform();
           }
           function onUp(e){ dragging=false; }
@@ -4711,7 +4769,7 @@ function renderDatabaseAccount(body){
             const delta = e.deltaY >0 ? -0.04 : 0.04;
             let newZoom = cropState.zoom * (1+delta);
             const minZoom = cropState.baseZoom;
-            const maxZoom = cropState.baseZoom*3;
+            const maxZoom = cropState.baseZoom*(Number(slider.max)/100);
             newZoom = Math.max(minZoom, Math.min(maxZoom, newZoom));
             cropState.zoom = newZoom;
             applyCropTransform();
@@ -4757,7 +4815,7 @@ function renderDatabaseAccount(body){
           };
           function cleanup(){
             viewport.onpointerdown=null; viewport.onpointermove=null; viewport.onpointerup=null; viewport.onpointercancel=null; viewport.onwheel=null;
-            imgEl.onload=null; imgEl.onerror=null; confirmBtn.disabled=false; cropState=null;
+            imgEl.onload=null; imgEl.onerror=null; guideToggle.onclick=null; fitButton.onclick=null; fillButton.onclick=null; confirmBtn.disabled=false; cropState=null;
           }
           // close on backdrop
           modal.onclick=(e)=>{ if(e.target.id==='cropEditor') { modal.classList.add('hidden'); cropState.reject(new Error('لغو شد')); cleanup(); }};
@@ -5705,7 +5763,7 @@ function mountCustomerDirectory(body){
               }
               const stillCurrent=()=>currentAdminTab==='prices'&&!document.getElementById('adminModal').classList.contains('hidden')&&state.items.includes(item)&&productImages(item)[photoIndex]===source&&productPhotoOriginal(item,source).path===oldOriginal.path;
               if(!stillCurrent())throw new Error('پنل، محصول یا جایگاه عکس تغییر کرده است؛ دوباره تلاش کنید.');
-              const info=!file&&!oldOriginal.uploaded?'نسخهٔ کامل اولیه برای این عکس قدیمی ذخیره نشده است. این ویرایش از نسخهٔ موجود شروع می‌شود؛ برای استفاده از عکس کامل، یک‌بار آن را جایگزین کنید.':'';
+              const info=!file&&!oldOriginal.uploaded?'فایل اولیه برای این عکس قدیمی ذخیره نشده است. نسخهٔ موجود باز شده؛ برای استفاده از فایل اولیه، آن را با گزینهٔ «جایگزینی عکس» انتخاب کنید.':'فایل اولیهٔ بارگذاری‌شده برای تنظیم کادر باز شده است.';
               const {base64}=await openImageCropEditor(dataUrl,item.name,info);
               if(!stillCurrent())throw new Error('پنل، محصول یا جایگاه عکس تغییر کرده است؛ دوباره تلاش کنید.');
               collectAdminInputs();
@@ -6070,7 +6128,7 @@ function mountCustomerDirectory(body){
                 const cfg=homeBannerSettings(), width=bannerBound(cfg.width,600,1800,1240), height=bannerBound(cfg.height,260,700,380);
                 const ratio=Math.max(.7,Math.min(7,(width-48)*(slide.layout==='full'?1:1.05/2.05)/height));
                 const info=!oldUploaded?'فایل اصلی این عکس قدیمی موجود نیست؛ برای ویرایش از فایل کامل، یک‌بار عکس را جایگزین کنید.':'';
-                ({base64}=await openImageCropEditor(dataUrl,'بنر',info,ratio));
+                ({base64}=await openImageCropEditor(dataUrl,'بنر',info,ratio,'banner'));
               }else{({base64}=await compressImageFile(file,1600,.88));}
               if(!stillCurrent())throw new Error('پنل یا بنر تغییر کرده است؛ دوباره تلاش کنید.');
               const path=`assets/images/banner_${Date.now()}_${Math.random().toString(36).slice(2,10)}.jpg`;
