@@ -1,5 +1,5 @@
 window.MENU_DATA = {
-  "updatedAt": 1794261166422,
+  "updatedAt": 1794263231114,
   "cloud": {
     "ghOwner": "lotuscake777",
     "ghRepo": "lotuscake777.github.io",
@@ -88,7 +88,7 @@ window.MENU_DATA = {
       "name": "کیک دبل چاکلت",
       "desc": "اسفنج شکلاتی، خامه کاکائو-نوتلا، گاناش چرخشی و شکلات سکه‌ای",
       "serving": "قالب سایز ۲۰ / ۸ اسلایس",
-      "price": "1.800.00",
+      "price": "1800000",
       "image": "assets/images/custom_k03_1794261025645_nkfqyr.jpg",
       "available": true,
       "badge": "",
